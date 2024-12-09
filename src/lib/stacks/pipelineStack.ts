@@ -116,7 +116,7 @@ export class PipelineStack extends Stack {
         version: '0.2',
         phases: {
           install: {
-            commands: ['cd app', 'npm install'],
+            commands: ['cd src/lib/lamda', 'npm install'],
           },
           build: {
             commands: 'npm run build',
@@ -124,7 +124,7 @@ export class PipelineStack extends Stack {
         },
         artifacts: {
           'base-directory': 'app',
-          files: ['lambda/index.js', 'node_modules/**/*'],
+          files: ['index.js', 'node_modules/**/*'],
         },
       }),
       environment: {
