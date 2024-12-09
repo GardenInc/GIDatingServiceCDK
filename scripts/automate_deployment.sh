@@ -40,23 +40,19 @@ aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploy
     --profile prod \
     --parameter-overrides ToolsAccountID=${TOOLS_ACCOUNT_ID} Stage=Prod 
 
-
-# Deploy Repository CDK Stack 
-printf "\nDeploying Repository Stack\n"
+# Deploy Pipeline CDK stack, write output to a file to gather key arn
+printf "\nDeploying Cross-Account Deployment Pipeline Stack\n"
 npm install
 npm audit fix
 npm run build
 cdk synth
-
-# Deploy Pipeline CDK stack, write output to a file to gather key arn
-printf "\nDeploying Cross-Account Deployment Pipeline Stack\n"
 
 CDK_OUTPUT_FILE='.cdk_output'
 rm -rf ${CDK_OUTPUT_FILE} .cfn_outputs
 npx cdk deploy CrossAccountPipelineDeploymentStack \
   --context prod-account=${PROD_ACCOUNT_ID} \
   --context beta-account=${BETA_ACCOUNT_ID} \
-  --profile pipeline \
+  --profile tooling \
   --require-approval never \
   2>&1 | tee -a ${CDK_OUTPUT_FILE}
 sed -n -e '/Outputs:/,/^$/ p' ${CDK_OUTPUT_FILE} > .cfn_outputs
@@ -96,9 +92,7 @@ aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAcc
 
 # Commit initial code to new repo (which will trigger a fresh pipeline execution)
 printf "\nCommitting code to repository\n"
-git init && git branch -m main && git add . && git commit -m "Initial commit" && git remote rm origin
-git remote add origin https://git-codecommit.us-west-2.amazonaws.com/v1/repos/repo-${TOOLS_ACCOUNT_ID}
-git config main.remove origin && git config main.merge refs/heads/main && git push --set-upstream origin main
+git add . && git commit -m "Automated Commit" && git push
 
 # Get deployed API Gateway endpoints
 printf "\nUse the following commands to get the Endpoints for deployed environemnts: "

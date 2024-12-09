@@ -1,1 +1,1 @@
-export const secretName = 'github-token';
+export const secretName = 'github-token-plaintext';

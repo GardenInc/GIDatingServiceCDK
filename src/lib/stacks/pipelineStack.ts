@@ -5,7 +5,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
-import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities } from 'aws-cdk-lib';
+import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
 import { ApplicationStackConfigInterface } from '../utils/config';
 import { secretName } from '../utils/constants';
 
@@ -140,11 +140,12 @@ export class PipelineStack extends Stack {
     const lambdaBuildOutput = new codepipeline.Artifact('LambdaBuildOutput');
 
     // oauthToken for CDK // TOOD: generate specific key for this repo and grab dynamically
-    const encryptionKey = new kms.Key(this, 'aws/secretsmanager', {});
-    const secret = Secret.fromSecretAttributes(this, secretName, {
-      secretCompleteArn: 'arn:aws:secretsmanager:us-west-2:682033486425:secret:github-token-lwKvJM',
-      encryptionKey,
-    });
+    // const encryptionKey = new kms.Key(this, 'aws/secretsmanager', {});
+    //const secret = Secret.fromSecretAttributes(this, 'GitHubSecret', {
+    //  secretCompleteArn: 'arn:aws:secretsmanager:us-west-2:682033486425:secret:github-token-secret-t1s1c5',
+    // encryptionKey,
+    // });
+    // secret.secretValue
 
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -158,9 +159,9 @@ export class PipelineStack extends Stack {
               actionName: 'GitHub_Source',
               owner: 'GardenInc',
               repo: 'GIDatingPipelineCDK',
-              oauthToken: secret.secretValue,
+              oauthToken: SecretValue.secretsManager(secretName),
               output: sourceOutput,
-              branch: 'main', // default: 'master'
+              branch: 'main',
             }),
           ],
         },
@@ -225,6 +226,15 @@ export class PipelineStack extends Stack {
       new iam.PolicyStatement({
         actions: ['sts:AssumeRole'],
         resources: [`arn:aws:iam::${betaAccountId}:role/*`, `arn:aws:iam::${prodAccountId}:role/*`],
+      }),
+    );
+
+    // Allow Pipeline to read key from secrets manager
+    pipeline.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['secretsmanager:GetSecretValue'],
+        resources: [`arn:aws:secretsmanager:us-west-2:682033486425:secret:github-token-secret-t1s1c5`],
       }),
     );
 

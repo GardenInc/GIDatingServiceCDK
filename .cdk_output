@@ -1,18 +1,84 @@
 
-✨  Synthesis time: 2.64s
+✨  Synthesis time: 2.42s
 
+current credentials could not be used to assume 'arn:aws:iam::682033486425:role/cdk-hnb659fds-deploy-role-682033486425-us-west-2', but are for the right account. Proceeding anyway.
+CrossAccountPipelineDeploymentStack: start: Building 8f171656df11c672a1c07344b68b7b777e1335af6365e2ed589e8415928183d5:current_account-current_region
+CrossAccountPipelineDeploymentStack: success: Built 8f171656df11c672a1c07344b68b7b777e1335af6365e2ed589e8415928183d5:current_account-current_region
+CrossAccountPipelineDeploymentStack: start: Publishing 8f171656df11c672a1c07344b68b7b777e1335af6365e2ed589e8415928183d5:current_account-current_region
+current credentials could not be used to assume 'arn:aws:iam::682033486425:role/cdk-hnb659fds-file-publishing-role-682033486425-us-west-2', but are for the right account. Proceeding anyway.
+CrossAccountPipelineDeploymentStack: success: Published 8f171656df11c672a1c07344b68b7b777e1335af6365e2ed589e8415928183d5:current_account-current_region
+CrossAccountPipelineDeploymentStack: deploying... [1/1]
+CrossAccountPipelineDeploymentStack: creating CloudFormation changeset...
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:23 AM | REVIEW_IN_PROGRESS   | AWS::CloudFormation::Stack  | CrossAccountPipelineDeploymentStack User Initiated
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:30 AM | CREATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | CrossAccountPipelineDeploymentStack User Initiated
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:33 AM | CREATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:33 AM | CREATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:33 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | CdkBuild/Role (CdkBuildRoleBE66F777) 
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:33 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/CDK_Synth/CodePipelineActionRole (PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83) 
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:33 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Role (PipelineRoleD68726F7) 
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:33 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | LambdaBuild/Role (LambdaBuildRole40E116C6) 
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:33 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/Application_Build/CodePipelineActionRole (PipelineBuildApplicationBuildCodePipelineActionRole183E7A54) 
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:34 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | LambdaBuild/Role (LambdaBuildRole40E116C6) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:34 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | CdkBuild/Role (CdkBuildRoleBE66F777) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:34 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Role (PipelineRoleD68726F7) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:34 AM | CREATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  0/20 | 9:00:34 AM | CREATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  1/20 | 9:00:34 AM | CREATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+CrossAccountPipelineDeploymentStack |  1/20 | 9:00:34 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/CDK_Synth/CodePipelineActionRole (PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  1/20 | 9:00:34 AM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/Application_Build/CodePipelineActionRole (PipelineBuildApplicationBuildCodePipelineActionRole183E7A54) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  1/20 | 9:00:35 AM | CREATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) Eventual consistency check initiated
+CrossAccountPipelineDeploymentStack |  1/20 | 9:00:35 AM | CREATE_IN_PROGRESS   | AWS::KMS::Alias             | ArtifactKey/Alias (ArtifactKeyAliasB27DA94F) 
+CrossAccountPipelineDeploymentStack |  1/20 | 9:00:36 AM | CREATE_IN_PROGRESS   | AWS::KMS::Alias             | ArtifactKey/Alias (ArtifactKeyAliasB27DA94F) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  2/20 | 9:00:49 AM | CREATE_COMPLETE      | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
+CrossAccountPipelineDeploymentStack |  2/20 | 9:00:50 AM | CREATE_IN_PROGRESS   | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) 
+CrossAccountPipelineDeploymentStack |  3/20 | 9:00:50 AM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Role (PipelineRoleD68726F7) 
+CrossAccountPipelineDeploymentStack |  4/20 | 9:00:50 AM | CREATE_COMPLETE      | AWS::IAM::Role              | CdkBuild/Role (CdkBuildRoleBE66F777) 
+CrossAccountPipelineDeploymentStack |  5/20 | 9:00:50 AM | CREATE_COMPLETE      | AWS::IAM::Role              | LambdaBuild/Role (LambdaBuildRole40E116C6) 
+CrossAccountPipelineDeploymentStack |  6/20 | 9:00:50 AM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Build/CDK_Synth/CodePipelineActionRole (PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83) 
+CrossAccountPipelineDeploymentStack |  7/20 | 9:00:50 AM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Build/Application_Build/CodePipelineActionRole (PipelineBuildApplicationBuildCodePipelineActionRole183E7A54) 
+CrossAccountPipelineDeploymentStack |  7/20 | 9:00:51 AM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
+CrossAccountPipelineDeploymentStack |  7/20 | 9:00:51 AM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | LambdaBuild (LambdaBuildCF1FE7ED) 
+CrossAccountPipelineDeploymentStack |  7/20 | 9:00:51 AM | CREATE_IN_PROGRESS   | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  7/20 | 9:00:52 AM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  7/20 | 9:00:52 AM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | LambdaBuild (LambdaBuildCF1FE7ED) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  8/20 | 9:00:52 AM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | LambdaBuild (LambdaBuildCF1FE7ED) 
+CrossAccountPipelineDeploymentStack |  9/20 | 9:00:52 AM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
+CrossAccountPipelineDeploymentStack |  9/20 | 9:00:53 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/Application_Build/CodePipelineActionRole/DefaultPolicy (PipelineBuildApplicationBuildCodePipelineActionRoleDefaultPolicyE2CB3CAC) 
+CrossAccountPipelineDeploymentStack |  9/20 | 9:00:53 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/CDK_Synth/CodePipelineActionRole/DefaultPolicy (PipelineBuildCDKSynthCodePipelineActionRoleDefaultPolicy34E41D63) 
+CrossAccountPipelineDeploymentStack |  9/20 | 9:00:54 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/Application_Build/CodePipelineActionRole/DefaultPolicy (PipelineBuildApplicationBuildCodePipelineActionRoleDefaultPolicyE2CB3CAC) Resource creation Initiated
+CrossAccountPipelineDeploymentStack |  9/20 | 9:00:54 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/CDK_Synth/CodePipelineActionRole/DefaultPolicy (PipelineBuildCDKSynthCodePipelineActionRoleDefaultPolicy34E41D63) Resource creation Initiated
+CrossAccountPipelineDeploymentStack | 10/20 | 9:01:04 AM | CREATE_COMPLETE      | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) 
+CrossAccountPipelineDeploymentStack | 10/20 | 9:01:05 AM | CREATE_IN_PROGRESS   | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
+CrossAccountPipelineDeploymentStack | 10/20 | 9:01:05 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | CdkBuild/Role/DefaultPolicy (CdkBuildRoleDefaultPolicyD27F0F5C) 
+CrossAccountPipelineDeploymentStack | 10/20 | 9:01:05 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | LambdaBuild/Role/DefaultPolicy (LambdaBuildRoleDefaultPolicyBE23D2E1) 
+CrossAccountPipelineDeploymentStack | 10/20 | 9:01:06 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | CdkBuild/Role/DefaultPolicy (CdkBuildRoleDefaultPolicyD27F0F5C) Resource creation Initiated
+CrossAccountPipelineDeploymentStack | 10/20 | 9:01:06 AM | CREATE_IN_PROGRESS   | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) Resource creation Initiated
+CrossAccountPipelineDeploymentStack | 10/20 | 9:01:06 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
+CrossAccountPipelineDeploymentStack | 10/20 | 9:01:07 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | LambdaBuild/Role/DefaultPolicy (LambdaBuildRoleDefaultPolicyBE23D2E1) Resource creation Initiated
+CrossAccountPipelineDeploymentStack | 11/20 | 9:01:07 AM | CREATE_COMPLETE      | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
+CrossAccountPipelineDeploymentStack | 11/20 | 9:01:08 AM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) Resource creation Initiated
+CrossAccountPipelineDeploymentStack | 12/20 | 9:01:10 AM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Build/Application_Build/CodePipelineActionRole/DefaultPolicy (PipelineBuildApplicationBuildCodePipelineActionRoleDefaultPolicyE2CB3CAC) 
+CrossAccountPipelineDeploymentStack | 13/20 | 9:01:10 AM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Build/CDK_Synth/CodePipelineActionRole/DefaultPolicy (PipelineBuildCDKSynthCodePipelineActionRoleDefaultPolicy34E41D63) 
+CrossAccountPipelineDeploymentStack | 14/20 | 9:01:22 AM | CREATE_COMPLETE      | AWS::IAM::Policy            | CdkBuild/Role/DefaultPolicy (CdkBuildRoleDefaultPolicyD27F0F5C) 
+CrossAccountPipelineDeploymentStack | 15/20 | 9:01:22 AM | CREATE_COMPLETE      | AWS::IAM::Policy            | LambdaBuild/Role/DefaultPolicy (LambdaBuildRoleDefaultPolicyBE23D2E1) 
+CrossAccountPipelineDeploymentStack | 16/20 | 9:01:23 AM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
+CrossAccountPipelineDeploymentStack | 16/20 | 9:01:25 AM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+CrossAccountPipelineDeploymentStack | 16/20 | 9:01:27 AM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) Resource creation Initiated
+CrossAccountPipelineDeploymentStack | 17/20 | 9:01:27 AM | CREATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+CrossAccountPipelineDeploymentStack | 17/20 | 9:01:28 AM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Webhook  | Pipeline/Source/GitHub_Source/WebhookResource (PipelineSourceGitHubSourceWebhookResource8EECEFFF) 
+CrossAccountPipelineDeploymentStack | 17/20 | 9:01:29 AM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Webhook  | Pipeline/Source/GitHub_Source/WebhookResource (PipelineSourceGitHubSourceWebhookResource8EECEFFF) Resource creation Initiated
+CrossAccountPipelineDeploymentStack | 18/20 | 9:01:29 AM | CREATE_COMPLETE      | AWS::CodePipeline::Webhook  | Pipeline/Source/GitHub_Source/WebhookResource (PipelineSourceGitHubSourceWebhookResource8EECEFFF) 
+CrossAccountPipelineDeploymentStack | 19/20 | 9:01:38 AM | CREATE_COMPLETE      | AWS::KMS::Alias             | ArtifactKey/Alias (ArtifactKeyAliasB27DA94F) 
+CrossAccountPipelineDeploymentStack | 20/20 | 9:01:39 AM | CREATE_COMPLETE      | AWS::CloudFormation::Stack  | CrossAccountPipelineDeploymentStack 
 
-NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)
+ ✅  CrossAccountPipelineDeploymentStack
 
-31716	cli: import fails with with 'S3 error: Access Denied'
+✨  Deployment time: 79.7s
 
-	Overview: When using cdk import, the command tries to read a template
-	          that doesn't exist from the assets bucket.
+Outputs:
+CrossAccountPipelineDeploymentStack.ArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:682033486425:key/b26aac9c-7248-495e-bc4e-b383e9ab0f33
+Stack ARN:
+arn:aws:cloudformation:us-west-2:682033486425:stack/CrossAccountPipelineDeploymentStack/ef2b02b0-b635-11ef-b60d-067aa16a1b59
 
-	Affected versions: cli: >=2.161.0 <=2.162.0
+✨  Total time: 82.13s
 
-	More information at: https://github.com/aws/aws-cdk/issues/31716
-
-
-If you don’t want to see a notice anymore, use "cdk acknowledge <id>". For example, "cdk acknowledge 31716".
-Unable to resolve AWS account to use. It must be either configured when you define your CDK Stack, or through the environment
