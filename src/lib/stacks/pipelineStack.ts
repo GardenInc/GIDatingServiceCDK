@@ -91,6 +91,9 @@ export class PipelineStack extends Stack {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
+          prebuild: {
+            commands: [`npm install -g npm@10.8.2`]
+          },
           install: {
             commands: [
               'npm install', // Install dependencies
@@ -121,6 +124,9 @@ export class PipelineStack extends Stack {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
+          prebuild: {
+            commands: [`npm install -g npm@10.8.2`]
+          },
           install: {
             commands: ['cd app', 'npm install'],
           },
