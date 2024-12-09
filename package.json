@@ -1,21 +1,25 @@
 {
-  "name": "gi_dating_service_cdk",
+  "name": "GIDatingServiceCDK",
   "version": "0.1.0",
   "bin": {
-    "gi_dating_service_cdk": "bin/gi_dating_service_cdk.js"
+    "GIDatingServiceCDK": "build/src/lib/app.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf build && prettier --write .&& tsc --outDir build/src && cdk synth --output build/cdkOut",
+    "compile": "tsc --outDir build/src",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "prettier": "prettier --check .",
+    "prettier:fix": "prettier --write ."
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "22.5.4",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
     "aws-cdk": "2.162.0",
+    "jest": "^29.7.0",
+    "prettier": "3.3.3",
+    "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "~5.6.2"
   },

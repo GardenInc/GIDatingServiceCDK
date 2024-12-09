@@ -1,0 +1,18 @@
+
+✨  Synthesis time: 2.64s
+
+
+NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)
+
+31716	cli: import fails with with 'S3 error: Access Denied'
+
+	Overview: When using cdk import, the command tries to read a template
+	          that doesn't exist from the assets bucket.
+
+	Affected versions: cli: >=2.161.0 <=2.162.0
+
+	More information at: https://github.com/aws/aws-cdk/issues/31716
+
+
+If you don’t want to see a notice anymore, use "cdk acknowledge <id>". For example, "cdk acknowledge 31716".
+Unable to resolve AWS account to use. It must be either configured when you define your CDK Stack, or through the environment
