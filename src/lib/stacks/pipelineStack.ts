@@ -116,7 +116,7 @@ export class PipelineStack extends Stack {
         version: '0.2',
         phases: {
           install: {
-            commands: ['cd src/lib/lamda', 'npm install'],
+            commands: ['cd src/lib/lambda', 'npm install'],
           },
           build: {
             commands: 'npm run build',
