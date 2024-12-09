@@ -158,7 +158,7 @@ export class PipelineStack extends Stack {
             new codepipeline_actions.GitHubSourceAction({
               actionName: 'GitHub_Source',
               owner: 'GardenInc',
-              repo: 'GIDatingPipelineCDK',
+              repo: 'GIDatingServiceCDK',
               oauthToken: SecretValue.secretsManager(secretName),
               output: sourceOutput,
               branch: 'main',

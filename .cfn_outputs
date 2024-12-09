@@ -1,0 +1,5 @@
+Outputs:
+CrossAccountPipelineDeploymentStack.ArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:682033486425:key/b26aac9c-7248-495e-bc4e-b383e9ab0f33
+Stack ARN:
+arn:aws:cloudformation:us-west-2:682033486425:stack/CrossAccountPipelineDeploymentStack/ef2b02b0-b635-11ef-b60d-067aa16a1b59
+
