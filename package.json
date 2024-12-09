@@ -5,7 +5,7 @@
     "GIDatingServiceCDK": "build/src/lib/app.js"
   },
   "scripts": {
-    "build": "rm -rf build && prettier --write .&& tsc --outDir build/src && cdk synth --output build/cdkOut",
+    "build": "rm -rf build && tsc --outDir build/src && cdk synth --output build/cdkOut",
     "compile": "tsc --outDir build/src",
     "watch": "tsc -w",
     "test": "jest",
