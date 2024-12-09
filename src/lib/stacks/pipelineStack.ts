@@ -92,7 +92,7 @@ export class PipelineStack extends Stack {
         version: '0.2',
         phases: {
           install: {
-            commands: ['npm install'],
+            commands: ['npm install -g node@20.18.0'],
           },
           build: {
             commands: ['npm run build', 'npm run cdk synth -- -o dist'],
@@ -116,7 +116,7 @@ export class PipelineStack extends Stack {
         version: '0.2',
         phases: {
           install: {
-            commands: ['cd lambda', 'npm install'],
+            commands: ['cd lambda', 'npm install -g node@20.18.0'],
           },
           build: {
             commands: 'npm run build',
