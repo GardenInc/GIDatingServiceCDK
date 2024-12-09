@@ -92,10 +92,10 @@ export class PipelineStack extends Stack {
         version: '0.2',
         phases: {
           prebuild: {
-            commands: [`npm install -g npm@10.8.2`]
           },
           install: {
             commands: [
+              `npm install -g npm@10.8.2`, // upgrade npm
               'npm install', // Install dependencies
               'npm install -g aws-cdk' // Ensure CDK is installed globally
             ],
@@ -124,11 +124,12 @@ export class PipelineStack extends Stack {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
-          prebuild: {
-            commands: [`npm install -g npm@10.8.2`]
-          },
           install: {
-            commands: ['cd app', 'npm install'],
+            commands: [
+              'cd app',
+              `npm install -g npm@10.8.2`, // upgrade npm
+              'npm install'
+            ],
           },
           build: {
             commands: 'npm run build',
