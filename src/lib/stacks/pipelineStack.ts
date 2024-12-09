@@ -99,7 +99,7 @@ export class PipelineStack extends Stack {
           },
           build: {
             commands: [
-              'npm run build', // Compile TypeScript (if using TypeScript)
+              'npm run build', // Compile TypeScript
               'npm run cdk synth -- -o dist' // Generate CloudFormation template
             ],
           },
@@ -122,7 +122,7 @@ export class PipelineStack extends Stack {
         version: '0.2',
         phases: {
           install: {
-            commands: ['cd lambda', 'npm install'],
+            commands: ['cd app', 'npm install'],
           },
           build: {
             commands: 'npm run build',
