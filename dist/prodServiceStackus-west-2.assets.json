@@ -1,0 +1,19 @@
+{
+  "version": "38.0.1",
+  "files": {
+    "f8f57c96bed531e9d8f91abce295797fedcdfa7a578999d7a345ce3b667b5674": {
+      "source": {
+        "path": "prodServiceStackus-west-2.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "f8f57c96bed531e9d8f91abce295797fedcdfa7a578999d7a345ce3b667b5674.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

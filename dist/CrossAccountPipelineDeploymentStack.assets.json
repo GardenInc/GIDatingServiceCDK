@@ -1,0 +1,19 @@
+{
+  "version": "38.0.1",
+  "files": {
+    "6efa30c0c6341d5d181e9c33d33662d5147ea8cbb8a852f8b63508f7addd6e57": {
+      "source": {
+        "path": "CrossAccountPipelineDeploymentStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "6efa30c0c6341d5d181e9c33d33662d5147ea8cbb8a852f8b63508f7addd6e57.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

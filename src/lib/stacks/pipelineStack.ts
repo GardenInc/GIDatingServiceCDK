@@ -92,10 +92,16 @@ export class PipelineStack extends Stack {
         version: '0.2',
         phases: {
           install: {
-            commands: ['npm install'],
+            commands: [
+              'npm install', // Install dependencies
+              'npm install -g aws-cdk' // Ensure CDK is installed globally
+            ],
           },
           build: {
-            commands: ['npm run build', 'npm run cdk synth -- -o dist'],
+            commands: [
+              'npm run build', // Compile TypeScript (if using TypeScript)
+              'npm run cdk synth -- -o dist' // Generate CloudFormation template
+            ],
           },
         },
         artifacts: {
