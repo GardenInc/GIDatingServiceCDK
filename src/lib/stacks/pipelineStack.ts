@@ -92,8 +92,8 @@ export class PipelineStack extends Stack {
         version: '0.2',
         phases: {
           install: {
-            runtimeVersions: {
-              nodejs: '20'
+            'runtime-versions': {
+              nodejs: 20
             },
             commands: [
               // `npm install -g npm@10.8.2`, // upgrade npm
@@ -126,8 +126,8 @@ export class PipelineStack extends Stack {
         version: '0.2',
         phases: {
           install: {
-            runtimeVersions: {
-              nodejs: '20.18.0'
+            'runtime-versions': {
+              nodejs: 20
             },
             commands: [
               'cd app',
@@ -145,7 +145,7 @@ export class PipelineStack extends Stack {
         },
       }),
       environment: {
-        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
       },
       // use the encryption key for build artifacts
       encryptionKey: key,
