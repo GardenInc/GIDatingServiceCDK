@@ -107,10 +107,7 @@
                     "functionName": "HelloLambda",
                     "handler": "index.handler",
                     "role": {
-                      "Fn::GetAtt": [
-                        "LambdaServiceRoleA8ED4D3B",
-                        "Arn"
-                      ]
+                      "Fn::GetAtt": ["LambdaServiceRoleA8ED4D3B", "Arn"]
                     },
                     "runtime": "nodejs18.x"
                   }
@@ -250,10 +247,7 @@
                           "aws:cdk:cloudformation:type": "AWS::ApiGateway::Resource",
                           "aws:cdk:cloudformation:props": {
                             "parentId": {
-                              "Fn::GetAtt": [
-                                "HelloLambdaRestApi2305A242",
-                                "RootResourceId"
-                              ]
+                              "Fn::GetAtt": ["HelloLambdaRestApi2305A242", "RootResourceId"]
                             },
                             "pathPart": "{proxy+}",
                             "restApiId": {
@@ -278,10 +272,7 @@
                               "aws:cdk:cloudformation:props": {
                                 "action": "lambda:InvokeFunction",
                                 "functionName": {
-                                  "Fn::GetAtt": [
-                                    "LambdaD247545B",
-                                    "Arn"
-                                  ]
+                                  "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                                 },
                                 "principal": "apigateway.amazonaws.com",
                                 "sourceArn": {
@@ -327,10 +318,7 @@
                               "aws:cdk:cloudformation:props": {
                                 "action": "lambda:InvokeFunction",
                                 "functionName": {
-                                  "Fn::GetAtt": [
-                                    "LambdaD247545B",
-                                    "Arn"
-                                  ]
+                                  "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                                 },
                                 "principal": "apigateway.amazonaws.com",
                                 "sourceArn": {
@@ -388,10 +376,7 @@
                                         },
                                         ":lambda:path/2015-03-31/functions/",
                                         {
-                                          "Fn::GetAtt": [
-                                            "LambdaD247545B",
-                                            "Arn"
-                                          ]
+                                          "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                                         },
                                         "/invocations"
                                       ]
@@ -436,10 +421,7 @@
                           "aws:cdk:cloudformation:props": {
                             "action": "lambda:InvokeFunction",
                             "functionName": {
-                              "Fn::GetAtt": [
-                                "LambdaD247545B",
-                                "Arn"
-                              ]
+                              "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                             },
                             "principal": "apigateway.amazonaws.com",
                             "sourceArn": {
@@ -485,10 +467,7 @@
                           "aws:cdk:cloudformation:props": {
                             "action": "lambda:InvokeFunction",
                             "functionName": {
-                              "Fn::GetAtt": [
-                                "LambdaD247545B",
-                                "Arn"
-                              ]
+                              "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                             },
                             "principal": "apigateway.amazonaws.com",
                             "sourceArn": {
@@ -546,10 +525,7 @@
                                     },
                                     ":lambda:path/2015-03-31/functions/",
                                     {
-                                      "Fn::GetAtt": [
-                                        "LambdaD247545B",
-                                        "Arn"
-                                      ]
+                                      "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                                     },
                                     "/invocations"
                                   ]
@@ -558,10 +534,7 @@
                               "integrationHttpMethod": "POST"
                             },
                             "resourceId": {
-                              "Fn::GetAtt": [
-                                "HelloLambdaRestApi2305A242",
-                                "RootResourceId"
-                              ]
+                              "Fn::GetAtt": ["HelloLambdaRestApi2305A242", "RootResourceId"]
                             },
                             "restApiId": {
                               "Ref": "HelloLambdaRestApi2305A242"
@@ -605,10 +578,7 @@
                       "Ref": "LambdaD247545B"
                     },
                     "functionVersion": {
-                      "Fn::GetAtt": [
-                        "LambdaCurrentVersionDF706F6A1ef863451c7f239a792e0cbe7a583e5a",
-                        "Version"
-                      ]
+                      "Fn::GetAtt": ["LambdaCurrentVersionDF706F6A1ef863451c7f239a792e0cbe7a583e5a", "Version"]
                     },
                     "name": "beta"
                   }
@@ -731,9 +701,7 @@
                     },
                     "autoRollbackConfiguration": {
                       "enabled": true,
-                      "events": [
-                        "DEPLOYMENT_FAILURE"
-                      ]
+                      "events": ["DEPLOYMENT_FAILURE"]
                     },
                     "deploymentConfigName": "CodeDeployDefault.LambdaAllAtOnce",
                     "deploymentStyle": {
@@ -741,10 +709,7 @@
                       "deploymentOption": "WITH_TRAFFIC_CONTROL"
                     },
                     "serviceRoleArn": {
-                      "Fn::GetAtt": [
-                        "DeploymentGroupServiceRoleA00955F3",
-                        "Arn"
-                      ]
+                      "Fn::GetAtt": ["DeploymentGroupServiceRoleA00955F3", "Arn"]
                     }
                   }
                 },
@@ -910,10 +875,7 @@
                     "functionName": "HelloLambda",
                     "handler": "index.handler",
                     "role": {
-                      "Fn::GetAtt": [
-                        "LambdaServiceRoleA8ED4D3B",
-                        "Arn"
-                      ]
+                      "Fn::GetAtt": ["LambdaServiceRoleA8ED4D3B", "Arn"]
                     },
                     "runtime": "nodejs18.x"
                   }
@@ -1053,10 +1015,7 @@
                           "aws:cdk:cloudformation:type": "AWS::ApiGateway::Resource",
                           "aws:cdk:cloudformation:props": {
                             "parentId": {
-                              "Fn::GetAtt": [
-                                "HelloLambdaRestApi2305A242",
-                                "RootResourceId"
-                              ]
+                              "Fn::GetAtt": ["HelloLambdaRestApi2305A242", "RootResourceId"]
                             },
                             "pathPart": "{proxy+}",
                             "restApiId": {
@@ -1081,10 +1040,7 @@
                               "aws:cdk:cloudformation:props": {
                                 "action": "lambda:InvokeFunction",
                                 "functionName": {
-                                  "Fn::GetAtt": [
-                                    "LambdaD247545B",
-                                    "Arn"
-                                  ]
+                                  "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                                 },
                                 "principal": "apigateway.amazonaws.com",
                                 "sourceArn": {
@@ -1130,10 +1086,7 @@
                               "aws:cdk:cloudformation:props": {
                                 "action": "lambda:InvokeFunction",
                                 "functionName": {
-                                  "Fn::GetAtt": [
-                                    "LambdaD247545B",
-                                    "Arn"
-                                  ]
+                                  "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                                 },
                                 "principal": "apigateway.amazonaws.com",
                                 "sourceArn": {
@@ -1191,10 +1144,7 @@
                                         },
                                         ":lambda:path/2015-03-31/functions/",
                                         {
-                                          "Fn::GetAtt": [
-                                            "LambdaD247545B",
-                                            "Arn"
-                                          ]
+                                          "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                                         },
                                         "/invocations"
                                       ]
@@ -1239,10 +1189,7 @@
                           "aws:cdk:cloudformation:props": {
                             "action": "lambda:InvokeFunction",
                             "functionName": {
-                              "Fn::GetAtt": [
-                                "LambdaD247545B",
-                                "Arn"
-                              ]
+                              "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                             },
                             "principal": "apigateway.amazonaws.com",
                             "sourceArn": {
@@ -1288,10 +1235,7 @@
                           "aws:cdk:cloudformation:props": {
                             "action": "lambda:InvokeFunction",
                             "functionName": {
-                              "Fn::GetAtt": [
-                                "LambdaD247545B",
-                                "Arn"
-                              ]
+                              "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                             },
                             "principal": "apigateway.amazonaws.com",
                             "sourceArn": {
@@ -1349,10 +1293,7 @@
                                     },
                                     ":lambda:path/2015-03-31/functions/",
                                     {
-                                      "Fn::GetAtt": [
-                                        "LambdaD247545B",
-                                        "Arn"
-                                      ]
+                                      "Fn::GetAtt": ["LambdaD247545B", "Arn"]
                                     },
                                     "/invocations"
                                   ]
@@ -1361,10 +1302,7 @@
                               "integrationHttpMethod": "POST"
                             },
                             "resourceId": {
-                              "Fn::GetAtt": [
-                                "HelloLambdaRestApi2305A242",
-                                "RootResourceId"
-                              ]
+                              "Fn::GetAtt": ["HelloLambdaRestApi2305A242", "RootResourceId"]
                             },
                             "restApiId": {
                               "Ref": "HelloLambdaRestApi2305A242"
@@ -1408,10 +1346,7 @@
                       "Ref": "LambdaD247545B"
                     },
                     "functionVersion": {
-                      "Fn::GetAtt": [
-                        "LambdaCurrentVersionDF706F6A611aa5821018a6cb85ea6783af3f65e2",
-                        "Version"
-                      ]
+                      "Fn::GetAtt": ["LambdaCurrentVersionDF706F6A611aa5821018a6cb85ea6783af3f65e2", "Version"]
                     },
                     "name": "prod"
                   }
@@ -1534,9 +1469,7 @@
                     },
                     "autoRollbackConfiguration": {
                       "enabled": true,
-                      "events": [
-                        "DEPLOYMENT_FAILURE"
-                      ]
+                      "events": ["DEPLOYMENT_FAILURE"]
                     },
                     "deploymentConfigName": "CodeDeployDefault.LambdaAllAtOnce",
                     "deploymentStyle": {
@@ -1544,10 +1477,7 @@
                       "deploymentOption": "WITH_TRAFFIC_CONTROL"
                     },
                     "serviceRoleArn": {
-                      "Fn::GetAtt": [
-                        "DeploymentGroupServiceRoleA00955F3",
-                        "Arn"
-                      ]
+                      "Fn::GetAtt": ["DeploymentGroupServiceRoleA00955F3", "Arn"]
                     }
                   }
                 },
@@ -1808,10 +1738,7 @@
                           "Resource": "*"
                         },
                         {
-                          "Action": [
-                            "kms:Decrypt",
-                            "kms:DescribeKey"
-                          ],
+                          "Action": ["kms:Decrypt", "kms:DescribeKey"],
                           "Effect": "Allow",
                           "Principal": {
                             "AWS": [
@@ -1843,10 +1770,7 @@
                       "aws:cdk:cloudformation:props": {
                         "aliasName": "alias/key/pipeline-artifact-key",
                         "targetKeyId": {
-                          "Fn::GetAtt": [
-                            "ArtifactKey8D84C5F0",
-                            "Arn"
-                          ]
+                          "Fn::GetAtt": ["ArtifactKey8D84C5F0", "Arn"]
                         }
                       }
                     },
@@ -1883,10 +1807,7 @@
                           "serverSideEncryptionByDefault": {
                             "sseAlgorithm": "aws:kms",
                             "kmsMasterKeyId": {
-                              "Fn::GetAtt": [
-                                "ArtifactKey8D84C5F0",
-                                "Arn"
-                              ]
+                              "Fn::GetAtt": ["ArtifactKey8D84C5F0", "Arn"]
                             }
                           }
                         }
@@ -1968,10 +1889,7 @@
                                   "",
                                   [
                                     {
-                                      "Fn::GetAtt": [
-                                        "ArtifactBucket7410C9EF",
-                                        "Arn"
-                                      ]
+                                      "Fn::GetAtt": ["ArtifactBucket7410C9EF", "Arn"]
                                     },
                                     "/*"
                                   ]
@@ -1979,11 +1897,7 @@
                               }
                             },
                             {
-                              "Action": [
-                                "s3:GetBucket*",
-                                "s3:GetObject*",
-                                "s3:List*"
-                              ],
+                              "Action": ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
                               "Effect": "Allow",
                               "Principal": {
                                 "AWS": [
@@ -2017,20 +1931,14 @@
                               },
                               "Resource": [
                                 {
-                                  "Fn::GetAtt": [
-                                    "ArtifactBucket7410C9EF",
-                                    "Arn"
-                                  ]
+                                  "Fn::GetAtt": ["ArtifactBucket7410C9EF", "Arn"]
                                 },
                                 {
                                   "Fn::Join": [
                                     "",
                                     [
                                       {
-                                        "Fn::GetAtt": [
-                                          "ArtifactBucket7410C9EF",
-                                          "Arn"
-                                        ]
+                                        "Fn::GetAtt": ["ArtifactBucket7410C9EF", "Arn"]
                                       },
                                       "/*"
                                     ]
@@ -2114,11 +2022,7 @@
                             "policyDocument": {
                               "Statement": [
                                 {
-                                  "Action": [
-                                    "logs:CreateLogGroup",
-                                    "logs:CreateLogStream",
-                                    "logs:PutLogEvents"
-                                  ],
+                                  "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
                                   "Effect": "Allow",
                                   "Resource": [
                                     {
@@ -2214,10 +2118,7 @@
                                   ],
                                   "Effect": "Allow",
                                   "Resource": {
-                                    "Fn::GetAtt": [
-                                      "ArtifactKey8D84C5F0",
-                                      "Arn"
-                                    ]
+                                    "Fn::GetAtt": ["ArtifactKey8D84C5F0", "Arn"]
                                   }
                                 },
                                 {
@@ -2236,20 +2137,14 @@
                                   "Effect": "Allow",
                                   "Resource": [
                                     {
-                                      "Fn::GetAtt": [
-                                        "ArtifactBucket7410C9EF",
-                                        "Arn"
-                                      ]
+                                      "Fn::GetAtt": ["ArtifactBucket7410C9EF", "Arn"]
                                     },
                                     {
                                       "Fn::Join": [
                                         "",
                                         [
                                           {
-                                            "Fn::GetAtt": [
-                                              "ArtifactBucket7410C9EF",
-                                              "Arn"
-                                            ]
+                                            "Fn::GetAtt": ["ArtifactBucket7410C9EF", "Arn"]
                                           },
                                           "/*"
                                         ]
@@ -2298,10 +2193,7 @@
                       "type": "NO_CACHE"
                     },
                     "encryptionKey": {
-                      "Fn::GetAtt": [
-                        "ArtifactKey8D84C5F0",
-                        "Arn"
-                      ]
+                      "Fn::GetAtt": ["ArtifactKey8D84C5F0", "Arn"]
                     },
                     "environment": {
                       "type": "LINUX_CONTAINER",
@@ -2311,10 +2203,7 @@
                       "computeType": "BUILD_GENERAL1_SMALL"
                     },
                     "serviceRole": {
-                      "Fn::GetAtt": [
-                        "CdkBuildRoleBE66F777",
-                        "Arn"
-                      ]
+                      "Fn::GetAtt": ["CdkBuildRoleBE66F777", "Arn"]
                     },
                     "source": {
                       "type": "CODEPIPELINE",
@@ -2387,11 +2276,7 @@
                             "policyDocument": {
                               "Statement": [
                                 {
-                                  "Action": [
-                                    "logs:CreateLogGroup",
-                                    "logs:CreateLogStream",
-                                    "logs:PutLogEvents"
-                                  ],
+                                  "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
                                   "Effect": "Allow",
                                   "Resource": [
                                     {
@@ -2487,10 +2372,7 @@
                                   ],
                                   "Effect": "Allow",
                                   "Resource": {
-                                    "Fn::GetAtt": [
-                                      "ArtifactKey8D84C5F0",
-                                      "Arn"
-                                    ]
+                                    "Fn::GetAtt": ["ArtifactKey8D84C5F0", "Arn"]
                                   }
                                 },
                                 {
@@ -2509,20 +2391,14 @@
                                   "Effect": "Allow",
                                   "Resource": [
                                     {
-                                      "Fn::GetAtt": [
-                                        "ArtifactBucket7410C9EF",
-                                        "Arn"
-                                      ]
+                                      "Fn::GetAtt": ["ArtifactBucket7410C9EF", "Arn"]
                                     },
                                     {
                                       "Fn::Join": [
                                         "",
                                         [
                                           {
-                                            "Fn::GetAtt": [
-                                              "ArtifactBucket7410C9EF",
-                                              "Arn"
-                                            ]
+                                            "Fn::GetAtt": ["ArtifactBucket7410C9EF", "Arn"]
                                           },
                                           "/*"
                                         ]
@@ -2571,10 +2447,7 @@
                       "type": "NO_CACHE"
                     },
                     "encryptionKey": {
-                      "Fn::GetAtt": [
-                        "ArtifactKey8D84C5F0",
-                        "Arn"
-                      ]
+                      "Fn::GetAtt": ["ArtifactKey8D84C5F0", "Arn"]
                     },
                     "environment": {
                       "type": "LINUX_CONTAINER",
@@ -2584,10 +2457,7 @@
                       "computeType": "BUILD_GENERAL1_SMALL"
                     },
                     "serviceRole": {
-                      "Fn::GetAtt": [
-                        "LambdaBuildRole40E116C6",
-                        "Arn"
-                      ]
+                      "Fn::GetAtt": ["LambdaBuildRole40E116C6", "Arn"]
                     },
                     "source": {
                       "type": "CODEPIPELINE",
@@ -2675,20 +2545,14 @@
                                   "Effect": "Allow",
                                   "Resource": [
                                     {
-                                      "Fn::GetAtt": [
-                                        "ArtifactBucket7410C9EF",
-                                        "Arn"
-                                      ]
+                                      "Fn::GetAtt": ["ArtifactBucket7410C9EF", "Arn"]
                                     },
                                     {
                                       "Fn::Join": [
                                         "",
                                         [
                                           {
-                                            "Fn::GetAtt": [
-                                              "ArtifactBucket7410C9EF",
-                                              "Arn"
-                                            ]
+                                            "Fn::GetAtt": ["ArtifactBucket7410C9EF", "Arn"]
                                           },
                                           "/*"
                                         ]
@@ -2706,10 +2570,7 @@
                                   ],
                                   "Effect": "Allow",
                                   "Resource": {
-                                    "Fn::GetAtt": [
-                                      "ArtifactKey8D84C5F0",
-                                      "Arn"
-                                    ]
+                                    "Fn::GetAtt": ["ArtifactKey8D84C5F0", "Arn"]
                                   }
                                 },
                                 {
@@ -2727,10 +2588,7 @@
                                       ]
                                     },
                                     {
-                                      "Fn::GetAtt": [
-                                        "PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83",
-                                        "Arn"
-                                      ]
+                                      "Fn::GetAtt": ["PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83", "Arn"]
                                     }
                                   ]
                                 },
@@ -2781,20 +2639,14 @@
                       "encryptionKey": {
                         "type": "KMS",
                         "id": {
-                          "Fn::GetAtt": [
-                            "ArtifactKey8D84C5F0",
-                            "Arn"
-                          ]
+                          "Fn::GetAtt": ["ArtifactKey8D84C5F0", "Arn"]
                         }
                       }
                     },
                     "name": "CrossAccountPipeline",
                     "pipelineType": "V2",
                     "roleArn": {
-                      "Fn::GetAtt": [
-                        "PipelineRoleD68726F7",
-                        "Arn"
-                      ]
+                      "Fn::GetAtt": ["PipelineRoleD68726F7", "Arn"]
                     },
                     "stages": [
                       {
@@ -2852,10 +2704,7 @@
                             },
                             "runOrder": 1,
                             "roleArn": {
-                              "Fn::GetAtt": [
-                                "PipelineBuildApplicationBuildCodePipelineActionRole183E7A54",
-                                "Arn"
-                              ]
+                              "Fn::GetAtt": ["PipelineBuildApplicationBuildCodePipelineActionRole183E7A54", "Arn"]
                             }
                           },
                           {
@@ -2883,10 +2732,7 @@
                             },
                             "runOrder": 1,
                             "roleArn": {
-                              "Fn::GetAtt": [
-                                "PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83",
-                                "Arn"
-                              ]
+                              "Fn::GetAtt": ["PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83", "Arn"]
                             }
                           }
                         ]
@@ -3092,10 +2938,7 @@
                                           ],
                                           "Effect": "Allow",
                                           "Resource": {
-                                            "Fn::GetAtt": [
-                                              "LambdaBuildCF1FE7ED",
-                                              "Arn"
-                                            ]
+                                            "Fn::GetAtt": ["LambdaBuildCF1FE7ED", "Arn"]
                                           }
                                         }
                                       ],
@@ -3208,10 +3051,7 @@
                                           ],
                                           "Effect": "Allow",
                                           "Resource": {
-                                            "Fn::GetAtt": [
-                                              "CdkBuild455F642E",
-                                              "Arn"
-                                            ]
+                                            "Fn::GetAtt": ["CdkBuild455F642E", "Arn"]
                                           }
                                         }
                                       ],

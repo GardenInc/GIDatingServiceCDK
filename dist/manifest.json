@@ -22,18 +22,14 @@
         "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cbddcb9b011a9f636edfec6885ffdb16f3b63ce53d8f4344b696519af81bf12b.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
-        "additionalDependencies": [
-          "betaServiceStackus-west-2.assets"
-        ],
+        "additionalDependencies": ["betaServiceStackus-west-2.assets"],
         "lookupRole": {
           "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
       },
-      "dependencies": [
-        "betaServiceStackus-west-2.assets"
-      ],
+      "dependencies": ["betaServiceStackus-west-2.assets"],
       "metadata": {
         "/betaServiceStackus-west-2/Lambda": [
           {
@@ -234,18 +230,14 @@
         "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f8f57c96bed531e9d8f91abce295797fedcdfa7a578999d7a345ce3b667b5674.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
-        "additionalDependencies": [
-          "prodServiceStackus-west-2.assets"
-        ],
+        "additionalDependencies": ["prodServiceStackus-west-2.assets"],
         "lookupRole": {
           "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
       },
-      "dependencies": [
-        "prodServiceStackus-west-2.assets"
-      ],
+      "dependencies": ["prodServiceStackus-west-2.assets"],
       "metadata": {
         "/prodServiceStackus-west-2/Lambda": [
           {
@@ -446,18 +438,14 @@
         "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6efa30c0c6341d5d181e9c33d33662d5147ea8cbb8a852f8b63508f7addd6e57.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
-        "additionalDependencies": [
-          "CrossAccountPipelineDeploymentStack.assets"
-        ],
+        "additionalDependencies": ["CrossAccountPipelineDeploymentStack.assets"],
         "lookupRole": {
           "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
       },
-      "dependencies": [
-        "CrossAccountPipelineDeploymentStack.assets"
-      ],
+      "dependencies": ["CrossAccountPipelineDeploymentStack.assets"],
       "metadata": {
         "/CrossAccountPipelineDeploymentStack/ArtifactKey/Resource": [
           {

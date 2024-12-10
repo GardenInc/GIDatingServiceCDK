@@ -93,18 +93,16 @@ export class PipelineStack extends Stack {
         phases: {
           install: {
             'runtime-versions': {
-              nodejs: 20
+              nodejs: 20,
             },
             commands: [
-              // `npm install -g npm@10.8.2`, // upgrade npm
               'npm install', // Install dependencies
-              // 'npm install -g aws-cdk' // Ensure CDK is installed globally
             ],
           },
           build: {
             commands: [
               'npm run build', // Compile TypeScript
-              'npm run cdk synth -- -o dist' // Generate CloudFormation template
+              'npm run cdk synth -- -o dist', // Generate CloudFormation template
             ],
           },
         },
@@ -127,13 +125,9 @@ export class PipelineStack extends Stack {
         phases: {
           install: {
             'runtime-versions': {
-              nodejs: 20
+              nodejs: 20,
             },
-            commands: [
-              'cd app',
-              // `npm install -g npm@10.8.2`, // upgrade npm
-              'npm install'
-            ],
+            commands: ['cd app', 'npm install'],
           },
           build: {
             commands: 'npm run build',
@@ -155,14 +149,6 @@ export class PipelineStack extends Stack {
     const sourceOutput = new codepipeline.Artifact();
     const cdkBuildOutput = new codepipeline.Artifact('CdkBuildOutput');
     const lambdaBuildOutput = new codepipeline.Artifact('LambdaBuildOutput');
-
-    // oauthToken for CDK // TOOD: generate specific key for this repo and grab dynamically
-    // const encryptionKey = new kms.Key(this, 'aws/secretsmanager', {});
-    //const secret = Secret.fromSecretAttributes(this, 'GitHubSecret', {
-    //  secretCompleteArn: 'arn:aws:secretsmanager:us-west-2:682033486425:secret:github-token-secret-t1s1c5',
-    // encryptionKey,
-    // });
-    // secret.secretValue
 
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
