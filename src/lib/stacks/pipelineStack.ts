@@ -127,11 +127,11 @@ export class PipelineStack extends Stack {
         phases: {
           install: {
             runtimeVersions: {
-              nodejs: '20'
+              nodejs: 20
             },
             commands: [
               'cd app',
-              `npm install -g npm@10.8.2`, // upgrade npm
+              // `npm install -g npm@10.8.2`, // upgrade npm
               'npm install'
             ],
           },
