@@ -108,7 +108,7 @@ export class PipelineStack extends Stack {
         },
         artifacts: {
           'base-directory': 'build/cdkOut',
-          files: ['*ApplicationStack.template.json'],
+          files: ['*us-west-2.template.json'],
         },
       }),
       environment: {
