@@ -1,0 +1,17 @@
+
+✨  Synthesis time: 2.69s
+
+current credentials could not be used to assume 'arn:aws:iam::682033486425:role/cdk-hnb659fds-deploy-role-682033486425-us-west-2', but are for the right account. Proceeding anyway.
+CrossAccountPipelineDeploymentStack: deploying... [1/1]
+
+ ✅  CrossAccountPipelineDeploymentStack (no changes)
+
+✨  Deployment time: 1.62s
+
+Outputs:
+CrossAccountPipelineDeploymentStack.ArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:682033486425:key/4520f4e3-14db-4143-b244-3a3abfa06dec
+Stack ARN:
+arn:aws:cloudformation:us-west-2:682033486425:stack/CrossAccountPipelineDeploymentStack/0c291ee0-b638-11ef-bba7-0a6b4439473f
+
+✨  Total time: 4.32s
+
