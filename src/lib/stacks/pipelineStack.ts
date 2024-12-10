@@ -114,7 +114,7 @@ export class PipelineStack extends Stack {
         },
       }),
       environment: {
-        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
       },
       // use the encryption key for build artifacts
       encryptionKey: key,
@@ -127,7 +127,7 @@ export class PipelineStack extends Stack {
         phases: {
           install: {
             runtimeVersions: {
-              nodejs: 20
+              nodejs: '20.18.0'
             },
             commands: [
               'cd app',
