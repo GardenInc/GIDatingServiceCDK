@@ -91,8 +91,6 @@ export class PipelineStack extends Stack {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
-          prebuild: {
-          },
           install: {
             runtimeVersions: {
               nodejs: '20'
