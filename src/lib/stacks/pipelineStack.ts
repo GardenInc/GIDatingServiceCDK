@@ -194,7 +194,7 @@ export class PipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'Deploy',
-              templatePath: cdkBuildOutput.atPath('build/cdk.out/CrossAccountPipelineDeploymentStack'),
+              templatePath: cdkBuildOutput.atPath('build/cdk.out/CrossAccountPipelineDeploymentStack.template.json'),
               stackName: 'CrossAccountPipelineDeploymentStack',
               adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
@@ -206,7 +206,7 @@ export class PipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'Deploy',
-              templatePath: cdkBuildOutput.atPath('build/cdk.out/betaServiceStackus-west-2'),
+              templatePath: cdkBuildOutput.atPath('build/cdk.out/betaServiceStackus-west-2.template.json'),
               stackName: 'betaServiceStackus-west-2',
               adminPermissions: false,
               parameterOverrides: {
