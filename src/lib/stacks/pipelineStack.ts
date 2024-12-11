@@ -24,6 +24,10 @@ export class PipelineStack extends Stack {
 
     // Add update pipeline stage
     // Add manual approval between beta and prod
+    // Clean constants in here and rename stacks with appropriate names
+
+    //
+    const pipelineCloudFomrationRole = iam.Role;
 
     // Resolve ARNs of cross-account roles for the Beta account
     const betaCloudFormationRole = iam.Role.fromRoleArn(
@@ -186,6 +190,18 @@ export class PipelineStack extends Stack {
           ],
         },
         {
+          stageName: 'Pipeline_Update',
+          actions: [
+            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+              actionName: 'Deploy',
+              templatePath: cdkBuildOutput.atPath('build/cdk.out/CrossAccountPipelineDeploymentStack'),
+              stackName: 'CrossAccountPipelineDeploymentStack',
+              adminPermissions: false,
+              cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
+            }),
+          ],
+        },
+        {
           stageName: 'Deploy_Beta',
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
@@ -240,6 +256,15 @@ export class PipelineStack extends Stack {
         resources: [`arn:aws:secretsmanager:us-west-2:682033486425:secret:github-token-secret-t1s1c5`],
       }),
     );
+
+    // Allow pipeline to update itselt
+    /*pipeline.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['codepipeline:UpdatePipeline'],
+        // resources: [`arn:aws:secretsmanager:us-west-2:682033486425:secret:github-token-secret-t1s1c5`],
+      }),
+    );*/
 
     // Publish the KMS Key ARN as an output
     new CfnOutput(this, 'ArtifactBucketEncryptionKeyArn', {
