@@ -4,10 +4,10 @@ import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
-import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
 import { ApplicationStackConfigInterface } from '../utils/config';
 import { secretName } from '../utils/constants';
+import { toolingAccountId } from '../utils/accounts';
 
 export interface PipelineStackProps extends StackProps {
   readonly applicationStackConfigs: ApplicationStackConfigInterface[];
@@ -193,10 +193,10 @@ export class PipelineStack extends Stack {
           stageName: 'Pipeline_Update',
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
-              actionName: 'Deploy',
+              actionName: 'SelfMutate',
               templatePath: cdkBuildOutput.atPath('CrossAccountPipelineDeploymentStack.template.json'),
               stackName: 'CrossAccountPipelineDeploymentStack',
-              adminPermissions: false,
+              adminPermissions: true,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             }),
           ],
@@ -253,18 +253,18 @@ export class PipelineStack extends Stack {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ['secretsmanager:GetSecretValue'],
-        resources: [`arn:aws:secretsmanager:us-west-2:682033486425:secret:github-token-secret-t1s1c5`],
+        resources: [`arn:aws:secretsmanager:us-west-2:${toolingAccountId}:secret:github-token-secret-t1s1c5`],
       }),
     );
 
     // Allow pipeline to update itselt
-    /*pipeline.addToRolePolicy(
+    pipeline.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ['codepipeline:UpdatePipeline'],
-        // resources: [`arn:aws:secretsmanager:us-west-2:682033486425:secret:github-token-secret-t1s1c5`],
+        actions: ['ssm:GetParameters'],
+        resources: [`arn:aws:ssm:us-west-2:${toolingAccountId}:parameter/*`],
       }),
-    );*/
+    );
 
     // Publish the KMS Key ARN as an output
     new CfnOutput(this, 'ArtifactBucketEncryptionKeyArn', {
