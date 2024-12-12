@@ -24,10 +24,8 @@ export class PipelineStack extends Stack {
 
     // Add update pipeline stage
     // Add manual approval between beta and prod
+    // easily deploy to multiple stages
     // Clean constants in here and rename stacks with appropriate names
-
-    //
-    const pipelineCloudFomrationRole = iam.Role;
 
     // Resolve ARNs of cross-account roles for the Beta account
     const betaCloudFormationRole = iam.Role.fromRoleArn(
@@ -220,6 +218,14 @@ export class PipelineStack extends Stack {
           ],
         },
         {
+          stageName: 'Manual_Approval',
+          actions: [
+            new codepipeline_actions.ManualApprovalAction({
+              actionName: 'Approve',
+            }),
+          ],
+        }
+        {
           stageName: 'Deploy_Prod',
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
@@ -257,7 +263,7 @@ export class PipelineStack extends Stack {
       }),
     );
 
-    // Allow pipeline to update itselt
+    // Allow pipeline to self mutate
     pipeline.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
