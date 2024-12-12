@@ -111,8 +111,8 @@ export class PipelineStack extends Stack {
           },
         },
         artifacts: {
-          'base-directory': 'build/cdkOut',
-          files: ['*us-west-2.template.json', 'CrossAccountPipelineDeploymentStack.template.json'],
+          'base-directory': 'dist',
+          files: ['CrossAccountPipelineDeploymentStack.template.json', '*us-west-2.template.json'],
         },
       }),
       environment: {
@@ -194,7 +194,7 @@ export class PipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'Deploy',
-              templatePath: cdkBuildOutput.atPath('build/cdk.out/CrossAccountPipelineDeploymentStack.template.json'),
+              templatePath: cdkBuildOutput.atPath('dist/CrossAccountPipelineDeploymentStack.template.json'),
               stackName: 'CrossAccountPipelineDeploymentStack',
               adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
