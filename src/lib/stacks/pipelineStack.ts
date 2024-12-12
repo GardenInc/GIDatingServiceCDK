@@ -224,7 +224,7 @@ export class PipelineStack extends Stack {
               actionName: 'Approve',
             }),
           ],
-        }
+        },
         {
           stageName: 'Deploy_Prod',
           actions: [
