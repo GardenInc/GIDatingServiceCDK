@@ -199,8 +199,8 @@ export class PipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'Deploy',
-              templatePath: cdkBuildOutput.atPath(`BetaServiceStackuswest2${TEMPLATE_ENDING}`),
-              stackName: 'BetaServiceStackuswest2',
+              templatePath: cdkBuildOutput.atPath(`Betauswest2ServiceStack${TEMPLATE_ENDING}`),
+              stackName: 'Betauswest2ServiceStack',
               adminPermissions: false,
               parameterOverrides: {
                 ...betaConfig.stack[0].lambdaCode.assign(lambdaBuildOutput.s3Location),
@@ -225,8 +225,8 @@ export class PipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'Deploy',
-              templatePath: cdkBuildOutput.atPath(`ProdServiceStackuswest2${TEMPLATE_ENDING}`),
-              stackName: 'ProdServiceStackuswest2',
+              templatePath: cdkBuildOutput.atPath(`Produswest2ServiceStack${TEMPLATE_ENDING}`),
+              stackName: 'Produswest2ServiceStack',
               adminPermissions: false,
               parameterOverrides: {
                 ...prodConfig.stack[0].lambdaCode.assign(lambdaBuildOutput.s3Location),

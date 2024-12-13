@@ -1,94 +1,30 @@
 
-✨  Synthesis time: 2.52s
+✨  Synthesis time: 2.8s
 
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+PipelineDeploymentStack: start: Building 6269ee1e1ca4686945539a1b89c560ee059591aeb8c8f641cbe19ad232a55147:current_account-current_region
+PipelineDeploymentStack: success: Built 6269ee1e1ca4686945539a1b89c560ee059591aeb8c8f641cbe19ad232a55147:current_account-current_region
+PipelineDeploymentStack: start: Publishing 6269ee1e1ca4686945539a1b89c560ee059591aeb8c8f641cbe19ad232a55147:current_account-current_region
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+PipelineDeploymentStack: success: Published 6269ee1e1ca4686945539a1b89c560ee059591aeb8c8f641cbe19ad232a55147:current_account-current_region
 PipelineDeploymentStack: deploying... [1/1]
 PipelineDeploymentStack: creating CloudFormation changeset...
-PipelineDeploymentStack |  0/25 | 9:33:09 PM | REVIEW_IN_PROGRESS   | AWS::CloudFormation::Stack  | PipelineDeploymentStack User Initiated
-PipelineDeploymentStack |  0/25 | 9:33:15 PM | CREATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | PipelineDeploymentStack User Initiated
-PipelineDeploymentStack |  0/25 | 9:33:18 PM | CREATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
-PipelineDeploymentStack |  0/25 | 9:33:18 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/Role (PipelinePipelineUpdateSelfMutateRole336A6040) 
-PipelineDeploymentStack |  0/25 | 9:33:18 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole (PipelinePipelineUpdateSelfMutateCodePipelineActionRole529AD9B9) 
-PipelineDeploymentStack |  0/25 | 9:33:18 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Manual_Approval/Approve/CodePipelineActionRole (PipelineManualApprovalApproveCodePipelineActionRole53989F82) 
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/Application_Build/CodePipelineActionRole (PipelineBuildApplicationBuildCodePipelineActionRole183E7A54) 
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | CdkBuild/Role (CdkBuildRoleBE66F777) 
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/CDK_Synth/CodePipelineActionRole (PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83) 
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Role (PipelineRoleD68726F7) 
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | LambdaBuild/Role (LambdaBuildRole40E116C6) 
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | CdkBuild/Role (CdkBuildRoleBE66F777) Resource creation Initiated
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole (PipelinePipelineUpdateSelfMutateCodePipelineActionRole529AD9B9) Resource creation Initiated
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) Resource creation Initiated
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/Application_Build/CodePipelineActionRole (PipelineBuildApplicationBuildCodePipelineActionRole183E7A54) Resource creation Initiated
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/Role (PipelinePipelineUpdateSelfMutateRole336A6040) Resource creation Initiated
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Manual_Approval/Approve/CodePipelineActionRole (PipelineManualApprovalApproveCodePipelineActionRole53989F82) Resource creation Initiated
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/CDK_Synth/CodePipelineActionRole (PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83) Resource creation Initiated
-PipelineDeploymentStack |  0/25 | 9:33:19 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Role (PipelineRoleD68726F7) Resource creation Initiated
-PipelineDeploymentStack |  1/25 | 9:33:19 PM | CREATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
-PipelineDeploymentStack |  1/25 | 9:33:20 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | LambdaBuild/Role (LambdaBuildRole40E116C6) Resource creation Initiated
-PipelineDeploymentStack |  1/25 | 9:33:20 PM | CREATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) Resource creation Initiated
-PipelineDeploymentStack |  1/25 | 9:33:20 PM | CREATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) Eventual consistency check initiated
-PipelineDeploymentStack |  1/25 | 9:33:21 PM | CREATE_IN_PROGRESS   | AWS::KMS::Alias             | ArtifactKey/Alias (ArtifactKeyAliasB27DA94F) 
-PipelineDeploymentStack |  1/25 | 9:33:22 PM | CREATE_IN_PROGRESS   | AWS::KMS::Alias             | ArtifactKey/Alias (ArtifactKeyAliasB27DA94F) Resource creation Initiated
-PipelineDeploymentStack |  2/25 | 9:33:35 PM | CREATE_COMPLETE      | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
-PipelineDeploymentStack |  3/25 | 9:33:35 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Build/Application_Build/CodePipelineActionRole (PipelineBuildApplicationBuildCodePipelineActionRole183E7A54) 
-PipelineDeploymentStack |  4/25 | 9:33:35 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/Role (PipelinePipelineUpdateSelfMutateRole336A6040) 
-PipelineDeploymentStack |  5/25 | 9:33:35 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole (PipelinePipelineUpdateSelfMutateCodePipelineActionRole529AD9B9) 
-PipelineDeploymentStack |  6/25 | 9:33:35 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Build/CDK_Synth/CodePipelineActionRole (PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83) 
-PipelineDeploymentStack |  7/25 | 9:33:35 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Manual_Approval/Approve/CodePipelineActionRole (PipelineManualApprovalApproveCodePipelineActionRole53989F82) 
-PipelineDeploymentStack |  8/25 | 9:33:35 PM | CREATE_COMPLETE      | AWS::IAM::Role              | CdkBuild/Role (CdkBuildRoleBE66F777) 
-PipelineDeploymentStack |  9/25 | 9:33:36 PM | CREATE_COMPLETE      | AWS::IAM::Role              | LambdaBuild/Role (LambdaBuildRole40E116C6) 
-PipelineDeploymentStack | 10/25 | 9:33:36 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Role (PipelineRoleD68726F7) 
-PipelineDeploymentStack | 10/25 | 9:33:36 PM | CREATE_IN_PROGRESS   | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) 
-PipelineDeploymentStack | 10/25 | 9:33:36 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
-PipelineDeploymentStack | 10/25 | 9:33:37 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | LambdaBuild (LambdaBuildCF1FE7ED) 
-PipelineDeploymentStack | 10/25 | 9:33:37 PM | CREATE_IN_PROGRESS   | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) Resource creation Initiated
-PipelineDeploymentStack | 10/25 | 9:33:38 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) Resource creation Initiated
-PipelineDeploymentStack | 10/25 | 9:33:38 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | LambdaBuild (LambdaBuildCF1FE7ED) Resource creation Initiated
-PipelineDeploymentStack | 11/25 | 9:33:38 PM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
-PipelineDeploymentStack | 12/25 | 9:33:38 PM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | LambdaBuild (LambdaBuildCF1FE7ED) 
-PipelineDeploymentStack | 12/25 | 9:33:39 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/CDK_Synth/CodePipelineActionRole/DefaultPolicy (PipelineBuildCDKSynthCodePipelineActionRoleDefaultPolicy34E41D63) 
-PipelineDeploymentStack | 12/25 | 9:33:39 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/Application_Build/CodePipelineActionRole/DefaultPolicy (PipelineBuildApplicationBuildCodePipelineActionRoleDefaultPolicyE2CB3CAC) 
-PipelineDeploymentStack | 12/25 | 9:33:40 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/CDK_Synth/CodePipelineActionRole/DefaultPolicy (PipelineBuildCDKSynthCodePipelineActionRoleDefaultPolicy34E41D63) Resource creation Initiated
-PipelineDeploymentStack | 12/25 | 9:33:40 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/Application_Build/CodePipelineActionRole/DefaultPolicy (PipelineBuildApplicationBuildCodePipelineActionRoleDefaultPolicyE2CB3CAC) Resource creation Initiated
-PipelineDeploymentStack | 13/25 | 9:33:50 PM | CREATE_COMPLETE      | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) 
-PipelineDeploymentStack | 13/25 | 9:33:51 PM | CREATE_IN_PROGRESS   | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
-PipelineDeploymentStack | 13/25 | 9:33:51 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole/DefaultPolicy (PipelinePipelineUpdateSelfMutateCodePipelineActionRoleDefaultPolicy0BC48BCB) 
-PipelineDeploymentStack | 13/25 | 9:33:51 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/Role/DefaultPolicy (PipelinePipelineUpdateSelfMutateRoleDefaultPolicy840E466A) 
-PipelineDeploymentStack | 13/25 | 9:33:51 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | LambdaBuild/Role/DefaultPolicy (LambdaBuildRoleDefaultPolicyBE23D2E1) 
-PipelineDeploymentStack | 13/25 | 9:33:51 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | CdkBuild/Role/DefaultPolicy (CdkBuildRoleDefaultPolicyD27F0F5C) 
-PipelineDeploymentStack | 13/25 | 9:33:52 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/Role/DefaultPolicy (PipelinePipelineUpdateSelfMutateRoleDefaultPolicy840E466A) Resource creation Initiated
-PipelineDeploymentStack | 13/25 | 9:33:52 PM | CREATE_IN_PROGRESS   | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) Resource creation Initiated
-PipelineDeploymentStack | 13/25 | 9:33:52 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | CdkBuild/Role/DefaultPolicy (CdkBuildRoleDefaultPolicyD27F0F5C) Resource creation Initiated
-PipelineDeploymentStack | 13/25 | 9:33:53 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | LambdaBuild/Role/DefaultPolicy (LambdaBuildRoleDefaultPolicyBE23D2E1) Resource creation Initiated
-PipelineDeploymentStack | 13/25 | 9:33:53 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole/DefaultPolicy (PipelinePipelineUpdateSelfMutateCodePipelineActionRoleDefaultPolicy0BC48BCB) Resource creation Initiated
-PipelineDeploymentStack | 14/25 | 9:33:53 PM | CREATE_COMPLETE      | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
-PipelineDeploymentStack | 14/25 | 9:33:53 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
-PipelineDeploymentStack | 14/25 | 9:33:54 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) Resource creation Initiated
-PipelineDeploymentStack | 15/25 | 9:33:55 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Build/CDK_Synth/CodePipelineActionRole/DefaultPolicy (PipelineBuildCDKSynthCodePipelineActionRoleDefaultPolicy34E41D63) 
-PipelineDeploymentStack | 16/25 | 9:33:56 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Build/Application_Build/CodePipelineActionRole/DefaultPolicy (PipelineBuildApplicationBuildCodePipelineActionRoleDefaultPolicyE2CB3CAC) 
-PipelineDeploymentStack | 17/25 | 9:34:08 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/Role/DefaultPolicy (PipelinePipelineUpdateSelfMutateRoleDefaultPolicy840E466A) 
-PipelineDeploymentStack | 18/25 | 9:34:08 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | LambdaBuild/Role/DefaultPolicy (LambdaBuildRoleDefaultPolicyBE23D2E1) 
-PipelineDeploymentStack | 19/25 | 9:34:08 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | CdkBuild/Role/DefaultPolicy (CdkBuildRoleDefaultPolicyD27F0F5C) 
-PipelineDeploymentStack | 20/25 | 9:34:08 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole/DefaultPolicy (PipelinePipelineUpdateSelfMutateCodePipelineActionRoleDefaultPolicy0BC48BCB) 
-PipelineDeploymentStack | 21/25 | 9:34:10 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
-PipelineDeploymentStack | 21/25 | 9:34:11 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-PipelineDeploymentStack | 21/25 | 9:34:14 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) Resource creation Initiated
-PipelineDeploymentStack | 22/25 | 9:34:14 PM | CREATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-PipelineDeploymentStack | 22/25 | 9:34:15 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Webhook  | Pipeline/Source/GitHub_Source/WebhookResource (PipelineSourceGitHubSourceWebhookResource8EECEFFF) 
-PipelineDeploymentStack | 22/25 | 9:34:16 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Webhook  | Pipeline/Source/GitHub_Source/WebhookResource (PipelineSourceGitHubSourceWebhookResource8EECEFFF) Resource creation Initiated
-PipelineDeploymentStack | 23/25 | 9:34:17 PM | CREATE_COMPLETE      | AWS::CodePipeline::Webhook  | Pipeline/Source/GitHub_Source/WebhookResource (PipelineSourceGitHubSourceWebhookResource8EECEFFF) 
-PipelineDeploymentStack | 24/25 | 9:34:23 PM | CREATE_COMPLETE      | AWS::KMS::Alias             | ArtifactKey/Alias (ArtifactKeyAliasB27DA94F) 
-PipelineDeploymentStack | 25/25 | 9:34:25 PM | CREATE_COMPLETE      | AWS::CloudFormation::Stack  | PipelineDeploymentStack 
+PipelineDeploymentStack | 0/4 | 9:40:48 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | PipelineDeploymentStack User Initiated
+PipelineDeploymentStack | 0/4 | 9:40:52 PM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+PipelineDeploymentStack | 1/4 | 9:40:53 PM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+PipelineDeploymentStack | 1/4 | 9:40:56 PM | UPDATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+PipelineDeploymentStack | 2/4 | 9:40:57 PM | UPDATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+PipelineDeploymentStack | 3/4 | 9:40:59 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | PipelineDeploymentStack 
+PipelineDeploymentStack | 4/4 | 9:41:00 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | PipelineDeploymentStack 
 
  ✅  PipelineDeploymentStack
 
-✨  Deployment time: 80.33s
+✨  Deployment time: 32.77s
 
 Outputs:
 PipelineDeploymentStack.ArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/bffcd5f7-24b8-4922-9d37-1a0ed142c92f
 Stack ARN:
 arn:aws:cloudformation:us-west-2:739275451028:stack/PipelineDeploymentStack/970ab1d0-b8fa-11ef-8a32-061ebfc3c9c1
 
-✨  Total time: 82.85s
+✨  Total time: 35.57s
 
