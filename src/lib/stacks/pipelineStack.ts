@@ -6,8 +6,8 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
 import { ApplicationStackConfigInterface } from '../utils/config';
-import { secretName } from '../utils/constants';
-import { toolingAccountId } from '../utils/accounts';
+import { SECRET_NAME, PipelineStackName, TEMPLATE_ENDING, SERVICE_STACK } from '../utils/constants';
+import { pipelineAccountId } from '../utils/accounts';
 
 export interface PipelineStackProps extends StackProps {
   readonly applicationStackConfigs: ApplicationStackConfigInterface[];
@@ -21,11 +21,6 @@ export class PipelineStack extends Stack {
     const betaAccountId = betaConfig.config.accountId;
     const prodConfig = props.applicationStackConfigs[1];
     const prodAccountId = prodConfig.config.accountId;
-
-    // Add update pipeline stage
-    // Add manual approval between beta and prod
-    // easily deploy to multiple stages
-    // Clean constants in here and rename stacks with appropriate names
 
     // Resolve ARNs of cross-account roles for the Beta account
     const betaCloudFormationRole = iam.Role.fromRoleArn(
@@ -110,7 +105,7 @@ export class PipelineStack extends Stack {
         },
         artifacts: {
           'base-directory': 'dist',
-          files: ['CrossAccountPipelineDeploymentStack.template.json', '*us-west-2.template.json'],
+          files: [`*${SERVICE_STACK}${TEMPLATE_ENDING}`, `${PipelineStackName}${TEMPLATE_ENDING}`],
         },
       }),
       environment: {
@@ -164,7 +159,7 @@ export class PipelineStack extends Stack {
               actionName: 'GitHub_Source',
               owner: 'GardenInc',
               repo: 'GIDatingServiceCDK',
-              oauthToken: SecretValue.secretsManager(secretName),
+              oauthToken: SecretValue.secretsManager(SECRET_NAME),
               output: sourceOutput,
               branch: 'main',
             }),
@@ -192,8 +187,8 @@ export class PipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'SelfMutate',
-              templatePath: cdkBuildOutput.atPath('CrossAccountPipelineDeploymentStack.template.json'),
-              stackName: 'CrossAccountPipelineDeploymentStack',
+              templatePath: cdkBuildOutput.atPath(`${PipelineStackName}${TEMPLATE_ENDING}`),
+              stackName: `${PipelineStackName}`,
               adminPermissions: true,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             }),
@@ -204,11 +199,11 @@ export class PipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'Deploy',
-              templatePath: cdkBuildOutput.atPath('betaServiceStackus-west-2.template.json'),
-              stackName: 'betaServiceStackus-west-2',
+              templatePath: cdkBuildOutput.atPath(`BetaServiceStackuswest2${TEMPLATE_ENDING}`),
+              stackName: 'BetaServiceStackuswest2',
               adminPermissions: false,
               parameterOverrides: {
-                ...betaConfig.stack.lambdaCode.assign(lambdaBuildOutput.s3Location),
+                ...betaConfig.stack[0].lambdaCode.assign(lambdaBuildOutput.s3Location),
               },
               extraInputs: [lambdaBuildOutput],
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
@@ -230,11 +225,11 @@ export class PipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'Deploy',
-              templatePath: cdkBuildOutput.atPath('prodServiceStackus-west-2.template.json'),
-              stackName: 'prodServiceStackus-west-2',
+              templatePath: cdkBuildOutput.atPath(`ProdServiceStackuswest2${TEMPLATE_ENDING}`),
+              stackName: 'ProdServiceStackuswest2',
               adminPermissions: false,
               parameterOverrides: {
-                ...prodConfig.stack.lambdaCode.assign(lambdaBuildOutput.s3Location),
+                ...prodConfig.stack[0].lambdaCode.assign(lambdaBuildOutput.s3Location),
               },
               extraInputs: [lambdaBuildOutput],
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
@@ -259,7 +254,7 @@ export class PipelineStack extends Stack {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ['secretsmanager:GetSecretValue'],
-        resources: [`arn:aws:secretsmanager:us-west-2:${toolingAccountId}:secret:github-token-secret-t1s1c5`],
+        resources: [`arn:aws:secretsmanager:us-west-2:${pipelineAccountId}:secret:github-token-secret-t1s1c5`],
       }),
     );
 
@@ -268,7 +263,7 @@ export class PipelineStack extends Stack {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ['ssm:GetParameters'],
-        resources: [`arn:aws:ssm:us-west-2:${toolingAccountId}:parameter/*`],
+        resources: [`arn:aws:ssm:us-west-2:${pipelineAccountId}:parameter/*`],
       }),
     );
 

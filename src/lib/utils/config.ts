@@ -2,8 +2,8 @@ import { betaAccountId, prodAccountId } from './accounts';
 import { ApplicationStackProps, ApplicationStack } from '../stacks/applicationStack';
 
 export enum STAGES {
-  BETA = 'beta',
-  PROD = 'prod',
+  BETA = 'Beta',
+  PROD = 'Prod',
 }
 
 export const REGIONS = {
@@ -35,6 +35,6 @@ export const stageConfigurationList: StageConfigInterface[] = [
 
 export interface ApplicationStackConfigInterface {
   props: ApplicationStackProps;
-  stack: ApplicationStack;
+  stack: [ApplicationStack];
   config: StageConfigInterface;
 }

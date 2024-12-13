@@ -18,7 +18,7 @@ You need to setup access to accounts using `aws configure --profile <profile>` c
 
 - Personal: <personal-account-id>
   - everyone should have their own personal account if you don't, please follow the steps below in the Setup Personal Account section
-- Tooling account: `682033486425`
+- Pipeline account: `739275451028`
 - Beta account: `954976299693`
 - Prod account: `724772068831`
 
@@ -29,7 +29,7 @@ Should be able to run following commands to see if you have access to deploy to 
 ```
     default
     beta
-    tooling
+    pipeline
     prod
     personal
 ```
@@ -50,5 +50,12 @@ Should be able to run following commands to see if you have access to deploy to 
 - Finish detailed Readme
 - Setup service package
 
-- add info on how pipeline works and get working.
-- update info on cloudformation templates and deploy them
+## Pipeline TODO:
+
+- easily deploy to multiple stages
+- Clean constants in here and rename stacks with appropriate names
+- Fix beta deployment (wrong stack name)
+- Create templates dynamically (or change them to deploy allow all stacks to be deployed from pipeline)
+- dynamically call automation_deployment.sh
+
+- Maybe just create a new account to fix these issues :(

@@ -1,12 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Description: The AWS CloudFormation template that creates the CodePipeline
-  Cross Account Role that will be assumed by the tooling account to deploy
+  Cross Account Role that will be assumed by the pipeline account to deploy
   into target accounts
 
 Parameters:
-  ToolsAccountID:
-    Description: Account ID of the tooling AWS Account that initiates deployments to this account.
+  PipelineAccountID:
+    Description: Account ID of the pipeline AWS Account that initiates deployments to this account.
     Type: String
     ConstraintDescription: Must be a valid AWS Account ID without hyphens.
     AllowedPattern: '\d{12}'
@@ -21,7 +21,7 @@ Parameters:
   KeyArn:
     Description: Provide the KMS Key ARN if you've deployed the pipeline stack
     Type: String
-    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the TOOLS account
+    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
     Default: ''
 
 # If the Key Arn is blank, it's our initial deployment,
@@ -40,7 +40,7 @@ Resources:
           - Effect: Allow
             Principal:
               AWS:
-                - !Sub arn:${AWS::Partition}:iam::${ToolsAccountID}:root
+                - !Sub arn:${AWS::Partition}:iam::${PipelineAccountID}:root
             Action:
               - sts:AssumeRole
 
@@ -62,7 +62,7 @@ Resources:
               - cloudformation:DeleteStack
               - cloudformation:UpdateStack
               - cloudformation:DescribeStack*
-            Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${Stage}ApplicationDeploymentStack/*
+            Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${Stage}uswest2ServiceStack/*
             Effect: Allow
           - Action:
               - iam:PassRole
@@ -73,8 +73,8 @@ Resources:
               - s3:Put*
               - s3:ListBucket
             Resource:
-              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${ToolsAccountID}
-              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${ToolsAccountID}/*
+              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${PipelineAccountID}
+              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${PipelineAccountID}/*
             Effect: Allow
           - Action:
               - kms:DescribeKey

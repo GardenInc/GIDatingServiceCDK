@@ -6,6 +6,8 @@ import { PipelineStack, PipelineStackProps } from './stacks/pipelineStack';
 import { stageConfigurationList } from './utils/config';
 import { ApplicationStackConfigInterface } from './utils/config';
 import { ApplicationStackProps } from './stacks/applicationStack';
+import { PipelineStackName } from './utils/constants';
+import { createServiceStackName } from './utils/utils';
 
 const app = new cdk.App();
 
@@ -15,18 +17,14 @@ for (var stageConfig of stageConfigurationList) {
   const applicationStackProps: ApplicationStackProps = {
     stageName: stageConfig.stage,
   };
-  // Setup service stack props
-  // How are we going to manage multiple stacks here?
-  const serviceStack = new ApplicationStack(
-    app,
-    `${stageConfig.stage}ServiceStack${stageConfig.region}`,
-    applicationStackProps,
-  );
 
-  // Passing tuple to stack list with stack in first param / config for stack in second param
+  const serviceStackName: string = createServiceStackName(stageConfig.stage, stageConfig.region);
+  const serviceStack = new ApplicationStack(app, serviceStackName, applicationStackProps);
+
+  // Add new Stacks that need to be deployed here and add them to the stack list here
   const stageConfigurationList: ApplicationStackConfigInterface = {
     props: applicationStackProps,
-    stack: serviceStack,
+    stack: [serviceStack],
     config: stageConfig,
   };
 
@@ -37,6 +35,6 @@ const pipelineStackProps: PipelineStackProps = {
   applicationStackConfigs: serviceStackList,
 };
 
-new PipelineStack(app, 'CrossAccountPipelineDeploymentStack', pipelineStackProps);
+new PipelineStack(app, PipelineStackName, pipelineStackProps);
 
 app.synth();

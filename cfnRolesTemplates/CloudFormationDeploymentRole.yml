@@ -6,8 +6,8 @@ Description: |
   This role is passed to the CloudFormation service by the CodePipeline Cross Account Role
 
 Parameters:
-  ToolsAccountID:
-    Description: Account ID of the TOOLS AWS Account that initiates code deployment to this account.
+  PipelineAccountID:
+    Description: Account ID of the PIPELINE AWS Account that initiates code deployment to this account.
     Type: String
     ConstraintDescription: Must be a valid AWS Account ID without hyphens.
     AllowedPattern: '\d{12}'
@@ -22,7 +22,7 @@ Parameters:
   KeyArn:
     Description: Provide the KMS Key ARN if you've deployed the pipeline stack
     Type: String
-    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the TOOLS account
+    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
     Default: ''
 
 # If the Key Arn is blank, it's our initial deployment,
@@ -49,7 +49,7 @@ Resources:
     Condition: DeployPolicy
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: Allows pipeline in TOOLS account to deploy API Gateway, Lambda
+      Description: Allows pipeline in PIPELINE account to deploy API Gateway, Lambda
       ManagedPolicyName: CloudFormationDeploymentPolicy
       Roles:
         - !Ref CloudFormationDeploymentRole
@@ -102,16 +102,16 @@ Resources:
               - codedeploy:CreateDeploymentGroup
               - codedeploy:DeleteApplication
             Resource:
-              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${Stage}ApplicationDeploymentStack*
-              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${Stage}ApplicationDeploymentStack*
+              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${Stage}uswest2ServiceStack*
+              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${Stage}uswest2ServiceStack*
             Effect: Allow
           - Action:
               - s3:GetObject*
               - s3:GetBucket*
               - s3:List*
             Resource:
-              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${ToolsAccountID}
-              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${ToolsAccountID}/*
+              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${PipelineAccountID}
+              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${PipelineAccountID}/*
             Effect: Allow
           - Action:
               - kms:Decrypt
@@ -126,5 +126,5 @@ Resources:
               - cloudformation:SetStackPolicy
               - cloudformation:UpdateStack
               - cloudformation:ValidateTemplate
-            Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${Stage}ApplicationDeploymentStack/*
+            Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${Stage}uswest2ServiceStack/*
             Effect: Allow

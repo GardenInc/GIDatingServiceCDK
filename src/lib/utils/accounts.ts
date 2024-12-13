@@ -1,5 +1,5 @@
-// Tooling account (manages pipeline deployments to service accounts)
-export const toolingAccountId = '682033486425';
+// Pipeline account (manages pipeline deployments to service accounts)
+export const pipelineAccountId = '739275451028';
 
 // Service Accounts (Contain)
 export const betaAccountId = '954976299693';

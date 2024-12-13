@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# Run this script in the tools account to clean up what was deployed
+# Run this script in the pipeline account to clean up what was deployed
 # Prerequisites: 
 # - Set up .aws/credentials profiles for pipeline, beta, and prod
-# - Set TOOLS_ACCOUNT_ID env variable
+# - Set PIPELINE_ACCOUNT_ID env variable
 # - Deploy the solution using automate_deployment.sh
 
 # If prerequisite account values aren't set, exit
-if [[ -z "${TOOLS_ACCOUNT_ID}" ]]; then
-  printf "Please set TOOLS_ACCOUNT_ID, BETA_ACCOUNT_ID, and PROD_ACCOUNT_ID"
-  printf "TOOLS_ACCOUNT_ID =" ${TOOLS_ACCOUNT_ID}
+if [[ -z "${PIPELINE_ACCOUNT_ID}" ]]; then
+  printf "Please set PIPELINE_ACCOUNT_ID, BETA_ACCOUNT_ID, and PROD_ACCOUNT_ID"
+  printf "PIPELINE_ACCOUNT_ID =" ${PIPELINE_ACCOUNT_ID}
   exit
 fi
 
@@ -18,7 +18,7 @@ aws cloudformation delete-stack --stack-name BetaApplicationDeploymentStack --pr
 aws cloudformation delete-stack --stack-name ProdApplicationDeploymentStack --profile prod &
 
 # Empty artifact bucket in pipeline acct (prerequisite for destroying the pipeline stack and its S3 bucket)
-aws s3 rm s3://artifact-bucket-${TOOLS_ACCOUNT_ID} --recursive --profile pipeline
+aws s3 rm s3://artifact-bucket-${PIPELINE_ACCOUNT_ID} --recursive --profile pipeline
 
 # Destroy Cross-Account Pipeline
 cdk destroy CrossAccountPipelineStack --profile pipeline
