@@ -56,11 +56,10 @@ Should be able to run following commands to see if you have access to deploy to 
 
 ## Pipeline TODO:
 
+- Make Cluster stack
 - easily deploy to multiple stages
 - Clean constants in here and rename stacks with appropriate names
 - Create templates dynamically (or change them to deploy allow all stacks to be deployed from pipeline)
 - dynamically call automation_deployment.sh
-
-- Maybe just create a new account to fix these issues :(
 
 This is the really good example I used: https://github.com/aws-samples/automate-cross-account-cicd-cfn-cdk/blob/main/README.md
