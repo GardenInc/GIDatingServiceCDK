@@ -1,0 +1,28 @@
+
+✨  Synthesis time: 2.65s
+
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+PipelineDeploymentStack: start: Building bc2dcda9dac4f3e4d3e1fe20e2806815cbe007dd853c97db9ea66ba8cb9854de:current_account-current_region
+PipelineDeploymentStack: success: Built bc2dcda9dac4f3e4d3e1fe20e2806815cbe007dd853c97db9ea66ba8cb9854de:current_account-current_region
+PipelineDeploymentStack: start: Publishing bc2dcda9dac4f3e4d3e1fe20e2806815cbe007dd853c97db9ea66ba8cb9854de:current_account-current_region
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+PipelineDeploymentStack: success: Published bc2dcda9dac4f3e4d3e1fe20e2806815cbe007dd853c97db9ea66ba8cb9854de:current_account-current_region
+PipelineDeploymentStack: deploying... [1/1]
+PipelineDeploymentStack: creating CloudFormation changeset...
+PipelineDeploymentStack | 0/3 | 12:48:32 AM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | PipelineDeploymentStack User Initiated
+PipelineDeploymentStack | 0/3 | 12:48:36 AM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+PipelineDeploymentStack | 1/3 | 12:48:37 AM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+PipelineDeploymentStack | 2/3 | 12:48:39 AM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | PipelineDeploymentStack 
+PipelineDeploymentStack | 3/3 | 12:48:40 AM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | PipelineDeploymentStack 
+
+ ✅  PipelineDeploymentStack
+
+✨  Deployment time: 26.84s
+
+Outputs:
+PipelineDeploymentStack.ArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/bffcd5f7-24b8-4922-9d37-1a0ed142c92f
+Stack ARN:
+arn:aws:cloudformation:us-west-2:739275451028:stack/PipelineDeploymentStack/970ab1d0-b8fa-11ef-8a32-061ebfc3c9c1
+
+✨  Total time: 29.5s
+
