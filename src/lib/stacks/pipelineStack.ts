@@ -8,18 +8,19 @@ import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, Secr
 import { ApplicationStackConfigInterface } from '../utils/config';
 import { SECRET_NAME, PipelineStackName, TEMPLATE_ENDING, SERVICE_STACK } from '../utils/constants';
 import { pipelineAccountId } from '../utils/accounts';
+import { ApplicationStack } from './applicationStack';
 
 export interface PipelineStackProps extends StackProps {
-  readonly applicationStackConfigs: ApplicationStackConfigInterface[];
+  readonly stacksToDeploy: ApplicationStackConfigInterface[];
 }
 
 export class PipelineStack extends Stack {
   constructor(app: App, id: string, props: PipelineStackProps) {
     super(app, id, props);
 
-    const betaConfig = props.applicationStackConfigs[0];
+    const betaConfig = props.stacksToDeploy[0];
     const betaAccountId = betaConfig.config.accountId;
-    const prodConfig = props.applicationStackConfigs[1];
+    const prodConfig = props.stacksToDeploy[1];
     const prodAccountId = prodConfig.config.accountId;
 
     // Resolve ARNs of cross-account roles for the Beta account
@@ -147,6 +148,10 @@ export class PipelineStack extends Stack {
     const cdkBuildOutput = new codepipeline.Artifact('CdkBuildOutput');
     const lambdaBuildOutput = new codepipeline.Artifact('LambdaBuildOutput');
 
+    // Application Stack
+    const betaApplicationStack: ApplicationStack = betaConfig.stacks.applicationStack;
+    const prodApplicationStack: ApplicationStack = prodConfig.stacks.applicationStack;
+
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
       pipelineName: 'CrossAccountPipeline',
@@ -203,7 +208,7 @@ export class PipelineStack extends Stack {
               stackName: 'Betauswest2ServiceStack',
               adminPermissions: false,
               parameterOverrides: {
-                ...betaConfig.stack[0].lambdaCode.assign(lambdaBuildOutput.s3Location),
+                ...betaApplicationStack.lambdaCode.assign(lambdaBuildOutput.s3Location),
               },
               extraInputs: [lambdaBuildOutput],
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
@@ -229,7 +234,7 @@ export class PipelineStack extends Stack {
               stackName: 'Produswest2ServiceStack',
               adminPermissions: false,
               parameterOverrides: {
-                ...prodConfig.stack[0].lambdaCode.assign(lambdaBuildOutput.s3Location),
+                ...prodApplicationStack.lambdaCode.assign(lambdaBuildOutput.s3Location),
               },
               extraInputs: [lambdaBuildOutput],
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],

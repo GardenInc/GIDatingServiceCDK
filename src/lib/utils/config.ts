@@ -1,5 +1,7 @@
 import { betaAccountId, prodAccountId } from './accounts';
 import { ApplicationStackProps, ApplicationStack } from '../stacks/applicationStack';
+import { VpcStackProps, VpcStack } from '../stacks/vpcStack';
+import { Stack } from 'aws-cdk-lib';
 
 export enum STAGES {
   BETA = 'Beta',
@@ -34,7 +36,17 @@ export const stageConfigurationList: StageConfigInterface[] = [
 ];
 
 export interface ApplicationStackConfigInterface {
-  props: ApplicationStackProps;
-  stack: [ApplicationStack];
+  props: PropsInterface;
+  stacks: StacksInterface;
   config: StageConfigInterface;
+}
+
+export interface StacksInterface {
+  applicationStack: ApplicationStack;
+  vpcStack: VpcStack;
+}
+
+export interface PropsInterface {
+  applicationStackProps: ApplicationStackProps;
+  vpcStackProps: VpcStackProps;
 }

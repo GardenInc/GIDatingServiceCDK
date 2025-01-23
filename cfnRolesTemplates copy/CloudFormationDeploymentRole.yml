@@ -102,8 +102,8 @@ Resources:
               - codedeploy:CreateDeploymentGroup
               - codedeploy:DeleteApplication
             Resource:
-              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${Stage}*
-              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${Stage}*
+              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${Stage}uswest2ServiceStack*
+              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${Stage}uswest2ServiceStack*
             Effect: Allow
           - Action:
               - s3:GetObject*
@@ -126,7 +126,7 @@ Resources:
               - cloudformation:SetStackPolicy
               - cloudformation:UpdateStack
               - cloudformation:ValidateTemplate
-            Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*
+            Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${Stage}uswest2ServiceStack/*
             Effect: Allow
           - Action:
               - ssm:GetParameters

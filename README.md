@@ -22,6 +22,10 @@ You need to setup access to accounts using `aws configure --profile <profile>` c
 - Beta account: `954976299693`
 - Prod account: `724772068831`
 
+```
+export PIPELINE_ACCOUNT_ID=739275451028 && export BETA_ACCOUNT_ID=954976299693 && export PROD_ACCOUNT_ID=724772068831
+```
+
 Should be able to run following commands to see if you have access to deploy to these accounts from your local:
 
 `aws configure list-profiles`
@@ -54,8 +58,9 @@ Should be able to run following commands to see if you have access to deploy to 
 
 - easily deploy to multiple stages
 - Clean constants in here and rename stacks with appropriate names
-- Fix beta deployment (wrong stack name)
 - Create templates dynamically (or change them to deploy allow all stacks to be deployed from pipeline)
 - dynamically call automation_deployment.sh
 
 - Maybe just create a new account to fix these issues :(
+
+This is the really good example I used: https://github.com/aws-samples/automate-cross-account-cicd-cfn-cdk/blob/main/README.md

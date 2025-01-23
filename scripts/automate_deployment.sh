@@ -96,9 +96,9 @@ git add . && git commit -m "Automated Commit" && git push
 
 # Get deployed API Gateway endpoints
 printf "\nUse the following commands to get the Endpoints for deployed environemnts: "
-printf "\n  aws cloudformation describe-stacks --stack-name Produswest2ServiceStack \
-  --profile beta | grep OutputValue"
 printf "\n  aws cloudformation describe-stacks --stack-name Betauswest2ServiceStack \
+  --profile beta | grep OutputValue"
+printf "\n  aws cloudformation describe-stacks --stack-name Produswest2ServiceStack \
   --profile prod | grep OutputValue"
 
 # Clean up temporary files
