@@ -90,8 +90,9 @@ Resources:
               - lambda:AddPermission
               - lambda:PublishVersion
               - lambda:RemovePermission
-            Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:HelloLambda*
-            Effect: Allow
+            Resource:
+              - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:HelloLambda*
+              - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:Betauswest2VpcStack*
           - Action:
               - apigateway:GET
               - apigateway:PATCH
