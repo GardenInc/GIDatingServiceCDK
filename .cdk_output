@@ -1,17 +1,23 @@
 
-✨  Synthesis time: 2.59s
+✨  Synthesis time: 2.6s
 
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
 PipelineDeploymentStack: deploying... [1/1]
+PipelineDeploymentStack: creating CloudFormation changeset...
+PipelineDeploymentStack | 0/3 | 9:27:27 AM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | PipelineDeploymentStack User Initiated
+PipelineDeploymentStack | 0/3 | 9:27:32 AM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+PipelineDeploymentStack | 1/3 | 9:27:32 AM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+PipelineDeploymentStack | 2/3 | 9:27:34 AM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | PipelineDeploymentStack 
+PipelineDeploymentStack | 3/3 | 9:27:35 AM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | PipelineDeploymentStack 
 
- ✅  PipelineDeploymentStack (no changes)
+ ✅  PipelineDeploymentStack
 
-✨  Deployment time: 1.74s
+✨  Deployment time: 27.37s
 
 Outputs:
 PipelineDeploymentStack.ArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/bffcd5f7-24b8-4922-9d37-1a0ed142c92f
 Stack ARN:
 arn:aws:cloudformation:us-west-2:739275451028:stack/PipelineDeploymentStack/970ab1d0-b8fa-11ef-8a32-061ebfc3c9c1
 
-✨  Total time: 4.32s
+✨  Total time: 29.97s
 
