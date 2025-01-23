@@ -1,5 +1,0 @@
-Outputs:
-PipelineDeploymentStack.ArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/bffcd5f7-24b8-4922-9d37-1a0ed142c92f
-Stack ARN:
-arn:aws:cloudformation:us-west-2:739275451028:stack/PipelineDeploymentStack/970ab1d0-b8fa-11ef-8a32-061ebfc3c9c1
-

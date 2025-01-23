@@ -6,7 +6,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
 import { ApplicationStackConfigInterface } from '../utils/config';
-import { SECRET_NAME, PipelineStackName, TEMPLATE_ENDING, SERVICE_STACK } from '../utils/constants';
+import { SECRET_NAME, PipelineStackName, TEMPLATE_ENDING, SERVICE_STACK, VPC_STACK } from '../utils/constants';
 import { pipelineAccountId } from '../utils/accounts';
 import { ApplicationStack } from './applicationStack';
 
@@ -106,7 +106,11 @@ export class PipelineStack extends Stack {
         },
         artifacts: {
           'base-directory': 'dist',
-          files: [`*${SERVICE_STACK}${TEMPLATE_ENDING}`, `${PipelineStackName}${TEMPLATE_ENDING}`],
+          files: [
+            `*${SERVICE_STACK}${TEMPLATE_ENDING}`,
+            `${PipelineStackName}${TEMPLATE_ENDING}`,
+            `*${VPC_STACK}${TEMPLATE_ENDING}`,
+          ],
         },
       }),
       environment: {
@@ -203,7 +207,7 @@ export class PipelineStack extends Stack {
           stageName: 'Deploy_Beta',
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
-              actionName: 'Deploy',
+              actionName: 'DeployServiceStack',
               templatePath: cdkBuildOutput.atPath(`Betauswest2ServiceStack${TEMPLATE_ENDING}`),
               stackName: 'Betauswest2ServiceStack',
               adminPermissions: false,
@@ -211,6 +215,15 @@ export class PipelineStack extends Stack {
                 ...betaApplicationStack.lambdaCode.assign(lambdaBuildOutput.s3Location),
               },
               extraInputs: [lambdaBuildOutput],
+              cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
+              role: betaCodePipelineRole,
+              deploymentRole: betaCloudFormationRole,
+            }),
+            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+              actionName: 'DeployVpcStack',
+              templatePath: cdkBuildOutput.atPath(`Betauswest2VpcStack${TEMPLATE_ENDING}`),
+              stackName: 'Betauswest2VpcStack',
+              adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: betaCodePipelineRole,
               deploymentRole: betaCloudFormationRole,
@@ -229,7 +242,7 @@ export class PipelineStack extends Stack {
           stageName: 'Deploy_Prod',
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
-              actionName: 'Deploy',
+              actionName: 'DeployServiceStack',
               templatePath: cdkBuildOutput.atPath(`Produswest2ServiceStack${TEMPLATE_ENDING}`),
               stackName: 'Produswest2ServiceStack',
               adminPermissions: false,
@@ -237,6 +250,15 @@ export class PipelineStack extends Stack {
                 ...prodApplicationStack.lambdaCode.assign(lambdaBuildOutput.s3Location),
               },
               extraInputs: [lambdaBuildOutput],
+              cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
+              role: prodCodeDeployRole,
+              deploymentRole: prodCloudFormationRole,
+            }),
+            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+              actionName: 'DeployVpcStack',
+              templatePath: cdkBuildOutput.atPath(`Produswest2VpcStack${TEMPLATE_ENDING}`),
+              stackName: 'Produswest2VpcStack',
+              adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: prodCodeDeployRole,
               deploymentRole: prodCloudFormationRole,
