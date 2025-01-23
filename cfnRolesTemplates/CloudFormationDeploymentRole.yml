@@ -44,8 +44,6 @@ Resources:
                 - cloudformation.amazonaws.com
             Action:
               - sts:AssumeRole
-              - ec2:DescribeVpcs
-              - ec2:DescribeInternetGateways
 
   CloudFormationDeploymentPolicy:
     Condition: DeployPolicy
