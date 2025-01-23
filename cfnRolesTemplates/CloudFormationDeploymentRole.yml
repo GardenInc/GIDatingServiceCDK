@@ -72,7 +72,12 @@ Resources:
             Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/*
             Effect: Allow
           - Action:
-              - ec2:*
+              - ec2:Create*
+              - ec2:Describe*
+              - ec2:AllocateAddress
+              - ec2:AttachInternetGateway
+              - ec2:AssociateRouteTable
+              - ec2:ModifyVpcAttribute
             Resource:
               - !Sub arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:internet-gateway/*
               - !Sub arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:vpc/*
