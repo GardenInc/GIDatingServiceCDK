@@ -74,10 +74,11 @@ Resources:
           - Action:
               - ec2:Describe*
               - ec2:Create*
-              - ec2:AllocateAddress
-              - ec2:AttachInternetGateway
-              - ec2:AssociateRouteTable
-              - ec2:ModifyVpcAttribute
+              - ec2:Allocate*
+              - ec2:Attach*
+              - ec2:Associate*
+              - ec2:Modify*
+              - ec2:Delete*
             Resource: '*'
             Effect: Allow
           - Action:
