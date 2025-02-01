@@ -77,6 +77,7 @@ Resources:
               - ec2:Allocate*
               - ec2:Attach*
               - ec2:Associate*
+              - ec2:Disassociate*
               - ec2:Modify*
               - ec2:Delete*
             Resource: '*'
