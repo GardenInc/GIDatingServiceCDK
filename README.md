@@ -57,10 +57,15 @@ Should be able to run following commands to see if you have access to deploy to 
 ## Pipeline TODO:
 
 - Make Cluster stack
-- get pipeline to automatically deploy cross account stacks to not have to manually deploy everytime.
-
+- get pipeline to automatically deploy cross account roles to not have to manually deploy everytime.
 - Clean constants in here and rename stacks with appropriate names
-- Create templates dynamically (or change them to deploy allow all stacks to be deployed from pipeline)
+- Create cross account templates dynamically (or change them to deploy allow all stacks to be deployed from pipeline)
 - dynamically call automation_deployment.sh
 
 This is the really good example I used: https://github.com/aws-samples/automate-cross-account-cicd-cfn-cdk/blob/main/README.md
+
+```
+export PIPELINE_ACCOUNT_ID=739275451028 && export BETA_ACCOUNT_ID=954976299693 && export PROD_ACCOUNT_ID=724772068831
+
+sh scripts/automate_deployment.sh
+```
