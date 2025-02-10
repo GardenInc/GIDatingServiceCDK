@@ -64,7 +64,7 @@ export class FrontendPipelineStack extends Stack {
 
     // Create KMS key and update policy with cross-account access
     const key = new kms.Key(this, 'ArtifactKey', {
-      alias: 'key/pipeline-artifact-key',
+      alias: 'key/frontend-pipeline-artifact-key',
     });
     key.grantDecrypt(betaAccountRootPrincipal);
     key.grantDecrypt(betaCodePipelineRole);
@@ -123,7 +123,7 @@ export class FrontendPipelineStack extends Stack {
 
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
-      pipelineName: 'CrossAccountPipeline',
+      pipelineName: 'FrontEndCrossAccountPipeline',
       artifactBucket: artifactBucket,
       stages: [
         {
