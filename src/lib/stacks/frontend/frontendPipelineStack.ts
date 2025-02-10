@@ -116,10 +116,10 @@ export class FrontendPipelineStack extends Stack {
     });
 
     // Define pipeline stage output artifacts
-    const sourceFrontEndOutput = new codepipeline.Artifact('frontEndCode');
-    const frontEndOutput = new codepipeline.Artifact('frontEndCodeBuild');
-    const sourceCDKOutput = new codepipeline.Artifact('cdkCode');
-    const cdkBuildOutput = new codepipeline.Artifact('CdkBuildOutput');
+    const cdkSource = new codepipeline.Artifact('frontEndSourceCDK');
+    const frontendsource = new codepipeline.Artifact('frontEndSourceUX');
+    const frontEndOutput = new codepipeline.Artifact('frontEndUXCodeBuild');
+    const cdkBuildOutput = new codepipeline.Artifact('frontEndCDKBuildOutput');
 
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -134,7 +134,7 @@ export class FrontendPipelineStack extends Stack {
               owner: 'GardenInc',
               repo: 'garden-frontend',
               oauthToken: SecretValue.secretsManager(SECRET_NAME),
-              output: sourceCDKOutput,
+              output: frontendsource,
               branch: 'main',
             }),
             new codepipeline_actions.GitHubSourceAction({
@@ -142,7 +142,7 @@ export class FrontendPipelineStack extends Stack {
               owner: 'GardenInc',
               repo: 'GIDatingServiceCDK',
               oauthToken: SecretValue.secretsManager(SECRET_NAME),
-              output: sourceFrontEndOutput,
+              output: cdkSource,
               branch: 'main',
             }),
           ],
@@ -153,7 +153,7 @@ export class FrontendPipelineStack extends Stack {
             new codepipeline_actions.CodeBuildAction({
               actionName: 'CDK_Synth',
               project: cdkBuild,
-              input: sourceCDKOutput,
+              input: cdkSource,
               outputs: [cdkBuildOutput],
             }),
           ],

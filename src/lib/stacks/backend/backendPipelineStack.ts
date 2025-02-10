@@ -154,9 +154,9 @@ export class BackendPipelineStack extends Stack {
     });
 
     // Define pipeline stage output artifacts
-    const sourceOutput = new codepipeline.Artifact();
-    const cdkBuildOutput = new codepipeline.Artifact('CdkBuildOutput');
-    const lambdaBuildOutput = new codepipeline.Artifact('LambdaBuildOutput');
+    const cdksource = new codepipeline.Artifact('backendSource');
+    const cdkBuildOutput = new codepipeline.Artifact('backendCDKBuildOutput');
+    const lambdaBuildOutput = new codepipeline.Artifact('backendLambdaBuildOutput');
 
     // Application Stack
     const betaApplicationStack: ApplicationStack = betaConfig.stacks.applicationStack;
@@ -164,7 +164,7 @@ export class BackendPipelineStack extends Stack {
 
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
-      pipelineName: 'CrossAccountPipeline',
+      pipelineName: 'BackendCrossAccountPipeline',
       artifactBucket: artifactBucket,
       stages: [
         {
@@ -175,7 +175,7 @@ export class BackendPipelineStack extends Stack {
               owner: 'GardenInc',
               repo: 'GIDatingServiceCDK',
               oauthToken: SecretValue.secretsManager(SECRET_NAME),
-              output: sourceOutput,
+              output: cdksource,
               branch: 'main',
             }),
           ],
@@ -186,13 +186,13 @@ export class BackendPipelineStack extends Stack {
             new codepipeline_actions.CodeBuildAction({
               actionName: 'Application_Build',
               project: lambdaBuild,
-              input: sourceOutput,
+              input: cdksource,
               outputs: [lambdaBuildOutput],
             }),
             new codepipeline_actions.CodeBuildAction({
               actionName: 'CDK_Synth',
               project: cdkBuild,
-              input: sourceOutput,
+              input: cdksource,
               outputs: [cdkBuildOutput],
             }),
           ],

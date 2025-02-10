@@ -2,7 +2,7 @@
 
 import * as cdk from 'aws-cdk-lib';
 import { ApplicationStack } from './stacks/backend/applicationStack';
-import { BackendPipelineStack, BackendPipelineStackProps } from './stacks/backend/pipelineStack';
+import { BackendPipelineStack, BackendPipelineStackProps } from './stacks/backend/backendPipelineStack';
 import { FrontendPipelineStackProps, FrontendPipelineStack } from './stacks/frontend/frontendPipelineStack';
 import { DeviceFarmStackProps, DeviceFarmStack } from './stacks/frontend/deviceFarmStack';
 import { stageConfigurationList } from './utils/config';
