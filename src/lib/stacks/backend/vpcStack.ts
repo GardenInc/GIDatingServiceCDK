@@ -13,7 +13,7 @@ export class VpcStack extends Stack {
     super(app, id, props);
 
     // Define a simple VPC
-    this.vpc = new Vpc(this, 'GIDatingVPC', {
+    this.vpc = new Vpc(this, 'GIDatingBackendVPC', {
       ipAddresses: IpAddresses.cidr('10.0.0.0/16'),
       maxAzs: 3, // Maximum number of Availability Zones to use
       natGateways: 1, // Number of NAT Gateways

@@ -5,17 +5,23 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
-import { ApplicationStackConfigInterface } from '../utils/config';
-import { SECRET_NAME, PipelineStackName, TEMPLATE_ENDING, SERVICE_STACK, VPC_STACK } from '../utils/constants';
-import { pipelineAccountId } from '../utils/accounts';
+import { ApplicationStackConfigInterface } from '../../utils/config';
+import {
+  SECRET_NAME,
+  BackendPipelineStackName,
+  TEMPLATE_ENDING,
+  SERVICE_STACK,
+  VPC_STACK,
+} from '../../utils/constants';
+import { pipelineAccountId } from '../../utils/accounts';
 import { ApplicationStack } from './applicationStack';
 
-export interface PipelineStackProps extends StackProps {
+export interface BackendPipelineStackProps extends StackProps {
   readonly stacksToDeploy: ApplicationStackConfigInterface[];
 }
 
-export class PipelineStack extends Stack {
-  constructor(app: App, id: string, props: PipelineStackProps) {
+export class BackendPipelineStack extends Stack {
+  constructor(app: App, id: string, props: BackendPipelineStackProps) {
     super(app, id, props);
 
     const betaConfig = props.stacksToDeploy[0];
@@ -108,7 +114,7 @@ export class PipelineStack extends Stack {
           'base-directory': 'dist',
           files: [
             `*${SERVICE_STACK}${TEMPLATE_ENDING}`,
-            `${PipelineStackName}${TEMPLATE_ENDING}`,
+            `${BackendPipelineStackName}${TEMPLATE_ENDING}`,
             `*${VPC_STACK}${TEMPLATE_ENDING}`,
           ],
         },
@@ -196,8 +202,8 @@ export class PipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'SelfMutate',
-              templatePath: cdkBuildOutput.atPath(`${PipelineStackName}${TEMPLATE_ENDING}`),
-              stackName: `${PipelineStackName}`,
+              templatePath: cdkBuildOutput.atPath(`${BackendPipelineStackName}${TEMPLATE_ENDING}`),
+              stackName: `${BackendPipelineStackName}`,
               adminPermissions: true,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             }),

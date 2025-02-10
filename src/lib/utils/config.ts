@@ -1,6 +1,7 @@
 import { betaAccountId, prodAccountId } from './accounts';
-import { ApplicationStackProps, ApplicationStack } from '../stacks/applicationStack';
-import { VpcStackProps, VpcStack } from '../stacks/vpcStack';
+import { ApplicationStackProps, ApplicationStack } from '../stacks/backend/applicationStack';
+import { VpcStackProps, VpcStack } from '../stacks/backend/vpcStack';
+import { DeviceFarmStack, DeviceFarmStackProps } from '../stacks/frontend/deviceFarmStack';
 import { Stack } from 'aws-cdk-lib';
 
 export enum STAGES {
@@ -49,4 +50,18 @@ export interface StacksInterface {
 export interface PropsInterface {
   applicationStackProps: ApplicationStackProps;
   vpcStackProps: VpcStackProps;
+}
+
+export interface FrontEndStackConfigInterface {
+  props: FrontEndPropsInterface;
+  stacks: FrontEndStacksInterface;
+  config: StageConfigInterface;
+}
+
+export interface FrontEndStacksInterface {
+  deviceFarmStack: DeviceFarmStack;
+}
+
+export interface FrontEndPropsInterface {
+  deviceFarmStackProps: DeviceFarmStackProps;
 }
