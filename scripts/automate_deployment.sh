@@ -64,31 +64,46 @@ if [[ -z "${KEY_ARN}" ]]; then
   exit
 fi
 
+npx cdk deploy FrontEndPipelineDeploymentStack \
+  --context prod-account=${PROD_ACCOUNT_ID} \
+  --context beta-account=${BETA_ACCOUNT_ID} \
+  --profile pipeline \
+  --require-approval never \
+  2>&1 | tee -a ${CDK_OUTPUT_FILE}
+sed -n -e '/Outputs:/,/^$/ p' ${CDK_OUTPUT_FILE} > .cfn_outputs
+FRONT_END_KEY_ARN=$(awk -F " " '/KeyArn/ { print $3 }' .cfn_outputs)
+
+# Check that KEY_ARN is set after the CDK deployment
+if [[ -z "${FRONT_END_KEY_ARN}" ]]; then
+  printf "\nSomething went wrong - we didn't get a Key ARN as an output from the CDK Pipeline deployment"
+  exit
+fi
+
 # Update the CloudFormation roles with the Key ARNy in parallel
 printf "\nUpdating roles with policies in BETA and Prod\n"
 aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAccountRole.yml \
     --stack-name CodePipelineCrossAccountRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile beta \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} &
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploymentRole.yml \
     --stack-name CloudFormationDeploymentRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile beta \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} &
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploymentRole.yml \
     --stack-name CloudFormationDeploymentRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile prod \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} &
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAccountRole.yml \
     --stack-name CodePipelineCrossAccountRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile prod \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} 
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN}
 
 # Commit initial code to new repo (which will trigger a fresh pipeline execution)
 printf "\nCommitting code to repository\n"

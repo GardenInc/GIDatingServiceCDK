@@ -23,11 +23,16 @@ Parameters:
     Type: String
     ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
     Default: ''
+  FrontEndKeyArn:
+    Description: Provide the KMS Key ARN if you've deployed the front end pipeline stack
+    Type: String
+    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
+    Default: ''
 
 # If the Key Arn is blank, it's our initial deployment,
 # so don't deploy the policy which references the bucket and key
 Conditions:
-  DeployPolicy: !Not [!Equals [!Ref KeyArn, '']]
+  DeployPolicy: !Not [!Equals [!Ref FrontEndKeyArn, '']]
 
 Resources:
   CrossAccountDeploymentRole:
@@ -84,4 +89,5 @@ Resources:
               - kms:Decrypt
             Resource:
               - !Sub ${KeyArn}
+              - !Sub ${FrontEndKeyArn}
             Effect: Allow
