@@ -6,13 +6,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
 import { FrontEndStackConfigInterface } from '../../utils/config';
-import {
-  SECRET_NAME,
-  BackendPipelineStackName,
-  TEMPLATE_ENDING,
-  SERVICE_STACK,
-  VPC_STACK,
-} from '../../utils/constants';
+import { SECRET_NAME, FrontendPipelineStackName, TEMPLATE_ENDING, SERVICE_STACK } from '../../utils/constants';
 import { pipelineAccountId } from '../../utils/accounts';
 
 export interface FrontendPipelineStackProps extends StackProps {
@@ -111,38 +105,7 @@ export class FrontendPipelineStack extends Stack {
         },
         artifacts: {
           'base-directory': 'dist',
-          files: [
-            `*${SERVICE_STACK}${TEMPLATE_ENDING}`,
-            `${BackendPipelineStackName}${TEMPLATE_ENDING}`,
-            `*${VPC_STACK}${TEMPLATE_ENDING}`,
-          ],
-        },
-      }),
-      environment: {
-        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
-      },
-      // use the encryption key for build artifacts
-      encryptionKey: key,
-    });
-
-    // Lambda build definition
-    const lambdaBuild = new codebuild.PipelineProject(this, 'LambdaBuild', {
-      buildSpec: codebuild.BuildSpec.fromObject({
-        version: '0.2',
-        phases: {
-          install: {
-            'runtime-versions': {
-              nodejs: 20,
-            },
-            commands: ['cd app', 'npm install'],
-          },
-          build: {
-            commands: 'npm run build',
-          },
-        },
-        artifacts: {
-          'base-directory': 'app',
-          files: ['index.js', 'node_modules/**/*'],
+          files: [`${FrontendPipelineStackName}${TEMPLATE_ENDING}`],
         },
       }),
       environment: {
@@ -153,9 +116,10 @@ export class FrontendPipelineStack extends Stack {
     });
 
     // Define pipeline stage output artifacts
-    const sourceOutput = new codepipeline.Artifact();
+    const sourceFrontEndOutput = new codepipeline.Artifact('frontEndCode');
+    const frontEndOutput = new codepipeline.Artifact('frontEndCodeBuild');
+    const sourceCDKOutput = new codepipeline.Artifact('cdkCode');
     const cdkBuildOutput = new codepipeline.Artifact('CdkBuildOutput');
-    const lambdaBuildOutput = new codepipeline.Artifact('LambdaBuildOutput');
 
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -166,11 +130,19 @@ export class FrontendPipelineStack extends Stack {
           stageName: 'Source',
           actions: [
             new codepipeline_actions.GitHubSourceAction({
-              actionName: 'GitHub_Source',
+              actionName: 'FrontEnd_Source',
+              owner: 'GardenInc',
+              repo: 'garden-frontend',
+              oauthToken: SecretValue.secretsManager(SECRET_NAME),
+              output: sourceCDKOutput,
+              branch: 'main',
+            }),
+            new codepipeline_actions.GitHubSourceAction({
+              actionName: 'CDKPipeline_Source',
               owner: 'GardenInc',
               repo: 'GIDatingServiceCDK',
               oauthToken: SecretValue.secretsManager(SECRET_NAME),
-              output: sourceOutput,
+              output: sourceFrontEndOutput,
               branch: 'main',
             }),
           ],
@@ -179,15 +151,9 @@ export class FrontendPipelineStack extends Stack {
           stageName: 'Build',
           actions: [
             new codepipeline_actions.CodeBuildAction({
-              actionName: 'Application_Build',
-              project: lambdaBuild,
-              input: sourceOutput,
-              outputs: [lambdaBuildOutput],
-            }),
-            new codepipeline_actions.CodeBuildAction({
               actionName: 'CDK_Synth',
               project: cdkBuild,
-              input: sourceOutput,
+              input: sourceCDKOutput,
               outputs: [cdkBuildOutput],
             }),
           ],
@@ -197,8 +163,8 @@ export class FrontendPipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'SelfMutate',
-              templatePath: cdkBuildOutput.atPath(`${BackendPipelineStackName}${TEMPLATE_ENDING}`),
-              stackName: `${BackendPipelineStackName}`,
+              templatePath: cdkBuildOutput.atPath(`${FrontendPipelineStackName}${TEMPLATE_ENDING}`),
+              stackName: `${FrontendPipelineStackName}`,
               adminPermissions: true,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             }),
@@ -208,9 +174,9 @@ export class FrontendPipelineStack extends Stack {
           stageName: 'Deploy_Beta',
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
-              actionName: 'DeployVpcStack',
-              templatePath: cdkBuildOutput.atPath(`Betauswest2VpcStack${TEMPLATE_ENDING}`),
-              stackName: 'Betauswest2VpcStack',
+              actionName: 'DeployDeviceFarmStack',
+              templatePath: cdkBuildOutput.atPath(`Betauswest2DeviceFarmStack${TEMPLATE_ENDING}`),
+              stackName: 'Betauswest2DeviceFarmStack',
               adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: betaCodePipelineRole,
@@ -230,9 +196,9 @@ export class FrontendPipelineStack extends Stack {
           stageName: 'Deploy_Prod',
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
-              actionName: 'DeployVpcStack',
-              templatePath: cdkBuildOutput.atPath(`Produswest2VpcStack${TEMPLATE_ENDING}`),
-              stackName: 'Produswest2VpcStack',
+              actionName: 'DeployDeviceFarmStack',
+              templatePath: cdkBuildOutput.atPath(`Produswest2DeviceFarmStack${TEMPLATE_ENDING}`),
+              stackName: 'Produswest2DeviceFarmStack',
               adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: prodCodeDeployRole,
@@ -270,9 +236,9 @@ export class FrontendPipelineStack extends Stack {
     );
 
     // Publish the KMS Key ARN as an output
-    new CfnOutput(this, 'ArtifactBucketEncryptionKeyArn', {
+    new CfnOutput(this, 'FrontEndArtifactBucketEncryptionKeyArn', {
       value: key.keyArn,
-      exportName: 'ArtifactBucketEncryptionKey',
+      exportName: 'FrontEndArtifactBucketEncryptionKey',
     });
   }
 }

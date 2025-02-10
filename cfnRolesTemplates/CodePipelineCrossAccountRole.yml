@@ -80,6 +80,8 @@ Resources:
             Resource:
               - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${PipelineAccountID}
               - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${PipelineAccountID}/*
+              - !Sub arn:${AWS::Partition}:s3:::frontend-artifact-bucket-${PipelineAccountID}
+              - !Sub arn:${AWS::Partition}:s3:::frontend-artifact-bucket-${PipelineAccountID}/*
             Effect: Allow
           - Action:
               - kms:DescribeKey
