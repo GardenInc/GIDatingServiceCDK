@@ -6,7 +6,12 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
 import { FrontEndStackConfigInterface } from '../../utils/config';
-import { SECRET_NAME, FrontendPipelineStackName, TEMPLATE_ENDING } from '../../utils/constants';
+import { 
+  SECRET_NAME, 
+  FrontendPipelineStackName, 
+  TEMPLATE_ENDING,
+  DEVICE_FARM_STACK,
+} from '../../utils/constants';
 import { pipelineAccountId } from '../../utils/accounts';
 import { Duration } from 'aws-cdk-lib'
 
@@ -115,7 +120,7 @@ export class FrontendPipelineStack extends Stack {
           'base-directory': 'dist',
           files: [
             `${FrontendPipelineStackName}${TEMPLATE_ENDING}`,
-            `Betauswest2DeviceFarmStack${TEMPLATE_ENDING}`
+            `*${DEVICE_FARM_STACK}${TEMPLATE_ENDING}`
           ],
         },
       }),
@@ -128,8 +133,8 @@ export class FrontendPipelineStack extends Stack {
 
     // Define pipeline stage output artifacts
     const cdkSource = new codepipeline.Artifact('frontEndSourceCDK');
-    const frontendsource = new codepipeline.Artifact('frontEndSourceUX');
-    const frontEndOutput = new codepipeline.Artifact('frontEndUXCodeBuild');
+    const frontendUXsource = new codepipeline.Artifact('frontEndSourceUX');
+    const frontEndUXOutput = new codepipeline.Artifact('frontEndUXCodeBuild');
     const cdkBuildOutput = new codepipeline.Artifact('frontEndCDKBuildOutput');
 
     // Pipeline definition
@@ -145,7 +150,7 @@ export class FrontendPipelineStack extends Stack {
               owner: 'GardenInc',
               repo: 'garden-frontend',
               oauthToken: SecretValue.secretsManager(SECRET_NAME),
-              output: frontendsource,
+              output: frontendUXsource,
               branch: 'main',
             }),
             new codepipeline_actions.GitHubSourceAction({
