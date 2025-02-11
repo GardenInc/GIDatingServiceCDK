@@ -8,6 +8,7 @@ import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, Secr
 import { FrontEndStackConfigInterface } from '../../utils/config';
 import { SECRET_NAME, FrontendPipelineStackName, TEMPLATE_ENDING } from '../../utils/constants';
 import { pipelineAccountId } from '../../utils/accounts';
+import { Duration } from 'aws-cdk-lib'
 
 export interface FrontendPipelineStackProps extends StackProps {
   readonly stacksToDeploy: FrontEndStackConfigInterface[];
@@ -77,6 +78,13 @@ export class FrontendPipelineStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       encryption: s3.BucketEncryption.KMS,
       encryptionKey: key,
+      lifecycleRules: [
+        {
+          // Lifecycle rule to delete objects after 30 days
+          expiration: Duration.days(30),
+          noncurrentVersionExpiration: Duration.days(30), // Optional, to delete noncurrent versions
+        },
+      ],
     });
     artifactBucket.grantPut(betaAccountRootPrincipal);
     artifactBucket.grantRead(betaAccountRootPrincipal);
@@ -105,7 +113,10 @@ export class FrontendPipelineStack extends Stack {
         },
         artifacts: {
           'base-directory': 'dist',
-          files: [`${FrontendPipelineStackName}${TEMPLATE_ENDING}`],
+          files: [
+            `${FrontendPipelineStackName}${TEMPLATE_ENDING}`,
+            `Betauswest2DeviceFarmStack${TEMPLATE_ENDING}`
+          ],
         },
       }),
       environment: {

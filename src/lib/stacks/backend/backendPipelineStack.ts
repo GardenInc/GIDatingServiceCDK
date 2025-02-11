@@ -13,6 +13,7 @@ import {
   SERVICE_STACK,
   VPC_STACK,
 } from '../../utils/constants';
+import { Duration } from 'aws-cdk-lib'
 import { pipelineAccountId } from '../../utils/accounts';
 import { ApplicationStack } from './applicationStack';
 
@@ -84,7 +85,16 @@ export class BackendPipelineStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       encryption: s3.BucketEncryption.KMS,
       encryptionKey: key,
+      lifecycleRules: [
+        {
+          // Lifecycle rule to delete objects after 30 days
+          expiration: Duration.days(30),
+          noncurrentVersionExpiration: Duration.days(30), // Optional, to delete noncurrent versions
+        },
+      ],
     });
+
+
     artifactBucket.grantPut(betaAccountRootPrincipal);
     artifactBucket.grantRead(betaAccountRootPrincipal);
     artifactBucket.grantPut(prodAccountRootPrincipal);
