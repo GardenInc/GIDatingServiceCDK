@@ -6,14 +6,9 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
 import { FrontEndStackConfigInterface } from '../../utils/config';
-import { 
-  SECRET_NAME, 
-  FrontendPipelineStackName, 
-  TEMPLATE_ENDING,
-  DEVICE_FARM_STACK,
-} from '../../utils/constants';
+import { SECRET_NAME, FrontendPipelineStackName, TEMPLATE_ENDING, DEVICE_FARM_STACK } from '../../utils/constants';
 import { pipelineAccountId } from '../../utils/accounts';
-import { Duration } from 'aws-cdk-lib'
+import { Duration } from 'aws-cdk-lib';
 
 export interface FrontendPipelineStackProps extends StackProps {
   readonly stacksToDeploy: FrontEndStackConfigInterface[];
@@ -118,10 +113,7 @@ export class FrontendPipelineStack extends Stack {
         },
         artifacts: {
           'base-directory': 'dist',
-          files: [
-            `${FrontendPipelineStackName}${TEMPLATE_ENDING}`,
-            `*${DEVICE_FARM_STACK}${TEMPLATE_ENDING}`
-          ],
+          files: [`${FrontendPipelineStackName}${TEMPLATE_ENDING}`, `*${DEVICE_FARM_STACK}${TEMPLATE_ENDING}`],
         },
       }),
       environment: {

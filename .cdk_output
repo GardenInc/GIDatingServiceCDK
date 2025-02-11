@@ -1,0 +1,28 @@
+
+✨  Synthesis time: 2.6s
+
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+FrontEndPipelineDeploymentStack: start: Building b899f4a8562ecddb9e574c7bcd7660e6618e013dddc9f0c0071499157179e43e:current_account-current_region
+FrontEndPipelineDeploymentStack: success: Built b899f4a8562ecddb9e574c7bcd7660e6618e013dddc9f0c0071499157179e43e:current_account-current_region
+FrontEndPipelineDeploymentStack: start: Publishing b899f4a8562ecddb9e574c7bcd7660e6618e013dddc9f0c0071499157179e43e:current_account-current_region
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+FrontEndPipelineDeploymentStack: success: Published b899f4a8562ecddb9e574c7bcd7660e6618e013dddc9f0c0071499157179e43e:current_account-current_region
+FrontEndPipelineDeploymentStack: deploying... [1/1]
+FrontEndPipelineDeploymentStack: creating CloudFormation changeset...
+FrontEndPipelineDeploymentStack | 0/3 | 7:51:23 AM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack User Initiated
+FrontEndPipelineDeploymentStack | 0/3 | 7:51:27 AM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack | 1/3 | 7:51:28 AM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack | 2/3 | 7:51:29 AM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+FrontEndPipelineDeploymentStack | 3/3 | 7:51:30 AM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+
+ ✅  FrontEndPipelineDeploymentStack
+
+✨  Deployment time: 24.09s
+
+Outputs:
+FrontEndPipelineDeploymentStack.FrontEndArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/10d82119-e88e-42a5-b765-02e5b523ff4c
+Stack ARN:
+arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndPipelineDeploymentStack/7e8cd740-e803-11ef-876b-0a43e34c04ed
+
+✨  Total time: 26.7s
+

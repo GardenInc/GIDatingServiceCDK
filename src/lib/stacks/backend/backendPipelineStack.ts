@@ -13,7 +13,7 @@ import {
   SERVICE_STACK,
   VPC_STACK,
 } from '../../utils/constants';
-import { Duration } from 'aws-cdk-lib'
+import { Duration } from 'aws-cdk-lib';
 import { pipelineAccountId } from '../../utils/accounts';
 import { ApplicationStack } from './applicationStack';
 
@@ -93,7 +93,6 @@ export class BackendPipelineStack extends Stack {
         },
       ],
     });
-
 
     artifactBucket.grantPut(betaAccountRootPrincipal);
     artifactBucket.grantRead(betaAccountRootPrincipal);
