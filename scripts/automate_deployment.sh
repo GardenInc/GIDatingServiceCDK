@@ -64,6 +64,7 @@ if [[ -z "${KEY_ARN}" ]]; then
   exit
 fi
 
+rm -rf ${CDK_OUTPUT_FILE} .cfn_outputs
 npx cdk deploy FrontEndPipelineDeploymentStack \
   --context prod-account=${PROD_ACCOUNT_ID} \
   --context beta-account=${BETA_ACCOUNT_ID} \
