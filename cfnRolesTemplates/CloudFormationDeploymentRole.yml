@@ -77,17 +77,6 @@ Resources:
             Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/*
             Effect: Allow
           - Action:
-              - ec2:Describe*
-              - ec2:Create*
-              - ec2:Allocate*
-              - ec2:Attach*
-              - ec2:Associate*
-              - ec2:Disassociate*
-              - ec2:Modify*
-              - ec2:Delete*
-            Resource: '*'
-            Effect: Allow
-          - Action:
               - lambda:Create*
               - lambda:Delete*
               - lambda:Get*
@@ -96,7 +85,8 @@ Resources:
               - lambda:AddPermission
               - lambda:PublishVersion
               - lambda:RemovePermission
-            Resource: '*'
+            Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:HelloLambda*
+            Effect: Allow
           - Action:
               - apigateway:GET
               - apigateway:PATCH
