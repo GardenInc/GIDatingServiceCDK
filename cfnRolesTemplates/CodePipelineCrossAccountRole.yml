@@ -74,14 +74,9 @@ Resources:
             Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudFormationDeploymentRole
             Effect: Allow
           - Action:
-              - s3:Get*
-              - s3:Put*
-              - s3:ListBucket
+              - s3:*
             Resource:
-              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${PipelineAccountID}
-              - !Sub arn:${AWS::Partition}:s3:::artifact-bucket-${PipelineAccountID}/*
-              - !Sub arn:${AWS::Partition}:s3:::frontend-artifact-bucket-${PipelineAccountID}
-              - !Sub arn:${AWS::Partition}:s3:::frontend-artifact-bucket-${PipelineAccountID}/*
+              - !Sub arn:${AWS::Partition}:s3:::*
             Effect: Allow
           - Action:
               - kms:DescribeKey
