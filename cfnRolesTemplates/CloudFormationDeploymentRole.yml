@@ -25,7 +25,7 @@ Parameters:
     ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
     Default: ''
   FrontEndKeyArn:
-    Description: Provide the KMS Key ARN if you've deployed the front end pipeline stack
+    Description: Provide the KMS Key ARN if you've deployed the pipeline stack
     Type: String
     ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
     Default: ''
