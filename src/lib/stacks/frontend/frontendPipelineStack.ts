@@ -158,10 +158,7 @@ export class FrontendPipelineStack extends Stack {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
-          install: {
-            'runtime-versions': {
-              android: 29,
-            },
+          pre_build: {
             commands: [
               'cd android', // Move into android folders
             ],
@@ -200,7 +197,7 @@ export class FrontendPipelineStack extends Stack {
           stageName: 'Source',
           actions: [
             new codepipeline_actions.GitHubSourceAction({
-              actionName: 'FrontEnd_Source',
+              actionName: 'GIDatingFrontend',
               owner: 'GardenInc',
               repo: 'GIDatingFrontend',
               oauthToken: SecretValue.secretsManager(SECRET_NAME),
@@ -208,7 +205,7 @@ export class FrontendPipelineStack extends Stack {
               branch: 'main',
             }),
             new codepipeline_actions.GitHubSourceAction({
-              actionName: 'CDKPipeline_Source',
+              actionName: 'GIDatingServiceCDK',
               owner: 'GardenInc',
               repo: 'GIDatingServiceCDK',
               oauthToken: SecretValue.secretsManager(SECRET_NAME),
