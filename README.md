@@ -64,6 +64,7 @@ Should be able to run following commands to see if you have access to deploy to 
 
 This is the really good example I used: https://github.com/aws-samples/automate-cross-account-cicd-cfn-cdk/blob/main/README.md
 
+
 ```
 export PIPELINE_ACCOUNT_ID=739275451028 && export BETA_ACCOUNT_ID=954976299693 && export PROD_ACCOUNT_ID=724772068831
 
