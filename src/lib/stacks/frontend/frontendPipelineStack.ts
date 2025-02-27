@@ -218,7 +218,7 @@ export class FrontendPipelineStack extends Stack {
           ],
         },
         {
-          stageName: 'Initial Build',
+          stageName: 'Initial_Build',
           actions: [
             new codepipeline_actions.CodeBuildAction({
               actionName: 'CDK_Synth',
@@ -247,10 +247,10 @@ export class FrontendPipelineStack extends Stack {
           ],
         },
         {
-          stageName: 'APK and IOS Builds',
+          stageName: 'APK_and_IOS_Builds',
           actions: [
             new codepipeline_actions.CodeBuildAction({
-              actionName: 'APK Build',
+              actionName: 'APK_Build',
               project: androidBuild,
               input: frontendUXsource,
               outputs: [androidBuildOutput],
