@@ -131,7 +131,7 @@ export class FrontendPipelineStack extends Stack {
           install: {
             'runtime-versions': {
               nodejs: 20,
-              java: 'corretto11',
+              java: 'corretto17',
             },
             commands: [
               'npm install', // Install dependencies
