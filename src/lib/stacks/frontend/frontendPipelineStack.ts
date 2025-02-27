@@ -153,11 +153,43 @@ export class FrontendPipelineStack extends Stack {
       encryptionKey: key,
     });
 
+    // CDK build definition
+    const androidBuild = new codebuild.PipelineProject(this, 'androidBuild', {
+      buildSpec: codebuild.BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          install: {
+            'runtime-versions': {
+              android: 29,
+            },
+            commands: [
+              'cd android', // Move into android folders
+            ],
+          },
+          build: {
+            commands: [
+              './gradlew assembleDebug', // builds the debug files
+            ],
+          },
+        },
+        artifacts: {
+          files: [`app/build/outputs/apk/debug/**/*`],
+        },
+      }),
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+      },
+      // use the encryption key for build artifacts
+      encryptionKey: key,
+    });
+
     // Define pipeline stage output artifacts
     const cdkSource = new codepipeline.Artifact('frontEndSourceCDK');
     const frontendUXsource = new codepipeline.Artifact('frontEndSourceUX');
     const frontEndUXOutput = new codepipeline.Artifact('frontEndUXCodeBuild');
     const cdkBuildOutput = new codepipeline.Artifact('frontEndCDKBuildOutput');
+    const androidBuildOutput = new codepipeline.Artifact('androidAPKOutput');
+    const iosBuildOutput = new codepipeline.Artifact('iosIPAOutput');
 
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -186,7 +218,7 @@ export class FrontendPipelineStack extends Stack {
           ],
         },
         {
-          stageName: 'Build',
+          stageName: 'Initial Build',
           actions: [
             new codepipeline_actions.CodeBuildAction({
               actionName: 'CDK_Synth',
@@ -211,6 +243,17 @@ export class FrontendPipelineStack extends Stack {
               stackName: `${FrontendPipelineStackName}`,
               adminPermissions: true,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
+            }),
+          ],
+        },
+        {
+          stageName: 'APK and IOS Builds',
+          actions: [
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'APK Build',
+              project: androidBuild,
+              input: frontendUXsource,
+              outputs: [androidBuildOutput],
             }),
           ],
         },
