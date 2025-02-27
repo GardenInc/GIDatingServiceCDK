@@ -136,38 +136,21 @@ export class FrontendPipelineStack extends Stack {
               'npm install', // Install dependencies
             ],
           },
-          build: {
+          pre_build: {
             commands: [
               'npx expo prebuild', // builds android and ios files
             ],
           },
-        },
-        artifacts: {
-          files: [`android/**/*`, `ios/**/*`],
-        },
-      }),
-      environment: {
-        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
-      },
-      // use the encryption key for build artifacts
-      encryptionKey: key,
-    });
-
-    // CDK build definition
-    const androidBuild = new codebuild.PipelineProject(this, 'androidBuild', {
-      buildSpec: codebuild.BuildSpec.fromObject({
-        version: '0.2',
-        phases: {
           build: {
             commands: [
-              'ls -a', // check
-              'cd android', // Move into android folders
+              'cd android', // go into android folder
               './gradlew assembleDebug', // builds the debug files
+              'cd ..'
             ],
           },
         },
         artifacts: {
-          files: [`app/build/outputs/apk/debug/**/*`],
+          files: [`android/app/build/outputs/apk/debug/**/*`, `ios/**/*`],
         },
       }),
       environment: {
@@ -180,10 +163,8 @@ export class FrontendPipelineStack extends Stack {
     // Define pipeline stage output artifacts
     const cdkSource = new codepipeline.Artifact('frontEndSourceCDK');
     const frontendUXsource = new codepipeline.Artifact('frontEndSourceUX');
-    const frontEndUXOutput = new codepipeline.Artifact('frontEndUXCodeBuild');
+    const frontendBuildOutput = new codepipeline.Artifact('frontEndUXCodeBuild');
     const cdkBuildOutput = new codepipeline.Artifact('frontEndCDKBuildOutput');
-    const androidBuildOutput = new codepipeline.Artifact('androidAPKOutput');
-    const iosBuildOutput = new codepipeline.Artifact('iosIPAOutput');
 
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -224,7 +205,7 @@ export class FrontendPipelineStack extends Stack {
               actionName: 'FrontEnd_Build',
               project: frontEndBuild,
               input: frontendUXsource,
-              outputs: [frontEndUXOutput],
+              outputs: [frontendBuildOutput],
             }),
           ],
         },
@@ -237,17 +218,6 @@ export class FrontendPipelineStack extends Stack {
               stackName: `${FrontendPipelineStackName}`,
               adminPermissions: true,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
-            }),
-          ],
-        },
-        {
-          stageName: 'APK_and_IOS_Builds',
-          actions: [
-            new codepipeline_actions.CodeBuildAction({
-              actionName: 'APK_Build',
-              project: androidBuild,
-              input: frontEndUXOutput,
-              outputs: [androidBuildOutput],
             }),
           ],
         },
