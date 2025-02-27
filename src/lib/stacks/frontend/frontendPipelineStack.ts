@@ -137,6 +137,7 @@ export class FrontendPipelineStack extends Stack {
               'npm install', // Install dependencies
               'wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip', // pulling android sdk
               'unzip commandlinetools-linux-*.zip',
+              'mkdir -p $HOME/Android/Sdk',
               'mv cmdline-tools/ $HOME/Android/Sdk/',
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --update',
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"',
