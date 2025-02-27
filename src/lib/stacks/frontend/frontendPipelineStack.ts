@@ -158,11 +158,12 @@ export class FrontendPipelineStack extends Stack {
           },
         },
         artifacts: {
-          files: [`android/app/build/outputs/apk/debug/**/*`, `ios/**/*`],
+          files: [`android/app/build/outputs/apk/debug/**/*`],
         },
       }),
       environment: {
         buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+        computeType: codebuild.ComputeType.MEDIUM,
       },
       // use the encryption key for build artifacts
       encryptionKey: key,
