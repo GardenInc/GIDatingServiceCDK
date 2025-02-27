@@ -131,9 +131,16 @@ export class FrontendPipelineStack extends Stack {
           install: {
             'runtime-versions': {
               nodejs: 20,
+              java: 'corretto11',
             },
             commands: [
               'npm install', // Install dependencies
+              'wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip', // pulling android sdk
+              'unzip commandlinetools-linux-*.zip',
+              'mv cmdline-tools/ $HOME/Android/Sdk/',
+              'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --update',
+              'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"',
+              'export ANDROID_HOME=$HOME/Android/Sdk',
             ],
           },
           pre_build: {
@@ -145,7 +152,7 @@ export class FrontendPipelineStack extends Stack {
             commands: [
               'cd android', // go into android folder
               './gradlew assembleDebug', // builds the debug files
-              'cd ..'
+              'cd ..',
             ],
           },
         },
