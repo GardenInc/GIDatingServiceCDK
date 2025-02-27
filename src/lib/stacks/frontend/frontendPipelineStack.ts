@@ -158,13 +158,9 @@ export class FrontendPipelineStack extends Stack {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
-          pre_build: {
-            commands: [
-              'cd android', // Move into android folders
-            ],
-          },
           build: {
             commands: [
+              'cd android', // Move into android folders
               './gradlew assembleDebug', // builds the debug files
             ],
           },
@@ -249,7 +245,7 @@ export class FrontendPipelineStack extends Stack {
             new codepipeline_actions.CodeBuildAction({
               actionName: 'APK_Build',
               project: androidBuild,
-              input: frontendUXsource,
+              input: frontEndUXOutput,
               outputs: [androidBuildOutput],
             }),
           ],
