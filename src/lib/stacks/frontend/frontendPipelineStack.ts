@@ -160,6 +160,7 @@ export class FrontendPipelineStack extends Stack {
         phases: {
           build: {
             commands: [
+              'ls -a', // check
               'cd android', // Move into android folders
               './gradlew assembleDebug', // builds the debug files
             ],
