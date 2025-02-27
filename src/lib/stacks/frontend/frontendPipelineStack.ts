@@ -123,6 +123,36 @@ export class FrontendPipelineStack extends Stack {
       encryptionKey: key,
     });
 
+    // CDK build definition
+    const frontEndBuild = new codebuild.PipelineProject(this, 'FrontEndBuild', {
+      buildSpec: codebuild.BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          install: {
+            'runtime-versions': {
+              nodejs: 20,
+            },
+            commands: [
+              'npm install', // Install dependencies
+            ],
+          },
+          build: {
+            commands: [
+              'npx expo prebuild', // builds android and ios files
+            ],
+          },
+        },
+        artifacts: {
+          files: [`android/**/*`, `ios/**/*`],
+        },
+      }),
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+      },
+      // use the encryption key for build artifacts
+      encryptionKey: key,
+    });
+
     // Define pipeline stage output artifacts
     const cdkSource = new codepipeline.Artifact('frontEndSourceCDK');
     const frontendUXsource = new codepipeline.Artifact('frontEndSourceUX');
@@ -140,7 +170,7 @@ export class FrontendPipelineStack extends Stack {
             new codepipeline_actions.GitHubSourceAction({
               actionName: 'FrontEnd_Source',
               owner: 'GardenInc',
-              repo: 'garden-frontend',
+              repo: 'GIDatingFrontend',
               oauthToken: SecretValue.secretsManager(SECRET_NAME),
               output: frontendUXsource,
               branch: 'main',
@@ -163,6 +193,12 @@ export class FrontendPipelineStack extends Stack {
               project: cdkBuild,
               input: cdkSource,
               outputs: [cdkBuildOutput],
+            }),
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'FrontEnd_Build',
+              project: frontEndBuild,
+              input: frontendUXsource,
+              outputs: [frontEndUXOutput],
             }),
           ],
         },
