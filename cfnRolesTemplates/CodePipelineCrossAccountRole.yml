@@ -70,6 +70,10 @@ Resources:
             Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*
             Effect: Allow
           - Action:
+              - s3:*
+            Resource: !Sub arn:${AWS::Partition}:s3:::*
+            Effect: Allow
+          - Action:
               - iam:PassRole
             Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudFormationDeploymentRole
             Effect: Allow

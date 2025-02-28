@@ -88,6 +88,10 @@ Resources:
             Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:HelloLambda*
             Effect: Allow
           - Action:
+              - VPC:*
+            Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:*
+            Effect: Allow
+          - Action:
               - apigateway:GET
               - apigateway:PATCH
               - apigateway:POST
