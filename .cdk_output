@@ -1,6 +1,6 @@
 Including dependency stacks: Betauswest2DeviceFarmStack
 
-✨  Synthesis time: 3.1s
+✨  Synthesis time: 2.88s
 
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
@@ -9,28 +9,28 @@ Betauswest2DeviceFarmStack: deploying... [1/2]
 
  ✅  Betauswest2DeviceFarmStack (no changes)
 
-✨  Deployment time: 0.98s
+✨  Deployment time: 0.86s
 
 Outputs:
 Betauswest2DeviceFarmStack.ExportsOutputFnGetAttAPKandIPAstoreBucketCF7C3959Arn91836663 = arn:aws:s3:::betauswest2devicefarmstac-apkandipastorebucketcf7c-cqj6en5tyma4
 Stack ARN:
 arn:aws:cloudformation:us-west-2:739275451028:stack/Betauswest2DeviceFarmStack/c8c348e0-f568-11ef-b859-0650f1d4b2c5
 
-✨  Total time: 4.08s
+✨  Total time: 3.75s
 
 FrontEndPipelineDeploymentStack
 FrontEndPipelineDeploymentStack: deploying... [2/2]
 
  ✅  FrontEndPipelineDeploymentStack (no changes)
 
-✨  Deployment time: 0.97s
+✨  Deployment time: 0.93s
 
 Outputs:
 FrontEndPipelineDeploymentStack.FrontEndArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/10d82119-e88e-42a5-b765-02e5b523ff4c
 Stack ARN:
 arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndPipelineDeploymentStack/7e8cd740-e803-11ef-876b-0a43e34c04ed
 
-✨  Total time: 4.07s
+✨  Total time: 3.81s
 
 
 NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)

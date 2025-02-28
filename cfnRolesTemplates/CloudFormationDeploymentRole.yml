@@ -91,7 +91,7 @@ Resources:
               - vpc:*
               - ec2:*
               - lambda:*
-            Resource: !Sub arn:${AWS::Partition}:*
+            Resource: '*'
             Effect: Allow
           - Action:
               - apigateway:GET
