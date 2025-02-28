@@ -56,6 +56,7 @@ export interface FrontEndStackConfigInterface {
   props: FrontEndPropsInterface;
   stacks: FrontEndStacksInterface;
   config: StageConfigInterface;
+  deploymentBucketArn: string;
 }
 
 export interface FrontEndStacksInterface {

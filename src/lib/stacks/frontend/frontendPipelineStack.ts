@@ -158,7 +158,7 @@ export class FrontendPipelineStack extends Stack {
           },
         },
         artifacts: {
-          files: [`android/app/build/outputs/apk/debug/**/*`],
+          files: [`android/app/build/outputs/apk/debug/*`],
         },
       }),
       environment: {
@@ -202,7 +202,7 @@ export class FrontendPipelineStack extends Stack {
           ],
         },
         {
-          stageName: 'Initial_Build',
+          stageName: 'Build',
           actions: [
             new codepipeline_actions.CodeBuildAction({
               actionName: 'CDK_Synth',
@@ -233,6 +233,16 @@ export class FrontendPipelineStack extends Stack {
         {
           stageName: 'Deploy_Beta',
           actions: [
+            new codepipeline_actions.S3DeployAction({
+              actionName: 'UploadAPKandIPAFiles',
+              input: frontendBuildOutput,
+              bucket: s3.Bucket.fromBucketArn(
+                betaConfig.stacks.deviceFarmStack,
+                'DeploymentBucket',
+                betaConfig.deploymentBucketArn,
+              ),
+              role: betaCodePipelineRole,
+            }),
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployDeviceFarmStack',
               templatePath: cdkBuildOutput.atPath(`Betauswest2DeviceFarmStack${TEMPLATE_ENDING}`),

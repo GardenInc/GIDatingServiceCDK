@@ -54,6 +54,7 @@ for (var stageConfig of stageConfigurationList) {
     props: frontendPropsInterface,
     stacks: frontendStacksInterface,
     config: stageConfig,
+    deploymentBucketArn: deviceFarmStack.appBucketArn,
   };
 
   frontendServiceStackList.push(frontendStageConfigurationList);
