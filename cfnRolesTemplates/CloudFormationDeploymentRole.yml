@@ -90,7 +90,7 @@ Resources:
           - Action:
               - vpc:*
               - ec2:*
-              - lambda:*
+              - lambda:Create*
             Resource: '*'
             Effect: Allow
           - Action:
@@ -116,10 +116,8 @@ Resources:
               - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${Stage}*
               - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${Stage}*
             Effect: Allow
-          - Action:
-              - s3:*
-            Resource:
-              - !Sub arn:${AWS::Partition}:s3:::*
+          - Action: s3:*
+            Resource: !Sub arn:${AWS::Partition}:s3:::*
             Effect: Allow
           - Action:
               - kms:Decrypt
