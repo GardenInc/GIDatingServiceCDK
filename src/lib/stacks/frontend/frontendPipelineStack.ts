@@ -142,6 +142,7 @@ export class FrontendPipelineStack extends Stack {
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --update',
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"',
               'export ANDROID_HOME=$HOME/Android/Sdk',
+              'mv android/app/build/outputs/apk/debug/ apk/',
             ],
           },
           pre_build: {
@@ -158,7 +159,7 @@ export class FrontendPipelineStack extends Stack {
           },
         },
         artifacts: {
-          files: [`android/app/build/outputs/apk/debug/*`],
+          files: [`apk/**/*`],
         },
       }),
       environment: {

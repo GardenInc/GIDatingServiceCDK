@@ -1,0 +1,62 @@
+Including dependency stacks: Betauswest2DeviceFarmStack
+
+✨  Synthesis time: 2.81s
+
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+Betauswest2DeviceFarmStack
+Betauswest2DeviceFarmStack: deploying... [1/2]
+FrontEndPipelineDeploymentStack: start: Building 757a239a4bdf7c37ee4e37cfc4b6195a74314d2b38a3fe542d9c0b9f6620a31e:current_account-current_region
+FrontEndPipelineDeploymentStack: success: Built 757a239a4bdf7c37ee4e37cfc4b6195a74314d2b38a3fe542d9c0b9f6620a31e:current_account-current_region
+
+ ✅  Betauswest2DeviceFarmStack (no changes)
+
+✨  Deployment time: 1.19s
+
+Outputs:
+Betauswest2DeviceFarmStack.ExportsOutputFnGetAttAPKandIPAstoreBucketCF7C3959Arn91836663 = arn:aws:s3:::betauswest2devicefarmstac-apkandipastorebucketcf7c-cqj6en5tyma4
+Stack ARN:
+arn:aws:cloudformation:us-west-2:739275451028:stack/Betauswest2DeviceFarmStack/c8c348e0-f568-11ef-b859-0650f1d4b2c5
+
+✨  Total time: 4s
+
+FrontEndPipelineDeploymentStack: start: Publishing 757a239a4bdf7c37ee4e37cfc4b6195a74314d2b38a3fe542d9c0b9f6620a31e:current_account-current_region
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+FrontEndPipelineDeploymentStack: success: Published 757a239a4bdf7c37ee4e37cfc4b6195a74314d2b38a3fe542d9c0b9f6620a31e:current_account-current_region
+FrontEndPipelineDeploymentStack
+FrontEndPipelineDeploymentStack: deploying... [2/2]
+FrontEndPipelineDeploymentStack: creating CloudFormation changeset...
+FrontEndPipelineDeploymentStack | 0/7 | 2:16:22 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack User Initiated
+FrontEndPipelineDeploymentStack | 0/7 | 2:16:26 PM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack | 1/7 | 2:16:27 PM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack | 1/7 | 2:16:27 PM | UPDATE_IN_PROGRESS   | AWS::CodeBuild::Project     | FrontEndBuild (FrontEndBuildA070F3A2) 
+FrontEndPipelineDeploymentStack | 2/7 | 2:16:29 PM | UPDATE_COMPLETE      | AWS::CodeBuild::Project     | FrontEndBuild (FrontEndBuildA070F3A2) 
+FrontEndPipelineDeploymentStack | 3/7 | 2:16:34 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+FrontEndPipelineDeploymentStack | 4/7 | 2:16:35 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+
+ ✅  FrontEndPipelineDeploymentStack
+
+✨  Deployment time: 37.69s
+
+Outputs:
+FrontEndPipelineDeploymentStack.FrontEndArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/10d82119-e88e-42a5-b765-02e5b523ff4c
+Stack ARN:
+arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndPipelineDeploymentStack/7e8cd740-e803-11ef-876b-0a43e34c04ed
+
+✨  Total time: 40.5s
+
+
+NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)
+
+32775	(cli): CLI versions and CDK library versions have diverged
+
+	Overview: Starting in CDK 2.179.0, CLI versions will no longer be in
+	          lockstep with CDK library versions. CLI versions will now be
+	          released as 2.1000.0 and continue with 2.1001.0, etc.
+
+	Affected versions: cli: >=2.0.0 <=2.1005.0
+
+	More information at: https://github.com/aws/aws-cdk/issues/32775
+
+
+If you don’t want to see a notice anymore, use "cdk acknowledge <id>". For example, "cdk acknowledge 32775".
