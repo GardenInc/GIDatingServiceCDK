@@ -15,6 +15,10 @@ export class VpcStack extends Stack {
     // Define a simple VPC
     this.vpc = new Vpc(this, 'GIDatingBackendVPC', {
       ipAddresses: IpAddresses.cidr('10.0.0.0/16'),
+    });
+    /*
+    this.vpc = new Vpc(this, 'GIDatingBackendVPC', {
+      ipAddresses: IpAddresses.cidr('10.0.0.0/16'),
       maxAzs: 3, // Maximum number of Availability Zones to use
       natGateways: 1, // Number of NAT Gateways
       subnetConfiguration: [
@@ -29,7 +33,7 @@ export class VpcStack extends Stack {
           cidrMask: 24,
         },
       ],
-    });
+    });*/
 
     // create log group and enable logging
     // Add endpoints
