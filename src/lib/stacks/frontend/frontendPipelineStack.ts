@@ -231,7 +231,7 @@ export class FrontendPipelineStack extends Stack {
           ],
         },
         {
-          stageName: 'Deploy_Beta',
+          stageName: 'Deploy_Resources_Beta',
           actions: [
             new codepipeline_actions.S3DeployAction({
               actionName: 'UploadAPKandIPAFiles',
@@ -243,6 +243,11 @@ export class FrontendPipelineStack extends Stack {
               ),
               role: betaCodePipelineRole,
             }),
+          ],
+        },
+        {
+          stageName: 'Deploy_Beta',
+          actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployDeviceFarmStack',
               templatePath: cdkBuildOutput.atPath(`Betauswest2DeviceFarmStack${TEMPLATE_ENDING}`),

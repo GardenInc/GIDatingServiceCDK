@@ -90,6 +90,7 @@ Resources:
           - Action:
               - vpc:*
               - ec2:*
+              - lambda:*
             Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:*
             Effect: Allow
           - Action:
