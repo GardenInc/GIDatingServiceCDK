@@ -233,6 +233,7 @@ export class BackendPipelineStack extends Stack {
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: betaCodePipelineRole,
               deploymentRole: betaCloudFormationRole,
+              runOrder: 2,
             }),
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployVpcStack',
@@ -242,6 +243,7 @@ export class BackendPipelineStack extends Stack {
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: betaCodePipelineRole,
               deploymentRole: betaCloudFormationRole,
+              runOrder: 1,
             }),
           ],
         },

@@ -142,6 +142,7 @@ export class FrontendPipelineStack extends Stack {
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --update',
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"',
               'export ANDROID_HOME=$HOME/Android/Sdk',
+              'cd android',
               './gradlew assembleDebug',
               'cd ..',
               'mkdir -p apk',
