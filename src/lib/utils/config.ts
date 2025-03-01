@@ -2,7 +2,7 @@ import { betaAccountId, prodAccountId } from './accounts';
 import { ApplicationStackProps, ApplicationStack } from '../stacks/backend/applicationStack';
 import { VpcStackProps, VpcStack } from '../stacks/backend/vpcStack';
 import { DeviceFarmStack, DeviceFarmStackProps } from '../stacks/frontend/deviceFarmStack';
-import { Stack } from 'aws-cdk-lib';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 
 export enum STAGES {
   BETA = 'Beta',
@@ -56,7 +56,7 @@ export interface FrontEndStackConfigInterface {
   props: FrontEndPropsInterface;
   stacks: FrontEndStacksInterface;
   config: StageConfigInterface;
-  deploymentBucketArn: string;
+  deploymentBucket: s3.Bucket;
 }
 
 export interface FrontEndStacksInterface {

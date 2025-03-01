@@ -11,16 +11,15 @@ export interface DeviceFarmStackProps extends StackProps {
 }
 
 export class DeviceFarmStack extends Stack {
-  readonly appBucketArn: string;
+  readonly appBucket: s3.Bucket;
 
   constructor(app: App, id: string, props: DeviceFarmStackProps) {
     super(app, id, props);
 
     // Create an S3 bucket to store the app files in
-    const appBucket = new s3.Bucket(this, 'APKandIPAstoreBucket', {
+    this.appBucket = new s3.Bucket(this, 'APKandIPAstoreBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
-    this.appBucketArn = appBucket.bucketArn;
 
     // Create seperate IAM role for people access device farm.
     // 1. just to test with device farm (mason, cash, any others)

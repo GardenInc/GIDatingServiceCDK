@@ -143,7 +143,7 @@ export class FrontendPipelineStack extends Stack {
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"',
               'export ANDROID_HOME=$HOME/Android/Sdk',
               'mkdir -p apk',
-              'mv android/app/build/outputs/apk/debug/ apk/',
+              'mv android/app/build/outputs/apk/debug/* apk/',
             ],
           },
           pre_build: {
@@ -236,13 +236,9 @@ export class FrontendPipelineStack extends Stack {
           stageName: 'Deploy_Resources_Beta',
           actions: [
             new codepipeline_actions.S3DeployAction({
-              actionName: 'UploadAPKandIPAFiles',
+              actionName: 'apkFileDeploy',
               input: frontendBuildOutput,
-              bucket: s3.Bucket.fromBucketArn(
-                betaConfig.stacks.deviceFarmStack,
-                'DeploymentBucket',
-                betaConfig.deploymentBucketArn,
-              ),
+              bucket: betaConfig.deploymentBucket,
               role: betaCodePipelineRole,
             }),
           ],
