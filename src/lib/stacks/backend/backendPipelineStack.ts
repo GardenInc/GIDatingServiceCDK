@@ -236,8 +236,8 @@ export class BackendPipelineStack extends Stack {
             }),
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployVpcStack',
-              templatePath: cdkBuildOutput.atPath(`Betauswest2VpcStack${TEMPLATE_ENDING}`),
-              stackName: 'Betauswest2VpcStack',
+              templatePath: cdkBuildOutput.atPath(`BackEndBetauswest2VpcStack${TEMPLATE_ENDING}`),
+              stackName: 'BackEndBetauswest2VpcStack',
               adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: betaCodePipelineRole,
@@ -271,8 +271,8 @@ export class BackendPipelineStack extends Stack {
             }),
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployVpcStack',
-              templatePath: cdkBuildOutput.atPath(`Produswest2VpcStack${TEMPLATE_ENDING}`),
-              stackName: 'Produswest2VpcStack',
+              templatePath: cdkBuildOutput.atPath(`BackEndProduswest2VpcStack${TEMPLATE_ENDING}`),
+              stackName: 'BackEndProduswest2VpcStack',
               adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: prodCodeDeployRole,

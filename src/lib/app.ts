@@ -16,8 +16,14 @@ import {
 } from './utils/config';
 import { ApplicationStackProps } from './stacks/backend/applicationStack';
 import { VpcStackProps, VpcStack } from './stacks/backend/vpcStack';
-import { BackendPipelineStackName, FrontendPipelineStackName } from './utils/constants';
-import { createServiceStackName, createVpcStackName, createDeviceFarmStackName } from './utils/utils';
+import { BackendPipelineStackName, FrontendPipelineStackName, FRONT_END, BACK_END } from './utils/constants';
+import {
+  createServiceStackName,
+  createVpcStackName,
+  createDeviceFarmStackName,
+  createDeploymentBucketStackName,
+} from './utils/utils';
+import { DeploymentBucketStackProps, DeploymentBucketStack } from './stacks/frontend/deploymentBucketStack';
 
 const app = new cdk.App();
 
@@ -36,18 +42,30 @@ for (var stageConfig of stageConfigurationList) {
   // EC2 Stack
 
   // VPC Stack
-  const devideFarmStackProps: DeviceFarmStackProps = {
+  const deviceFarmStackProps: DeviceFarmStackProps = {
     stageName: stageConfig.stage,
   };
-  const deviceFarmStackName: string = createDeviceFarmStackName(stageConfig.stage, stageConfig.region);
-  const deviceFarmStack = new DeviceFarmStack(app, deviceFarmStackName, devideFarmStackProps);
+  const deviceFarmStackName: string = createDeviceFarmStackName(stageConfig.stage, stageConfig.region, FRONT_END);
+  const deviceFarmStack = new DeviceFarmStack(app, deviceFarmStackName, deviceFarmStackProps);
+
+  const deploymentBucketStackProps: DeploymentBucketStackProps = {
+    stageName: stageConfig.stage,
+  };
+  const deploymentBucketStackName: string = createDeploymentBucketStackName(
+    stageConfig.stage,
+    stageConfig.region,
+    FRONT_END,
+  );
+  const deploymentBucketStack = new DeploymentBucketStack(app, deploymentBucketStackName, deploymentBucketStackProps);
 
   // Add new stacks to the following packages
   const frontendStacksInterface: FrontEndStacksInterface = {
+    deploymentBucketStack: deploymentBucketStack,
     deviceFarmStack: deviceFarmStack,
   };
   const frontendPropsInterface: FrontEndPropsInterface = {
-    deviceFarmStackProps: devideFarmStackProps,
+    deploymentBucketStackProps: deploymentBucketStackProps,
+    deviceFarmStackProps: deviceFarmStackProps,
   };
 
   const frontendStageConfigurationList: FrontEndStackConfigInterface = {
@@ -67,7 +85,7 @@ for (var stageConfig of stageConfigurationList) {
   const backendVpcStackProps: VpcStackProps = {
     stageName: stageConfig.stage,
   };
-  const backendVpcStackName: string = createVpcStackName(stageConfig.stage, stageConfig.region);
+  const backendVpcStackName: string = createVpcStackName(stageConfig.stage, stageConfig.region, BACK_END);
   const backendVpcStack = new VpcStack(app, backendVpcStackName, backendVpcStackProps);
 
   // ECS Service Stack

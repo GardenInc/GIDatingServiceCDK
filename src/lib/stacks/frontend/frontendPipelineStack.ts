@@ -142,6 +142,8 @@ export class FrontendPipelineStack extends Stack {
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --update',
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"',
               'export ANDROID_HOME=$HOME/Android/Sdk',
+              './gradlew assembleDebug',
+              'cd ..',
               'mkdir -p apk',
               'mv android/app/build/outputs/apk/debug/* apk/',
             ],
@@ -233,19 +235,25 @@ export class FrontendPipelineStack extends Stack {
           ],
         },
         {
-          stageName: 'Deploy_Resources_Beta',
+          stageName: 'Deploy_Beta',
           actions: [
+            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+              actionName: 'DeployS3Bucket',
+              templatePath: cdkBuildOutput.atPath(`FrontEndBetauswest2DeplyomentBucketStack${TEMPLATE_ENDING}`),
+              stackName: 'FrontEndBetauswest2DeplyomentBucketStack',
+              adminPermissions: false,
+              cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
+              role: betaCodePipelineRole,
+              deploymentRole: betaCloudFormationRole,
+              runOrder: 1,
+            }),
             new codepipeline_actions.S3DeployAction({
               actionName: 'apkFileDeploy',
               input: frontendBuildOutput,
               bucket: betaConfig.deploymentBucket,
               role: betaCodePipelineRole,
+              runOrder: 2,
             }),
-          ],
-        },
-        {
-          stageName: 'Deploy_Beta',
-          actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployDeviceFarmStack',
               templatePath: cdkBuildOutput.atPath(`Betauswest2DeviceFarmStack${TEMPLATE_ENDING}`),
@@ -254,6 +262,7 @@ export class FrontendPipelineStack extends Stack {
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: betaCodePipelineRole,
               deploymentRole: betaCloudFormationRole,
+              runOrder: 3,
             }),
           ],
         },
