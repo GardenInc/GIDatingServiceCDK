@@ -72,7 +72,7 @@ for (var stageConfig of stageConfigurationList) {
     props: frontendPropsInterface,
     stacks: frontendStacksInterface,
     config: stageConfig,
-    deploymentBucket: deviceFarmStack.appBucket,
+    deploymentBucket: deploymentBucketStack.appBucket,
   };
 
   frontendServiceStackList.push(frontendStageConfigurationList);
