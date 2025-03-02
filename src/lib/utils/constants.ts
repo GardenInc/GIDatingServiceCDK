@@ -3,7 +3,7 @@
 export const SERVICE_STACK = 'ServiceStack';
 export const VPC_STACK = 'VpcStack';
 export const DEVICE_FARM_STACK = 'DeviceFarmStack';
-export const DEPLOYMENT_BUCKET_STACK = 'DeplyomentBucketStack';
+export const DEPLOYMENT_BUCKET_STACK = 'DeploymentBucketStack';
 
 export const FRONT_END = 'FrontEnd';
 export const BACK_END = 'BackEnd';

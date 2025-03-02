@@ -1,0 +1,82 @@
+Including dependency stacks: FrontEndBetauswest2DeploymentBucketStack
+
+✨  Synthesis time: 2.6s
+
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+FrontEndBetauswest2DeploymentBucketStack: start: Building 76ecd59a434a944f7423ddc38bfd7c6bf39237ccfd2961fa41a89f99b43e5410:current_account-current_region
+FrontEndBetauswest2DeploymentBucketStack: success: Built 76ecd59a434a944f7423ddc38bfd7c6bf39237ccfd2961fa41a89f99b43e5410:current_account-current_region
+FrontEndBetauswest2DeploymentBucketStack: start: Publishing 76ecd59a434a944f7423ddc38bfd7c6bf39237ccfd2961fa41a89f99b43e5410:current_account-current_region
+FrontEndPipelineDeploymentStack: start: Building 00ffe63034e2fe9de422a4b8525009f0ebeb84fb59dc716678d45d16bebeb50c:current_account-current_region
+FrontEndPipelineDeploymentStack: success: Built 00ffe63034e2fe9de422a4b8525009f0ebeb84fb59dc716678d45d16bebeb50c:current_account-current_region
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+FrontEndBetauswest2DeploymentBucketStack: success: Published 76ecd59a434a944f7423ddc38bfd7c6bf39237ccfd2961fa41a89f99b43e5410:current_account-current_region
+FrontEndBetauswest2DeploymentBucketStack
+FrontEndBetauswest2DeploymentBucketStack: deploying... [1/2]
+FrontEndBetauswest2DeploymentBucketStack: creating CloudFormation changeset...
+FrontEndBetauswest2DeploymentBucketStack | 0/4 | 11:52:27 PM | REVIEW_IN_PROGRESS   | AWS::CloudFormation::Stack | FrontEndBetauswest2DeploymentBucketStack User Initiated
+FrontEndBetauswest2DeploymentBucketStack | 0/4 | 11:52:33 PM | CREATE_IN_PROGRESS   | AWS::CloudFormation::Stack | FrontEndBetauswest2DeploymentBucketStack User Initiated
+FrontEndBetauswest2DeploymentBucketStack | 0/4 | 11:52:35 PM | CREATE_IN_PROGRESS   | AWS::CDK::Metadata    | CDKMetadata/Default (CDKMetadata) 
+FrontEndBetauswest2DeploymentBucketStack | 0/4 | 11:52:35 PM | CREATE_IN_PROGRESS   | AWS::S3::Bucket       | APKandIPADeploymentBucket (APKandIPADeploymentBucket0A9747F0) 
+FrontEndBetauswest2DeploymentBucketStack | 0/4 | 11:52:36 PM | CREATE_IN_PROGRESS   | AWS::CDK::Metadata    | CDKMetadata/Default (CDKMetadata) Resource creation Initiated
+FrontEndBetauswest2DeploymentBucketStack | 1/4 | 11:52:36 PM | CREATE_COMPLETE      | AWS::CDK::Metadata    | CDKMetadata/Default (CDKMetadata) 
+FrontEndBetauswest2DeploymentBucketStack | 1/4 | 11:52:36 PM | CREATE_IN_PROGRESS   | AWS::S3::Bucket       | APKandIPADeploymentBucket (APKandIPADeploymentBucket0A9747F0) Resource creation Initiated
+FrontEndBetauswest2DeploymentBucketStack | 2/4 | 11:52:50 PM | CREATE_COMPLETE      | AWS::S3::Bucket       | APKandIPADeploymentBucket (APKandIPADeploymentBucket0A9747F0) 
+FrontEndBetauswest2DeploymentBucketStack | 2/4 | 11:52:51 PM | CREATE_IN_PROGRESS   | AWS::S3::BucketPolicy | APKandIPADeploymentBucket/Policy (APKandIPADeploymentBucketPolicy3D5AD70C) 
+FrontEndBetauswest2DeploymentBucketStack | 2/4 | 11:52:51 PM | CREATE_IN_PROGRESS   | AWS::S3::BucketPolicy | APKandIPADeploymentBucket/Policy (APKandIPADeploymentBucketPolicy3D5AD70C) Resource creation Initiated
+FrontEndBetauswest2DeploymentBucketStack | 3/4 | 11:52:52 PM | CREATE_COMPLETE      | AWS::S3::BucketPolicy | APKandIPADeploymentBucket/Policy (APKandIPADeploymentBucketPolicy3D5AD70C) 
+FrontEndBetauswest2DeploymentBucketStack | 4/4 | 11:52:53 PM | CREATE_COMPLETE      | AWS::CloudFormation::Stack | FrontEndBetauswest2DeploymentBucketStack 
+
+ ✅  FrontEndBetauswest2DeploymentBucketStack
+
+✨  Deployment time: 30.08s
+
+Outputs:
+FrontEndBetauswest2DeploymentBucketStack.ExportsOutputRefAPKandIPADeploymentBucket0A9747F0AA2D42A6 = frontendbetauswest2deploy-apkandipadeploymentbucke-7bxlgzp41k6h
+Stack ARN:
+arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndBetauswest2DeploymentBucketStack/858619e0-f72a-11ef-a1c4-06e5872d2baf
+
+✨  Total time: 32.68s
+
+FrontEndPipelineDeploymentStack: start: Publishing 00ffe63034e2fe9de422a4b8525009f0ebeb84fb59dc716678d45d16bebeb50c:current_account-current_region
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+FrontEndPipelineDeploymentStack: success: Published 00ffe63034e2fe9de422a4b8525009f0ebeb84fb59dc716678d45d16bebeb50c:current_account-current_region
+FrontEndPipelineDeploymentStack
+FrontEndPipelineDeploymentStack: deploying... [2/2]
+FrontEndPipelineDeploymentStack: creating CloudFormation changeset...
+FrontEndPipelineDeploymentStack | 0/7 | 11:53:12 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack User Initiated
+FrontEndPipelineDeploymentStack | 0/7 | 11:53:16 PM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack | 0/7 | 11:53:17 PM | UPDATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
+FrontEndPipelineDeploymentStack | 1/7 | 11:53:17 PM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack | 2/7 | 11:53:18 PM | UPDATE_COMPLETE      | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
+FrontEndPipelineDeploymentStack | 2/7 | 11:53:23 PM | UPDATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+FrontEndPipelineDeploymentStack | 3/7 | 11:53:25 PM | UPDATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+FrontEndPipelineDeploymentStack | 4/7 | 11:53:27 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+FrontEndPipelineDeploymentStack | 5/7 | 11:53:28 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+
+ ✅  FrontEndPipelineDeploymentStack
+
+✨  Deployment time: 32.01s
+
+Outputs:
+FrontEndPipelineDeploymentStack.FrontEndArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/10d82119-e88e-42a5-b765-02e5b523ff4c
+Stack ARN:
+arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndPipelineDeploymentStack/7e8cd740-e803-11ef-876b-0a43e34c04ed
+
+✨  Total time: 34.61s
+
+
+NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)
+
+32775	(cli): CLI versions and CDK library versions have diverged
+
+	Overview: Starting in CDK 2.179.0, CLI versions will no longer be in
+	          lockstep with CDK library versions. CLI versions will now be
+	          released as 2.1000.0 and continue with 2.1001.0, etc.
+
+	Affected versions: cli: >=2.0.0 <=2.1005.0
+
+	More information at: https://github.com/aws/aws-cdk/issues/32775
+
+
+If you don’t want to see a notice anymore, use "cdk acknowledge <id>". For example, "cdk acknowledge 32775".

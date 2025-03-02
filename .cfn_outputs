@@ -1,0 +1,10 @@
+Outputs:
+FrontEndBetauswest2DeploymentBucketStack.ExportsOutputRefAPKandIPADeploymentBucket0A9747F0AA2D42A6 = frontendbetauswest2deploy-apkandipadeploymentbucke-7bxlgzp41k6h
+Stack ARN:
+arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndBetauswest2DeploymentBucketStack/858619e0-f72a-11ef-a1c4-06e5872d2baf
+
+Outputs:
+FrontEndPipelineDeploymentStack.FrontEndArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/10d82119-e88e-42a5-b765-02e5b523ff4c
+Stack ARN:
+arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndPipelineDeploymentStack/7e8cd740-e803-11ef-876b-0a43e34c04ed
+
