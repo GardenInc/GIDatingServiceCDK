@@ -8,6 +8,7 @@ import * as path from 'path';
 export interface DeviceFarmStackProps extends StackProps {
   // deployment stage of the VPC
   readonly stageName: string;
+  readonly bucket: s3.Bucket;
 }
 
 export class DeviceFarmStack extends Stack {

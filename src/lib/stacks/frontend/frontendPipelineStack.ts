@@ -152,12 +152,6 @@ export class FrontendPipelineStack extends Stack {
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --update',
               'yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platform-tools" "platforms;android-30" "build-tools;30.0.3"',
               'export ANDROID_HOME=$HOME/Android/Sdk',
-              `npx expo prebuild`,
-              'cd android',
-              './gradlew assembleDebug',
-              'cd ..',
-              'mkdir -p apk',
-              'mv android/app/build/outputs/apk/debug/* apk/',
             ],
           },
           pre_build: {
@@ -170,6 +164,8 @@ export class FrontendPipelineStack extends Stack {
               'cd android', // go into android folder
               './gradlew assembleDebug', // builds the debug files
               'cd ..',
+              'mkdir -p apk',
+              'mv android/app/build/outputs/apk/debug/* apk/',
             ],
           },
         },
@@ -262,14 +258,14 @@ export class FrontendPipelineStack extends Stack {
             new codepipeline_actions.S3DeployAction({
               actionName: 'apkFileDeploy',
               input: frontendBuildOutput,
-              bucket: betaConfig.deploymentBucket,
+              bucket: betaConfig.stacks.deploymentBucketStack.appBucket,
               role: betaCodePipelineRole,
               runOrder: 2,
             }),
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployDeviceFarmStack',
-              templatePath: cdkBuildOutput.atPath(`Betauswest2DeviceFarmStack${TEMPLATE_ENDING}`),
-              stackName: 'Betauswest2DeviceFarmStack',
+              templatePath: cdkBuildOutput.atPath(`FrontEndBetauswest2DeviceFarmStack${TEMPLATE_ENDING}`),
+              stackName: 'FrontEndBetauswest2DeviceFarmStack',
               adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: betaCodePipelineRole,

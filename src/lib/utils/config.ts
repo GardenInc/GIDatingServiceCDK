@@ -57,7 +57,6 @@ export interface FrontEndStackConfigInterface {
   props: FrontEndPropsInterface;
   stacks: FrontEndStacksInterface;
   config: StageConfigInterface;
-  deploymentBucket: s3.Bucket;
 }
 
 export interface FrontEndStacksInterface {

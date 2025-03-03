@@ -42,12 +42,6 @@ for (var stageConfig of stageConfigurationList) {
   // EC2 Stack
 
   // VPC Stack
-  const deviceFarmStackProps: DeviceFarmStackProps = {
-    stageName: stageConfig.stage,
-  };
-  const deviceFarmStackName: string = createDeviceFarmStackName(stageConfig.stage, stageConfig.region, FRONT_END);
-  const deviceFarmStack = new DeviceFarmStack(app, deviceFarmStackName, deviceFarmStackProps);
-
   const deploymentBucketStackProps: DeploymentBucketStackProps = {
     stageName: stageConfig.stage,
   };
@@ -57,6 +51,13 @@ for (var stageConfig of stageConfigurationList) {
     FRONT_END,
   );
   const deploymentBucketStack = new DeploymentBucketStack(app, deploymentBucketStackName, deploymentBucketStackProps);
+
+  const deviceFarmStackProps: DeviceFarmStackProps = {
+    stageName: stageConfig.stage,
+    bucket: deploymentBucketStack.appBucket,
+  };
+  const deviceFarmStackName: string = createDeviceFarmStackName(stageConfig.stage, stageConfig.region, FRONT_END);
+  const deviceFarmStack = new DeviceFarmStack(app, deviceFarmStackName, deviceFarmStackProps);
 
   // Add new stacks to the following packages
   const frontendStacksInterface: FrontEndStacksInterface = {
@@ -72,7 +73,6 @@ for (var stageConfig of stageConfigurationList) {
     props: frontendPropsInterface,
     stacks: frontendStacksInterface,
     config: stageConfig,
-    deploymentBucket: deploymentBucketStack.appBucket,
   };
 
   frontendServiceStackList.push(frontendStageConfigurationList);
