@@ -1,51 +1,32 @@
-Including dependency stacks: FrontEndBetauswest2DeploymentBucketStack
 
-✨  Synthesis time: 2.72s
+✨  Synthesis time: 2.85s
 
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
-current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
-FrontEndBetauswest2DeploymentBucketStack
-FrontEndBetauswest2DeploymentBucketStack: deploying... [1/2]
-FrontEndPipelineDeploymentStack: start: Building e930307317a88f0e5603d5b89d6dcfc97395fbbd5f9947b391a94bab3c58c636:current_account-current_region
-FrontEndPipelineDeploymentStack: success: Built e930307317a88f0e5603d5b89d6dcfc97395fbbd5f9947b391a94bab3c58c636:current_account-current_region
-
- ✅  FrontEndBetauswest2DeploymentBucketStack (no changes)
-
-✨  Deployment time: 1.19s
-
-Outputs:
-FrontEndBetauswest2DeploymentBucketStack.ExportsOutputRefAPKandIPADeploymentBucket0A9747F0AA2D42A6 = frontendbetauswest2deploy-apkandipadeploymentbucke-7bxlgzp41k6h
-Stack ARN:
-arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndBetauswest2DeploymentBucketStack/858619e0-f72a-11ef-a1c4-06e5872d2baf
-
-✨  Total time: 3.9s
-
-FrontEndPipelineDeploymentStack: start: Publishing e930307317a88f0e5603d5b89d6dcfc97395fbbd5f9947b391a94bab3c58c636:current_account-current_region
+FrontEndPipelineDeploymentStack: start: Building 9023e9f9f771d8f0bf994dbcb02e9312a47485fabeccf64a02b384e3616bdad6:current_account-current_region
+FrontEndPipelineDeploymentStack: success: Built 9023e9f9f771d8f0bf994dbcb02e9312a47485fabeccf64a02b384e3616bdad6:current_account-current_region
+FrontEndPipelineDeploymentStack: start: Publishing 9023e9f9f771d8f0bf994dbcb02e9312a47485fabeccf64a02b384e3616bdad6:current_account-current_region
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
-FrontEndPipelineDeploymentStack: success: Published e930307317a88f0e5603d5b89d6dcfc97395fbbd5f9947b391a94bab3c58c636:current_account-current_region
-FrontEndPipelineDeploymentStack
-FrontEndPipelineDeploymentStack: deploying... [2/2]
+FrontEndPipelineDeploymentStack: success: Published 9023e9f9f771d8f0bf994dbcb02e9312a47485fabeccf64a02b384e3616bdad6:current_account-current_region
+FrontEndPipelineDeploymentStack: deploying... [1/1]
 FrontEndPipelineDeploymentStack: creating CloudFormation changeset...
-FrontEndPipelineDeploymentStack | 0/7 | 11:25:44 AM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack User Initiated
-FrontEndPipelineDeploymentStack | 0/7 | 11:25:49 AM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
-FrontEndPipelineDeploymentStack | 0/7 | 11:25:50 AM | UPDATE_IN_PROGRESS   | AWS::CodeBuild::Project     | FrontEndBuild (FrontEndBuildA070F3A2) 
-FrontEndPipelineDeploymentStack | 1/7 | 11:25:50 AM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
-FrontEndPipelineDeploymentStack | 2/7 | 11:25:51 AM | UPDATE_COMPLETE      | AWS::CodeBuild::Project     | FrontEndBuild (FrontEndBuildA070F3A2) 
-FrontEndPipelineDeploymentStack | 2/7 | 11:25:56 AM | UPDATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-FrontEndPipelineDeploymentStack | 3/7 | 11:25:58 AM | UPDATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-FrontEndPipelineDeploymentStack | 4/7 | 11:26:00 AM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
-FrontEndPipelineDeploymentStack | 5/7 | 11:26:01 AM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+FrontEndPipelineDeploymentStack | 0/4 | 8:54:12 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack User Initiated
+FrontEndPipelineDeploymentStack | 0/4 | 8:54:16 PM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack | 1/4 | 8:54:17 PM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack | 1/4 | 8:54:20 PM | UPDATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+FrontEndPipelineDeploymentStack | 2/4 | 8:54:23 PM | UPDATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+FrontEndPipelineDeploymentStack | 3/4 | 8:54:25 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+FrontEndPipelineDeploymentStack | 4/4 | 8:54:26 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
 
  ✅  FrontEndPipelineDeploymentStack
 
-✨  Deployment time: 42.58s
+✨  Deployment time: 31.51s
 
 Outputs:
 FrontEndPipelineDeploymentStack.FrontEndArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/10d82119-e88e-42a5-b765-02e5b523ff4c
 Stack ARN:
 arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndPipelineDeploymentStack/7e8cd740-e803-11ef-876b-0a43e34c04ed
 
-✨  Total time: 45.3s
+✨  Total time: 34.35s
 
 
 NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)

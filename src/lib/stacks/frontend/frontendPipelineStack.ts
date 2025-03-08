@@ -255,13 +255,14 @@ export class FrontendPipelineStack extends Stack {
               deploymentRole: betaCloudFormationRole,
               runOrder: 1,
             }),
+            /*
             new codepipeline_actions.S3DeployAction({
               actionName: 'apkFileDeploy',
               input: frontendBuildOutput,
               bucket: betaConfig.stacks.deploymentBucketStack.appBucket,
               role: betaCodePipelineRole,
               runOrder: 2,
-            }),
+            }), */
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployDeviceFarmStack',
               templatePath: cdkBuildOutput.atPath(`FrontEndBetauswest2DeviceFarmStack${TEMPLATE_ENDING}`),
@@ -270,7 +271,7 @@ export class FrontendPipelineStack extends Stack {
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: betaCodePipelineRole,
               deploymentRole: betaCloudFormationRole,
-              runOrder: 3,
+              runOrder: 2,
             }),
           ],
         },
