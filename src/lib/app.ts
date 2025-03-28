@@ -11,8 +11,6 @@ import {
   ApplicationStackConfigInterface,
   StacksInterface,
   PropsInterface,
-  FrontEndStacksInterface,
-  FrontEndPropsInterface,
 } from './utils/config';
 import { ApplicationStackProps } from './stacks/backend/applicationStack';
 import { VpcStackProps, VpcStack } from './stacks/backend/vpcStack';
@@ -64,19 +62,7 @@ for (var stageConfig of stageConfigurationList) {
   const deviceFarmStackName: string = createDeviceFarmStackName(stageConfig.stage, stageConfig.region, FRONT_END);
   const deviceFarmStack = new DeviceFarmStack(app, deviceFarmStackName, deviceFarmStackProps);
 
-  // Add new stacks to the following packages
-  const frontendStacksInterface: FrontEndStacksInterface = {
-    deploymentBucketStack: deploymentBucketStack,
-    deviceFarmStack: deviceFarmStack,
-  };
-  const frontendPropsInterface: FrontEndPropsInterface = {
-    deploymentBucketStackProps: deploymentBucketStackProps,
-    deviceFarmStackProps: deviceFarmStackProps,
-  };
-
   const frontendStageConfigurationList: FrontEndStackConfigInterface = {
-    props: frontendPropsInterface,
-    stacks: frontendStacksInterface,
     config: stageConfig,
     frontEndCodeDeploymentBucketArn: deploymentBucketStack.bucketArn,
   };

@@ -52,23 +52,13 @@ export interface PropsInterface {
   vpcStackProps: VpcStackProps;
 }
 
+// FRONT END REF
 export interface FrontEndStackConfigInterface {
-  props: FrontEndPropsInterface;
-  stacks: FrontEndStacksInterface;
   config: StageConfigInterface;
   frontEndCodeDeploymentBucketArn: string;
 }
 
-export interface FrontEndStacksInterface {
-  deploymentBucketStack: DeploymentBucketStack;
-  deviceFarmStack: DeviceFarmStack;
-}
-
-export interface FrontEndPropsInterface {
-  deploymentBucketStackProps: DeploymentBucketStackProps;
-  deviceFarmStackProps: DeviceFarmStackProps;
-}
-
+// WEBSITE REF
 export interface WebsiteStackConfigInterface {
   props: WebsitePropsInterface;
   stacks: WebsiteStacksInterface;
