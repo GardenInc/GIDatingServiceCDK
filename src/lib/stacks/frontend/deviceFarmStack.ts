@@ -8,11 +8,10 @@ import * as path from 'path';
 export interface DeviceFarmStackProps extends StackProps {
   // deployment stage of the VPC
   readonly stageName: string;
+  readonly frontEndBuildBucketArn: string;
 }
 
 export class DeviceFarmStack extends Stack {
-  readonly bucketArn: string;
-
   constructor(app: App, id: string, props: DeviceFarmStackProps) {
     super(app, id, props);
 
@@ -20,7 +19,6 @@ export class DeviceFarmStack extends Stack {
     const appBucket = new s3.Bucket(this, 'APKandIPAstoreBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
-    this.bucketArn = appBucket.bucketArn;
 
     // Create seperate IAM role for people access device farm.
     // 1. just to test with device farm (mason, cash, any others)

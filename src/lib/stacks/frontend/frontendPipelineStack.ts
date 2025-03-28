@@ -260,9 +260,9 @@ export class FrontendPipelineStack extends Stack {
               input: frontendBuildOutput,
               //bucket: betaConfig.stacks.deploymentBucketStack.appBucket,
               bucket: s3.Bucket.fromBucketArn(
-                betaConfig.stacks.deviceFarmStack,
+                betaConfig.stacks.deploymentBucketStack,
                 'APKIPAImportedBucket',
-                betaConfig.stacks.deviceFarmStack.bucketArn,
+                betaConfig.stacks.deploymentBucketStack.bucketArn,
               ),
               role: betaCodePipelineRole,
               runOrder: 2,
