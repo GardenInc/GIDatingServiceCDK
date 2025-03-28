@@ -259,7 +259,7 @@ export class FrontendPipelineStack extends Stack {
               actionName: 'apkFileDeploy',
               input: frontendBuildOutput,
               bucket: s3.Bucket.fromBucketAttributes(this, 'APKIPAImportedBucket', {
-                bucketArn: betaConfig.frontEndCodeDeploymentBucketArn, // Hardcode the ARN or use string literal
+                bucketArn: 'arn:aws:s3:::frontendbetauswest2deploy-apkandipadeploymentbucke-rqkmrwsimhvc', // Hardcode the ARN or use string literal
                 // If you need to specify the account explicitly:
                 // account: 'beta-account-id',
                 // region: 'us-west-2'
