@@ -78,6 +78,7 @@ for (var stageConfig of stageConfigurationList) {
     props: frontendPropsInterface,
     stacks: frontendStacksInterface,
     config: stageConfig,
+    frontEndCodeDeploymentBucketArn: deploymentBucketStack.bucketArn,
   };
 
   frontendServiceStackList.push(frontendStageConfigurationList);
