@@ -175,7 +175,7 @@ export class FrontendPipelineStack extends Stack {
       }),
       environment: {
         buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
-        computeType: codebuild.ComputeType.MEDIUM,
+        computeType: codebuild.ComputeType.LARGE,
       },
       // use the encryption key for build artifacts
       encryptionKey: key,

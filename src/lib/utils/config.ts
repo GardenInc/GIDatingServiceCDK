@@ -67,3 +67,19 @@ export interface FrontEndPropsInterface {
   deploymentBucketStackProps: DeploymentBucketStackProps;
   deviceFarmStackProps: DeviceFarmStackProps;
 }
+
+export interface WebsiteStackConfigInterface {
+  props: WebsitePropsInterface;
+  stacks: WebsiteStacksInterface;
+  config: StageConfigInterface;
+}
+
+export interface WebsiteStacksInterface {
+  deploymentBucketStack: DeploymentBucketStack;
+  deviceFarmStack: DeviceFarmStack;
+}
+
+export interface WebsitePropsInterface {
+  deploymentBucketStackProps: DeploymentBucketStackProps;
+  deviceFarmStackProps: DeviceFarmStackProps;
+}

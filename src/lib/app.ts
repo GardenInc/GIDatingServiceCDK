@@ -25,6 +25,11 @@ import {
 } from './utils/utils';
 import { DeploymentBucketStackProps, DeploymentBucketStack } from './stacks/frontend/deploymentBucketStack';
 
+/*const app = new cdk.App({
+  context: {
+    '@aws-cdk/core:newStyleStackSynthesis': true,
+  },
+});*/
 const app = new cdk.App();
 
 // Setup a stack of applications which will be deployed to the pipeline
