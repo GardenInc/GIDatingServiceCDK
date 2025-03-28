@@ -3,7 +3,6 @@ import { ApplicationStackProps, ApplicationStack } from '../stacks/backend/appli
 import { VpcStackProps, VpcStack } from '../stacks/backend/vpcStack';
 import { DeviceFarmStack, DeviceFarmStackProps } from '../stacks/frontend/deviceFarmStack';
 import { DeploymentBucketStackProps, DeploymentBucketStack } from '../stacks/frontend/deploymentBucketStack';
-import * as s3 from 'aws-cdk-lib/aws-s3';
 
 export enum STAGES {
   BETA = 'Beta',

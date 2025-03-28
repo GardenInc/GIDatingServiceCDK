@@ -54,7 +54,6 @@ for (var stageConfig of stageConfigurationList) {
 
   const deviceFarmStackProps: DeviceFarmStackProps = {
     stageName: stageConfig.stage,
-    bucket: deploymentBucketStack.appBucket,
   };
   const deviceFarmStackName: string = createDeviceFarmStackName(stageConfig.stage, stageConfig.region, FRONT_END);
   const deviceFarmStack = new DeviceFarmStack(app, deviceFarmStackName, deviceFarmStackProps);

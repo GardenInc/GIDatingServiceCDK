@@ -258,7 +258,12 @@ export class FrontendPipelineStack extends Stack {
             new codepipeline_actions.S3DeployAction({
               actionName: 'apkFileDeploy',
               input: frontendBuildOutput,
-              bucket: betaConfig.stacks.deploymentBucketStack.appBucket,
+              //bucket: betaConfig.stacks.deploymentBucketStack.appBucket,
+              bucket: s3.Bucket.fromBucketArn(
+                betaConfig.stacks.deviceFarmStack,
+                'APKIPAImportedBucket',
+                betaConfig.stacks.deviceFarmStack.bucketArn,
+              ),
               role: betaCodePipelineRole,
               runOrder: 2,
             }),
