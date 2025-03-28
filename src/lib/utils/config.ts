@@ -36,20 +36,9 @@ export const stageConfigurationList: StageConfigInterface[] = [
   },
 ];
 
+// BACK END REF
 export interface ApplicationStackConfigInterface {
-  props: PropsInterface;
-  stacks: StacksInterface;
   config: StageConfigInterface;
-}
-
-export interface StacksInterface {
-  applicationStack: ApplicationStack;
-  vpcStack: VpcStack;
-}
-
-export interface PropsInterface {
-  applicationStackProps: ApplicationStackProps;
-  vpcStackProps: VpcStackProps;
 }
 
 // FRONT END REF
@@ -60,17 +49,5 @@ export interface FrontEndStackConfigInterface {
 
 // WEBSITE REF
 export interface WebsiteStackConfigInterface {
-  props: WebsitePropsInterface;
-  stacks: WebsiteStacksInterface;
   config: StageConfigInterface;
-}
-
-export interface WebsiteStacksInterface {
-  deploymentBucketStack: DeploymentBucketStack;
-  deviceFarmStack: DeviceFarmStack;
-}
-
-export interface WebsitePropsInterface {
-  deploymentBucketStackProps: DeploymentBucketStackProps;
-  deviceFarmStackProps: DeviceFarmStackProps;
 }

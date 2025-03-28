@@ -168,8 +168,8 @@ export class BackendPipelineStack extends Stack {
     const lambdaBuildOutput = new codepipeline.Artifact('backendLambdaBuildOutput');
 
     // Application Stack
-    const betaApplicationStack: ApplicationStack = betaConfig.stacks.applicationStack;
-    const prodApplicationStack: ApplicationStack = prodConfig.stacks.applicationStack;
+    //const betaApplicationStack: ApplicationStack = betaConfig.stacks.applicationStack;
+    //const prodApplicationStack: ApplicationStack = prodConfig.stacks.applicationStack;
 
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -231,6 +231,7 @@ export class BackendPipelineStack extends Stack {
               deploymentRole: betaCloudFormationRole,
               runOrder: 1,
             }),
+            /*
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployServiceStack',
               templatePath: cdkBuildOutput.atPath(`Betauswest2ServiceStack${TEMPLATE_ENDING}`),
@@ -244,7 +245,7 @@ export class BackendPipelineStack extends Stack {
               role: betaCodePipelineRole,
               deploymentRole: betaCloudFormationRole,
               runOrder: 2,
-            }),
+            }),*/
           ],
         },
         {
@@ -258,7 +259,7 @@ export class BackendPipelineStack extends Stack {
         {
           stageName: 'Deploy_Prod',
           actions: [
-            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+            /*new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployServiceStack',
               templatePath: cdkBuildOutput.atPath(`Produswest2ServiceStack${TEMPLATE_ENDING}`),
               stackName: 'Produswest2ServiceStack',
@@ -270,7 +271,7 @@ export class BackendPipelineStack extends Stack {
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: prodCodeDeployRole,
               deploymentRole: prodCloudFormationRole,
-            }),
+            }),*/
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployVpcStack',
               templatePath: cdkBuildOutput.atPath(`BackEndProduswest2VpcStack${TEMPLATE_ENDING}`),

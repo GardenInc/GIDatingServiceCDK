@@ -6,12 +6,7 @@ import { BackendPipelineStack, BackendPipelineStackProps } from './stacks/backen
 import { FrontendPipelineStackProps, FrontendPipelineStack } from './stacks/frontend/frontendPipelineStack';
 import { DeviceFarmStackProps, DeviceFarmStack } from './stacks/frontend/deviceFarmStack';
 import { stageConfigurationList } from './utils/config';
-import {
-  FrontEndStackConfigInterface,
-  ApplicationStackConfigInterface,
-  StacksInterface,
-  PropsInterface,
-} from './utils/config';
+import { FrontEndStackConfigInterface, ApplicationStackConfigInterface } from './utils/config';
 import { ApplicationStackProps } from './stacks/backend/applicationStack';
 import { VpcStackProps, VpcStack } from './stacks/backend/vpcStack';
 import { BackendPipelineStackName, FrontendPipelineStackName, FRONT_END, BACK_END } from './utils/constants';
@@ -60,7 +55,7 @@ for (var stageConfig of stageConfigurationList) {
     frontEndBuildBucketArn: deploymentBucketStack.bucketArn,
   };
   const deviceFarmStackName: string = createDeviceFarmStackName(stageConfig.stage, stageConfig.region, FRONT_END);
-  const deviceFarmStack = new DeviceFarmStack(app, deviceFarmStackName, deviceFarmStackProps);
+  new DeviceFarmStack(app, deviceFarmStackName, deviceFarmStackProps);
 
   const frontendStageConfigurationList: FrontEndStackConfigInterface = {
     config: stageConfig,
@@ -78,28 +73,16 @@ for (var stageConfig of stageConfigurationList) {
     stageName: stageConfig.stage,
   };
   const backendVpcStackName: string = createVpcStackName(stageConfig.stage, stageConfig.region, BACK_END);
-  const backendVpcStack = new VpcStack(app, backendVpcStackName, backendVpcStackProps);
+  new VpcStack(app, backendVpcStackName, backendVpcStackProps);
 
   // ECS Service Stack
   const backendApplicationStackProps: ApplicationStackProps = {
     stageName: stageConfig.stage,
   };
   const serviceStackName: string = createServiceStackName(stageConfig.stage, stageConfig.region);
-  const backendServiceStack = new ApplicationStack(app, serviceStackName, backendApplicationStackProps);
-
-  // Add new stacks to the following packages
-  const backendStacksInterface: StacksInterface = {
-    applicationStack: backendServiceStack,
-    vpcStack: backendVpcStack,
-  };
-  const backendPropsInterface: PropsInterface = {
-    applicationStackProps: backendApplicationStackProps,
-    vpcStackProps: backendVpcStackProps,
-  };
+  new ApplicationStack(app, serviceStackName, backendApplicationStackProps);
 
   const backendStageConfigurationList: ApplicationStackConfigInterface = {
-    props: backendPropsInterface,
-    stacks: backendStacksInterface,
     config: stageConfig,
   };
 
