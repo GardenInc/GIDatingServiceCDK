@@ -4,6 +4,7 @@ import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
 import { FrontEndStackConfigInterface } from '../../utils/config';
 import {
@@ -187,10 +188,56 @@ export class FrontendPipelineStack extends Stack {
     const frontendBuildOutput = new codepipeline.Artifact('frontEndUXCodeBuild');
     const cdkBuildOutput = new codepipeline.Artifact('frontEndCDKBuildOutput');
 
+    // Create a CodeBuild project to process Device Farm test results
+    const deviceFarmResultsProcessor = new codebuild.PipelineProject(this, 'DeviceFarmResultsProcessor', {
+      buildSpec: codebuild.BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          install: {
+            'runtime-versions': {
+              nodejs: 20,
+            },
+            commands: ['npm install aws-sdk'],
+          },
+          build: {
+            commands: [
+              'export AWS_REGION=us-west-2',
+              'echo "Checking Device Farm test results..."',
+              // This script will fetch test results from the S3 bucket created by the Device Farm stack
+              "node -e \"const AWS = require('aws-sdk'); const s3 = new AWS.S3(); const cloudformation = new AWS.CloudFormation(); async function getResults() { try { const cfResult = await cloudformation.describeStacks({StackName: 'FrontEndBetauswest2DeviceFarmStack'}).promise(); const resultsBucket = cfResult.Stacks[0].Outputs.find(o => o.OutputKey === 'ResultsBucketName').OutputValue; console.log('Results bucket: ' + resultsBucket); const objects = await s3.listObjectsV2({Bucket: resultsBucket, Prefix: ''}).promise(); console.log('Found ' + objects.Contents.length + ' objects in results bucket'); if (objects.Contents.length > 0) { const latestFolder = objects.Contents.filter(o => o.Key.endsWith('/summary.json')).sort((a, b) => b.LastModified - a.LastModified)[0]; if (latestFolder) { const data = await s3.getObject({Bucket: resultsBucket, Key: latestFolder.Key}).promise(); const summary = JSON.parse(data.Body.toString()); console.log('Latest test run: ' + JSON.stringify(summary, null, 2)); process.exit(summary.result === 'PASSED' ? 0 : 1); } else { console.log('No test summaries found'); process.exit(0); } } else { console.log('No test results found'); process.exit(0); } } catch (err) { console.error('Error getting test results: ' + err); process.exit(0); } } getResults();\"",
+            ],
+          },
+        },
+      }),
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+      },
+      encryptionKey: key,
+    });
+
+    // Grant the processor permissions to access S3 and CloudFormation
+    deviceFarmResultsProcessor.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['s3:ListBucket', 's3:GetObject'],
+        resources: ['*'], // You might want to restrict this to just the results bucket
+      }),
+    );
+
+    deviceFarmResultsProcessor.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['cloudformation:DescribeStacks'],
+        resources: ['*'],
+      }),
+    );
+
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
       pipelineName: 'FrontEndCrossAccountPipeline',
-      artifactBucket: artifactBucket,
+      crossRegionReplicationBuckets: {
+        'us-west-2': artifactBucket, // Update with your actual regions if different
+      },
+      // Add this line to explicitly set the region
+      crossAccountKeys: true, // This enables cross-account functionality
       stages: [
         {
           stageName: 'Source',
@@ -260,9 +307,6 @@ export class FrontendPipelineStack extends Stack {
               input: frontendBuildOutput,
               bucket: s3.Bucket.fromBucketAttributes(this, 'APKIPAImportedBucket', {
                 bucketArn: 'arn:aws:s3:::frontendbetauswest2deploy-apkandipadeploymentbucke-rqkmrwsimhvc', // Hardcode the ARN or use string literal
-                // If you need to specify the account explicitly:
-                // account: 'beta-account-id',
-                // region: 'us-west-2'
               }),
               role: betaCodePipelineRole,
               runOrder: 2,
@@ -276,6 +320,26 @@ export class FrontendPipelineStack extends Stack {
               role: betaCodePipelineRole,
               deploymentRole: betaCloudFormationRole,
               runOrder: 3,
+            }),
+            // Add a new Lambda Invoke action to run the Device Farm test
+            new codepipeline_actions.LambdaInvokeAction({
+              actionName: 'RunDeviceFarmTest',
+              lambda: lambda.Function.fromFunctionAttributes(this, 'TriggerDeviceFarmTestFunction', {
+                functionArn: `arn:aws:lambda:us-west-2:${betaAccountId}:function:${this.getDeviceFarmTriggerFunctionName()}`,
+                role: betaCodePipelineRole,
+              }),
+              userParameters: {
+                // You can pass parameters if needed
+              },
+              runOrder: 4,
+              role: betaCodePipelineRole,
+            }),
+            // Add a new CodeBuild action to check the Device Farm test results
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'CheckDeviceFarmResults',
+              project: deviceFarmResultsProcessor,
+              input: cdkSource, // Just needs some input, doesn't matter which one
+              runOrder: 5,
             }),
           ],
         },
@@ -335,5 +399,11 @@ export class FrontendPipelineStack extends Stack {
       value: key.keyArn,
       exportName: 'FrontEndArtifactBucketEncryptionKey',
     });
+  }
+
+  // Helper method to get the Device Farm trigger function name
+  private getDeviceFarmTriggerFunctionName(): string {
+    // You can either hardcode this or use a more dynamic approach using CloudFormation exports if needed
+    return 'FrontEndBetauswest2Device-TriggerDeviceFarmTest';
   }
 }

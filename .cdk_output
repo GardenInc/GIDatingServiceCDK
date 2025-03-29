@@ -1,32 +1,54 @@
 
-✨  Synthesis time: 3.11s
+✨  Synthesis time: 7.93s
 
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
-FrontEndPipelineDeploymentStack: start: Building 1466bceff99b81c727292fc2f8fd90c0e6f74a695fd8bb9ed930fd702e1673de:current_account-current_region
-FrontEndPipelineDeploymentStack: success: Built 1466bceff99b81c727292fc2f8fd90c0e6f74a695fd8bb9ed930fd702e1673de:current_account-current_region
-FrontEndPipelineDeploymentStack: start: Publishing 1466bceff99b81c727292fc2f8fd90c0e6f74a695fd8bb9ed930fd702e1673de:current_account-current_region
+FrontEndPipelineDeploymentStack: start: Building ae933cb167eb3233d08fb645a9fc69bbcbb987d7fcaced5ffbe36be987d93a48:739275451028-us-west-2
+FrontEndPipelineDeploymentStack: success: Built ae933cb167eb3233d08fb645a9fc69bbcbb987d7fcaced5ffbe36be987d93a48:739275451028-us-west-2
+FrontEndPipelineDeploymentStack: start: Publishing ae933cb167eb3233d08fb645a9fc69bbcbb987d7fcaced5ffbe36be987d93a48:739275451028-us-west-2
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
-FrontEndPipelineDeploymentStack: success: Published 1466bceff99b81c727292fc2f8fd90c0e6f74a695fd8bb9ed930fd702e1673de:current_account-current_region
+FrontEndPipelineDeploymentStack: success: Published ae933cb167eb3233d08fb645a9fc69bbcbb987d7fcaced5ffbe36be987d93a48:739275451028-us-west-2
 FrontEndPipelineDeploymentStack: deploying... [1/1]
 FrontEndPipelineDeploymentStack: creating CloudFormation changeset...
-FrontEndPipelineDeploymentStack | 0/4 | 10:47:36 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack User Initiated
-FrontEndPipelineDeploymentStack | 0/4 | 10:47:41 PM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
-FrontEndPipelineDeploymentStack | 1/4 | 10:47:41 PM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
-FrontEndPipelineDeploymentStack | 1/4 | 10:47:45 PM | UPDATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-FrontEndPipelineDeploymentStack | 2/4 | 10:47:47 PM | UPDATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-FrontEndPipelineDeploymentStack | 3/4 | 10:47:50 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
-FrontEndPipelineDeploymentStack | 4/4 | 10:47:51 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+FrontEndPipelineDeploymentStack |  0/22 | 5:33:24 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack User Initiated
+FrontEndPipelineDeploymentStack |  0/22 | 5:33:28 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleE1F5F7F4) 
+FrontEndPipelineDeploymentStack |  0/22 | 5:33:28 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | DeviceFarmResultsProcessor/Role (DeviceFarmResultsProcessorRoleA8251F34) 
+FrontEndPipelineDeploymentStack |  0/22 | 5:33:28 PM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack |  0/22 | 5:33:29 PM | UPDATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
+FrontEndPipelineDeploymentStack |  0/22 | 5:33:29 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleE1F5F7F4) Resource creation Initiated
+FrontEndPipelineDeploymentStack |  0/22 | 5:33:29 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | DeviceFarmResultsProcessor/Role (DeviceFarmResultsProcessorRoleA8251F34) Resource creation Initiated
+FrontEndPipelineDeploymentStack |  1/22 | 5:33:29 PM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+FrontEndPipelineDeploymentStack |  2/22 | 5:33:46 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleE1F5F7F4) 
+FrontEndPipelineDeploymentStack |  3/22 | 5:33:46 PM | CREATE_COMPLETE      | AWS::IAM::Role              | DeviceFarmResultsProcessor/Role (DeviceFarmResultsProcessorRoleA8251F34) 
+ 3/22 Currently in progress: FrontEndPipelineDeploymentStack, ArtifactKey8D84C5F0
+FrontEndPipelineDeploymentStack |  4/22 | 5:35:31 PM | UPDATE_COMPLETE      | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
+FrontEndPipelineDeploymentStack |  4/22 | 5:35:32 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | DeviceFarmResultsProcessor (DeviceFarmResultsProcessor9A35F762) 
+FrontEndPipelineDeploymentStack |  4/22 | 5:35:33 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | DeviceFarmResultsProcessor (DeviceFarmResultsProcessor9A35F762) Resource creation Initiated
+FrontEndPipelineDeploymentStack |  4/22 | 5:35:33 PM | UPDATE_IN_PROGRESS   | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
+FrontEndPipelineDeploymentStack |  5/22 | 5:35:34 PM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | DeviceFarmResultsProcessor (DeviceFarmResultsProcessor9A35F762) 
+FrontEndPipelineDeploymentStack |  6/22 | 5:35:34 PM | UPDATE_COMPLETE      | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
+FrontEndPipelineDeploymentStack |  6/22 | 5:35:34 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | DeviceFarmResultsProcessor/Role/DefaultPolicy (DeviceFarmResultsProcessorRoleDefaultPolicy8EC7EFA3) 
+FrontEndPipelineDeploymentStack |  6/22 | 5:35:35 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole/DefaultPolicy (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleDefaultPolicy28908EE6) 
+FrontEndPipelineDeploymentStack |  6/22 | 5:35:35 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | DeviceFarmResultsProcessor/Role/DefaultPolicy (DeviceFarmResultsProcessorRoleDefaultPolicy8EC7EFA3) Resource creation Initiated
+FrontEndPipelineDeploymentStack |  6/22 | 5:35:36 PM | UPDATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
+FrontEndPipelineDeploymentStack |  6/22 | 5:35:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole/DefaultPolicy (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleDefaultPolicy28908EE6) Resource creation Initiated
+FrontEndPipelineDeploymentStack |  7/22 | 5:35:51 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | DeviceFarmResultsProcessor/Role/DefaultPolicy (DeviceFarmResultsProcessorRoleDefaultPolicy8EC7EFA3) 
+FrontEndPipelineDeploymentStack |  8/22 | 5:35:51 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole/DefaultPolicy (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleDefaultPolicy28908EE6) 
+FrontEndPipelineDeploymentStack |  9/22 | 5:35:52 PM | UPDATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
+FrontEndPipelineDeploymentStack |  9/22 | 5:35:54 PM | UPDATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+FrontEndPipelineDeploymentStack | 10/22 | 5:35:57 PM | UPDATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+FrontEndPipelineDeploymentStack | 11/22 | 5:35:59 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+FrontEndPipelineDeploymentStack | 12/22 | 5:36:00 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
 
  ✅  FrontEndPipelineDeploymentStack
 
-✨  Deployment time: 33.3s
+✨  Deployment time: 178.28s
 
 Outputs:
 FrontEndPipelineDeploymentStack.FrontEndArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/f2ac5a9a-6fdb-413a-951d-31b1c80af01a
 Stack ARN:
 arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndPipelineDeploymentStack/83792ca0-0b93-11f0-965f-0240febb4ecb
 
-✨  Total time: 36.41s
+✨  Total time: 186.21s
 
 
 NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)

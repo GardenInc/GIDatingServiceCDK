@@ -1,0 +1,8 @@
+{
+  "statusCode": 200,
+  "message": "Device Farm test initiated successfully",
+  "status": "INITIATED",
+  "monitoringEnabled": true,
+  "monitoringRule": "DeviceFarmMonitor-1743207293740-64db420f",
+  "nextSteps": "The start function is processing your request asynchronously. Check Device Farm console or CloudWatch logs for status."
+}

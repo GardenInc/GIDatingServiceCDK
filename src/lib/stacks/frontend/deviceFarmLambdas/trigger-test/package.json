@@ -1,0 +1,25 @@
+{
+  "name": "device-farm-trigger-test",
+  "version": "1.0.0",
+  "description": "Lambda function to trigger Device Farm tests",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "device-farm"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1099.0",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.38.0",
+    "jest": "^29.5.0"
+  }
+}
