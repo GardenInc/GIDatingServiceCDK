@@ -1,88 +1,96 @@
-AWSTemplateFormatVersion: 2010-09-09
-
-Description: The AWS CloudFormation template that creates the CodePipeline
-  Cross Account Role that will be assumed by the pipeline account to deploy
-  into target accounts
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Role used by CodePipeline to operate in target accounts
 
 Parameters:
   PipelineAccountID:
-    Description: Account ID of the pipeline AWS Account that initiates deployments to this account.
     Type: String
-    ConstraintDescription: Must be a valid AWS Account ID without hyphens.
-    AllowedPattern: '\d{12}'
-    MinLength: 12
-    MaxLength: 12
+    Description: AWS account ID for the Pipeline
+
   Stage:
-    Description: Stage of the account we're deploying to
     Type: String
+    Description: Environment name (Beta, Prod)
+    Default: Beta
     AllowedValues:
-      - Prod
       - Beta
+      - Prod
+
   KeyArn:
-    Description: Provide the KMS Key ARN if you've deployed the pipeline stack
     Type: String
-    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
-    Default: ''
-  FrontEndKeyArn:
-    Description: Provide the KMS Key ARN if you've deployed the front end pipeline stack
-    Type: String
-    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
+    Description: ARN of the KMS Key used by CodePipeline for artifacts (for Backend)
     Default: ''
 
-# If the Key Arn is blank, it's our initial deployment,
-# so don't deploy the policy which references the bucket and key
+  FrontEndKeyArn:
+    Type: String
+    Description: ARN of the KMS Key used by the FrontEnd CodePipeline for artifacts
+    Default: ''
+
+  WebsiteKeyArn:
+    Type: String
+    Description: ARN of the KMS Key used by the Website CodePipeline for artifacts
+    Default: ''
+
 Conditions:
-  DeployPolicy: !Not [!Equals [!Ref FrontEndKeyArn, '']]
+  HasKeyArn: !Not [!Equals [!Ref KeyArn, '']]
+  HasFrontEndKeyArn: !Not [!Equals [!Ref FrontEndKeyArn, '']]
+  HasWebsiteKeyArn: !Not [!Equals [!Ref WebsiteKeyArn, '']]
 
 Resources:
-  CrossAccountDeploymentRole:
-    Type: AWS::IAM::Role
+  CodePipelineCrossAccountRole:
+    Type: 'AWS::IAM::Role'
     Properties:
       RoleName: CodePipelineCrossAccountRole
       AssumeRolePolicyDocument:
-        Version: 2012-10-17
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
-              AWS:
-                - !Sub arn:${AWS::Partition}:iam::${PipelineAccountID}:root
-            Action:
-              - sts:AssumeRole
+              AWS: !Sub 'arn:aws:iam::${PipelineAccountID}:root'
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
 
-  CrossAccountDeploymentPolicy:
-    Condition: DeployPolicy
-    Type: AWS::IAM::ManagedPolicy
+  CodePipelineCrossAccountRolePolicy:
+    Type: 'AWS::IAM::Policy'
+    Condition: HasKeyArn
     Properties:
-      Description: Allows pipeline in master account to deploy API Gateway, Lambda
-      ManagedPolicyName: CodePipelineCrossAccountPolicy
-      Roles:
-        - !Ref CrossAccountDeploymentRole
+      PolicyName: CodePipelineCrossAccountRolePolicy
       PolicyDocument:
-        Version: 2012-10-17
+        Version: '2012-10-17'
         Statement:
-          - Action:
-              - cloudformation:CreateStack
-              - cloudformation:GetTemplate
-              - cloudformation:ValidateTemplate
-              - cloudformation:DeleteStack
-              - cloudformation:UpdateStack
-              - cloudformation:DescribeStack*
-            Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*
-            Effect: Allow
-          - Action: s3:*
-            Resource: !Sub arn:${AWS::Partition}:s3:::*
-            Effect: Allow
-          - Action:
-              - iam:PassRole
-            Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudFormationDeploymentRole
-            Effect: Allow
-          - Action:
-              - kms:DescribeKey
-              - kms:GenerateDataKey*
-              - kms:Encrypt
-              - kms:ReEncrypt*
-              - kms:Decrypt
+          - Effect: Allow
+            Action:
+              - 'cloudformation:*'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - 'kms:Decrypt'
+              - 'kms:DescribeKey'
+              - 'kms:Encrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey*'
             Resource:
-              - !Sub ${KeyArn}
-              - !Sub ${FrontEndKeyArn}
-            Effect: Allow
+              - !Ref KeyArn
+              - !If [HasFrontEndKeyArn, !Ref FrontEndKeyArn, !Ref 'AWS::NoValue']
+              - !If [HasWebsiteKeyArn, !Ref WebsiteKeyArn, !Ref 'AWS::NoValue']
+          - Effect: Allow
+            Action:
+              - 'lambda:InvokeFunction'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - 'cloudfront:CreateInvalidation'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - 'devicefarm:*' # You can limit this to specific actions if preferred
+            Resource: '*'
+      Roles:
+        - !Ref CodePipelineCrossAccountRole
+
+Outputs:
+  CodePipelineCrossAccountRoleARN:
+    Description: ARN of the CodePipeline Cross Account Role
+    Value: !GetAtt CodePipelineCrossAccountRole.Arn
+    Export:
+      Name: !Sub '${Stage}:CodePipelineCrossAccountRoleARN'

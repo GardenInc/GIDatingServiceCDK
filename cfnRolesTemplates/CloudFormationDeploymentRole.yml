@@ -1,142 +1,84 @@
-AWSTemplateFormatVersion: 2010-09-09
-
-Description: |
-  The AWS CloudFormation template for creating Cloudformation execution role to be used by
-  Cloudformation Service to create resources in the application stack.
-  This role is passed to the CloudFormation service by the CodePipeline Cross Account Role
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Role used by CloudFormation to deploy resources in target accounts
 
 Parameters:
   PipelineAccountID:
-    Description: Account ID of the PIPELINE AWS Account that initiates code deployment to this account.
     Type: String
-    ConstraintDescription: Must be a valid AWS Account ID without hyphens.
-    AllowedPattern: '\d{12}'
-    MinLength: 12
-    MaxLength: 12
+    Description: AWS account ID for the Pipeline
+
   Stage:
-    Description: Stage of the account we're deploying to
     Type: String
+    Description: Environment name (Beta, Prod)
+    Default: Beta
     AllowedValues:
-      - Prod
       - Beta
+      - Prod
+
   KeyArn:
-    Description: Provide the KMS Key ARN if you've deployed the pipeline stack
     Type: String
-    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
-    Default: ''
-  FrontEndKeyArn:
-    Description: Provide the KMS Key ARN if you've deployed the pipeline stack
-    Type: String
-    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the PIPELINE account
+    Description: ARN of the KMS Key used by CodePipeline for artifacts (for Backend)
     Default: ''
 
-# If the Key Arn is blank, it's our initial deployment,
-# so don't deploy the policy which references the bucket and key
+  FrontEndKeyArn:
+    Type: String
+    Description: ARN of the KMS Key used by the FrontEnd CodePipeline for artifacts
+    Default: ''
+
+  WebsiteKeyArn:
+    Type: String
+    Description: ARN of the KMS Key used by the Website CodePipeline for artifacts
+    Default: ''
+
 Conditions:
-  DeployPolicy: !Not [!Equals [!Ref FrontEndKeyArn, '']]
+  HasKeyArn: !Not [!Equals [!Ref KeyArn, '']]
+  HasFrontEndKeyArn: !Not [!Equals [!Ref FrontEndKeyArn, '']]
+  HasWebsiteKeyArn: !Not [!Equals [!Ref WebsiteKeyArn, '']]
 
 Resources:
   CloudFormationDeploymentRole:
-    Type: AWS::IAM::Role
+    Type: 'AWS::IAM::Role'
     Properties:
       RoleName: CloudFormationDeploymentRole
       AssumeRolePolicyDocument:
-        Version: 2012-10-17
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
-              Service:
-                - cloudformation.amazonaws.com
-            Action:
-              - sts:AssumeRole
+              AWS: !Sub 'arn:aws:iam::${PipelineAccountID}:root'
+              Service: cloudformation.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
 
-  CloudFormationDeploymentPolicy:
-    Condition: DeployPolicy
-    Type: AWS::IAM::ManagedPolicy
+  CloudFormationDeploymentRolePolicy:
+    Type: 'AWS::IAM::Policy'
+    Condition: HasKeyArn
     Properties:
-      Description: Allows pipeline in PIPELINE account to deploy API Gateway, Lambda
-      ManagedPolicyName: CloudFormationDeploymentPolicy
+      PolicyName: CloudFormationDeploymentRolePolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'kms:Decrypt'
+              - 'kms:DescribeKey'
+              - 'kms:Encrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey*'
+            Resource:
+              - !Ref KeyArn
+              - !If [HasFrontEndKeyArn, !Ref FrontEndKeyArn, !Ref 'AWS::NoValue']
+              - !If [HasWebsiteKeyArn, !Ref WebsiteKeyArn, !Ref 'AWS::NoValue']
+          - Effect: Allow
+            Action:
+              - 'devicefarm:*' # You can limit this to specific actions if preferred
+            Resource: '*'
       Roles:
         - !Ref CloudFormationDeploymentRole
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action: iam:PassRole
-            Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CodePipelineCrossAccountRole
-            Effect: Allow
-          - Action:
-              - iam:Get*
-              - iam:*Role*
-              - iam:AttachRolePolicy
-              - iam:DetachRolePolicy
-              - iam:CreateServiceLinkedRole
-              - iam:DeleteServiceLinkedRole
-              - iam:CreatePolicy
-              - iam:DeletePolicy
-              - iam:*PolicyVersion*
-            Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/*
-            Effect: Allow
-          - Action:
-              - lambda:Create*
-              - lambda:Delete*
-              - lambda:Get*
-              - lambda:Update*
-              - lambda:List*
-              - lambda:AddPermission
-              - lambda:PublishVersion
-              - lambda:RemovePermission
-            Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:HelloLambda*
-            Effect: Allow
-          - Action:
-              - vpc:*
-              - ec2:*
-              - lambda:*
-            Resource: '*'
-            Effect: Allow
-          - Action:
-              - apigateway:GET
-              - apigateway:PATCH
-              - apigateway:POST
-              - apigateway:PUT
-              - apigateway:DELETE
-              - apigateway:GetResources
-            Resource:
-              - !Sub arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:*
-              - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/restapis*
-              - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/account
-            Effect: Allow
-          - Action:
-              - codedeploy:Get*
-              - codedeploy:List*
-              - codedeploy:*Deployment*
-              - codedeploy:CreateApplication
-              - codedeploy:CreateDeploymentGroup
-              - codedeploy:DeleteApplication
-            Resource:
-              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${Stage}*
-              - !Sub arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${Stage}*
-            Effect: Allow
-          - Action: s3:*
-            Resource: !Sub arn:${AWS::Partition}:s3:::*
-            Effect: Allow
-          - Action:
-              - kms:Decrypt
-              - kms:DescribeKey
-            Resource:
-              - !Sub ${KeyArn}
-              - !Sub ${FrontEndKeyArn}
-            Effect: Allow
-          - Action:
-              - cloudformation:CreateStack
-              - cloudformation:DescribeStack*
-              - cloudformation:GetStackPolicy
-              - cloudformation:GetTemplate*
-              - cloudformation:SetStackPolicy
-              - cloudformation:UpdateStack
-              - cloudformation:ValidateTemplate
-            Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*
-            Effect: Allow
-          - Action:
-              - ssm:GetParameters
-            Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
-            Effect: Allow
+
+Outputs:
+  CloudFormationDeploymentRoleARN:
+    Description: ARN of the CloudFormation Deployment Role
+    Value: !GetAtt CloudFormationDeploymentRole.Arn
+    Export:
+      Name: !Sub '${Stage}:CloudFormationDeploymentRoleARN'

@@ -3,37 +3,105 @@ import * as cdk from 'aws-cdk-lib';
 import { ApplicationStack } from './stacks/backend/applicationStack';
 import { BackendPipelineStack, BackendPipelineStackProps } from './stacks/backend/backendPipelineStack';
 import { FrontendPipelineStackProps, FrontendPipelineStack } from './stacks/frontend/frontendPipelineStack';
+import { WebsitePipelineStackProps, WebsitePipelineStack } from './stacks/website/websitePipelineStack';
 import { DeviceFarmStackProps, DeviceFarmStack } from './stacks/frontend/deviceFarmStack';
+import {
+  WebsiteDeploymentBucketStackProps,
+  WebsiteDeploymentBucketStack,
+} from './stacks/website/websiteDeploymentBucketStack';
 import { stageConfigurationList } from './utils/config';
-import { FrontEndStackConfigInterface, ApplicationStackConfigInterface } from './utils/config';
+import {
+  FrontEndStackConfigInterface,
+  ApplicationStackConfigInterface,
+  WebsiteStackConfigInterface,
+} from './utils/config';
 import { ApplicationStackProps } from './stacks/backend/applicationStack';
 import { VpcStackProps, VpcStack } from './stacks/backend/vpcStack';
-import { BackendPipelineStackName, FrontendPipelineStackName, FRONT_END, BACK_END } from './utils/constants';
+import {
+  BackendPipelineStackName,
+  FrontendPipelineStackName,
+  WebsitePipelineStackName,
+  FRONT_END,
+  BACK_END,
+  WEBSITE,
+  DOMAIN_NAME,
+} from './utils/constants';
 import {
   createServiceStackName,
   createVpcStackName,
   createDeviceFarmStackName,
   createDeploymentBucketStackName,
+  createWebsiteBucketStackName,
 } from './utils/utils';
 import { DeploymentBucketStackProps, DeploymentBucketStack } from './stacks/frontend/deploymentBucketStack';
-/*const app = new cdk.App({
-  context: {
-    '@aws-cdk/core:newStyleStackSynthesis': true,
-  },
-});*/
+import { DomainConfigurationStack, DomainConfigurationStackProps } from './stacks/website/domainConfigurationStack';
+import { createDomainConfigStackName } from './utils/utils';
+
 const app = new cdk.App();
+
 // Setup a stack of applications which will be deployed to the pipeline
 const backendServiceStackList: ApplicationStackConfigInterface[] = [];
 const frontendServiceStackList: FrontEndStackConfigInterface[] = [];
+const websiteServiceStackList: WebsiteStackConfigInterface[] = [];
+
+// Create website configuration first with generated values
+for (var stageConfig of stageConfigurationList) {
+  // Generate the same bucket name pattern as in WebsiteDeploymentBucketStack
+  const bucketNamePrefix = `website-${stageConfig.stage.toLowerCase()}-${stageConfig.accountId}`;
+  const uniqueBucketName = `${bucketNamePrefix}-${stageConfig.region}`;
+
+  // Create configuration with dummy CloudFront values
+  const websiteStageConfigurationList: WebsiteStackConfigInterface = {
+    config: stageConfig,
+    websiteBucketArn: `arn:aws:s3:::${uniqueBucketName}`,
+    websiteBucketName: uniqueBucketName,
+    // For initial deployment, use dummy values that will be replaced after first deployment
+    distributionId: `dummy-distribution-id-${stageConfig.stage.toLowerCase()}`,
+    distributionDomainName: `dummy-domain-${stageConfig.stage.toLowerCase()}.cloudfront.net`,
+  };
+
+  websiteServiceStackList.push(websiteStageConfigurationList);
+}
+
+// Now deploy all the actual stacks
+for (var stageConfig of stageConfigurationList) {
+  /*
+   --- Website Stacks ---
+   */
+  const websiteBucketStackProps: WebsiteDeploymentBucketStackProps = {
+    stageName: stageConfig.stage,
+    env: {
+      account: stageConfig.accountId,
+      region: stageConfig.region,
+    },
+  };
+
+  const websiteBucketStackName: string = createWebsiteBucketStackName(stageConfig.stage, stageConfig.region, WEBSITE);
+  new WebsiteDeploymentBucketStack(app, websiteBucketStackName, websiteBucketStackProps);
+
+  const bucketArn = cdk.Fn.importValue(`${stageConfig.stage}-WebsiteBucketArn`);
+  const bucketName = cdk.Fn.importValue(`${stageConfig.stage}-WebsiteBucketName`);
+  const distributionId = cdk.Fn.importValue(`${stageConfig.stage}-WebsiteDistributionId`);
+  const websiteUrl = cdk.Fn.importValue(`${stageConfig.stage}-WebsiteURL`);
+
+  // Use Fn.importValue to get values instead of direct references
+  const websiteStageConfigurationList: WebsiteStackConfigInterface = {
+    config: stageConfig,
+    websiteBucketArn: bucketArn.toString(),
+    websiteBucketName: bucketName.toString(),
+    distributionId: distributionId.toString(),
+    distributionDomainName: websiteUrl.toString().replace('https://', ''),
+  };
+
+  websiteServiceStackList.push(websiteStageConfigurationList);
+}
+
+// Now deploy the rest of the stacks
 for (var stageConfig of stageConfigurationList) {
   /*
    --- Front End Stacks ---
    */
-  // Device Farm Stack
-  // VPC Stack
-  // Cluster Stack
-  // EC2 Stack
-  // VPC Stack
+  // Deployment bucket
   const deploymentBucketStackProps: DeploymentBucketStackProps = {
     stageName: stageConfig.stage,
   };
@@ -43,17 +111,21 @@ for (var stageConfig of stageConfigurationList) {
     FRONT_END,
   );
   const deploymentBucketStack = new DeploymentBucketStack(app, deploymentBucketStackName, deploymentBucketStackProps);
+
+  // Device Farm Stack
   const deviceFarmStackProps: DeviceFarmStackProps = {
     stageName: stageConfig.stage,
     frontEndBuildBucketArn: deploymentBucketStack.bucketArn,
   };
   const deviceFarmStackName: string = createDeviceFarmStackName(stageConfig.stage, stageConfig.region, FRONT_END);
   new DeviceFarmStack(app, deviceFarmStackName, deviceFarmStackProps);
+
   const frontendStageConfigurationList: FrontEndStackConfigInterface = {
     config: stageConfig,
     frontEndCodeDeploymentBucketArn: deploymentBucketStack.bucketArn,
   };
   frontendServiceStackList.push(frontendStageConfigurationList);
+
   /*
    --- Back End Stacks ---
    */
@@ -63,12 +135,14 @@ for (var stageConfig of stageConfigurationList) {
   };
   const backendVpcStackName: string = createVpcStackName(stageConfig.stage, stageConfig.region, BACK_END);
   new VpcStack(app, backendVpcStackName, backendVpcStackProps);
+
   // ECS Service Stack
   const backendApplicationStackProps: ApplicationStackProps = {
     stageName: stageConfig.stage,
   };
   const serviceStackName: string = createServiceStackName(stageConfig.stage, stageConfig.region);
   new ApplicationStack(app, serviceStackName, backendApplicationStackProps);
+
   const backendStageConfigurationList: ApplicationStackConfigInterface = {
     config: stageConfig,
   };
@@ -76,19 +150,31 @@ for (var stageConfig of stageConfigurationList) {
   backendServiceStackList.push(backendStageConfigurationList);
 }
 
-// Frontend Pipeline - Added explicit region and account for cross-environment actions
+// Frontend Pipeline
 const frontEndPipelineStackProps: FrontendPipelineStackProps = {
   stacksToDeploy: frontendServiceStackList,
   env: {
-    region: 'us-west-2', // Explicitly set the region
-    account: process.env.CDK_DEFAULT_ACCOUNT || stageConfigurationList[0].accountId, // Use the first config's account or the default
+    region: 'us-west-2',
+    account: process.env.CDK_DEFAULT_ACCOUNT || stageConfigurationList[0].accountId,
   },
 };
 new FrontendPipelineStack(app, FrontendPipelineStackName, frontEndPipelineStackProps);
+
+// Website Pipeline
+// Note: This will only work after you've deployed the website bucket stacks first
+const websitePipelineStackProps: WebsitePipelineStackProps = {
+  stacksToDeploy: websiteServiceStackList,
+  env: {
+    region: 'us-west-2',
+    account: process.env.CDK_DEFAULT_ACCOUNT || stageConfigurationList[0].accountId,
+  },
+};
+new WebsitePipelineStack(app, WebsitePipelineStackName, websitePipelineStackProps);
 
 // Backend Pipeline
 const backendPipelineStackProps: BackendPipelineStackProps = {
   stacksToDeploy: backendServiceStackList,
 };
 new BackendPipelineStack(app, BackendPipelineStackName, backendPipelineStackProps);
+
 app.synth();

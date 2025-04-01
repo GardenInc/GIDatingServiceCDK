@@ -8,10 +8,10 @@
 
 # If prerequisite account values aren't set, exit
 if [[ -z "${PIPELINE_ACCOUNT_ID}" || -z "${BETA_ACCOUNT_ID}" || -z "${PROD_ACCOUNT_ID}" ]]; then
-  printf "Please set PIPELINE_ACCOUNT_ID, BETA_ACCOUNT_ID, and PROD_ACCOUNT_ID"
-  printf "PIPELINE_ACCOUNT_ID =" ${PIPELINE_ACCOUNT_ID}
-  printf "BETA_ACCOUNT_ID =" ${BETA_ACCOUNT_ID}
-  printf "PROD_ACCOUNT_ID =" ${PROD_ACCOUNT_ID}
+  printf "Please set PIPELINE_ACCOUNT_ID, BETA_ACCOUNT_ID, and PROD_ACCOUNT_ID\n"
+  printf "PIPELINE_ACCOUNT_ID = ${PIPELINE_ACCOUNT_ID}\n"
+  printf "BETA_ACCOUNT_ID = ${BETA_ACCOUNT_ID}\n"
+  printf "PROD_ACCOUNT_ID = ${PROD_ACCOUNT_ID}\n"
   exit
 fi
 
@@ -40,13 +40,23 @@ aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploy
     --profile prod \
     --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod 
 
-# Deploy Pipeline CDK stack, write output to a file to gather key arn
-printf "\nDeploying Cross-Account Deployment Pipeline Stack\n"
+# First, deploy the website bucket stacks to create exports
+printf "\nDeploying Website Bucket Stacks to Beta and Prod\n"
 npm install
 npm audit fix
 npm run build
-cdk synth
 
+# Deploy Website Bucket stacks to both environments
+npx cdk deploy WebsiteBetaus-west-2BucketStack \
+  --profile beta \
+  --require-approval never
+
+npx cdk deploy WebsiteProdus-west-2BucketStack \
+  --profile prod \
+  --require-approval never
+
+# Deploy Pipeline CDK stack, write output to a file to gather key arn
+printf "\nDeploying Cross-Account Deployment Pipeline Stack\n"
 CDK_OUTPUT_FILE='.cdk_output'
 rm -rf ${CDK_OUTPUT_FILE} .cfn_outputs
 npx cdk deploy PipelineDeploymentStack \
@@ -64,6 +74,7 @@ if [[ -z "${KEY_ARN}" ]]; then
   exit
 fi
 
+# Deploy Frontend Pipeline
 rm -rf ${CDK_OUTPUT_FILE} .cfn_outputs
 npx cdk deploy FrontEndPipelineDeploymentStack \
   --context prod-account=${PROD_ACCOUNT_ID} \
@@ -74,48 +85,72 @@ npx cdk deploy FrontEndPipelineDeploymentStack \
 sed -n -e '/Outputs:/,/^$/ p' ${CDK_OUTPUT_FILE} > .cfn_outputs
 FRONT_END_KEY_ARN=$(awk -F " " '/KeyArn/ { print $3 }' .cfn_outputs)
 
-# Check that KEY_ARN is set after the CDK deployment
+# Check that FRONT_END_KEY_ARN is set after the CDK deployment
 if [[ -z "${FRONT_END_KEY_ARN}" ]]; then
-  printf "\nSomething went wrong - we didn't get a Key ARN as an output from the CDK Pipeline deployment"
+  printf "\nSomething went wrong - we didn't get a Key ARN as an output from the Frontend CDK Pipeline deployment"
   exit
 fi
 
-# Update the CloudFormation roles with the Key ARNy in parallel
+# Deploy Website Pipeline - Updated with correct stack name
+rm -rf ${CDK_OUTPUT_FILE} .cfn_outputs
+npx cdk deploy WebsitePipelineStack \
+  --context prod-account=${PROD_ACCOUNT_ID} \
+  --context beta-account=${BETA_ACCOUNT_ID} \
+  --profile pipeline \
+  --require-approval never \
+  2>&1 | tee -a ${CDK_OUTPUT_FILE}
+sed -n -e '/Outputs:/,/^$/ p' ${CDK_OUTPUT_FILE} > .cfn_outputs
+WEBSITE_KEY_ARN=$(awk -F " " '/WebsiteArtifactBucketEncryptionKeyArn/ { print $3 }' .cfn_outputs)
+
+# Check that WEBSITE_KEY_ARN is set after the CDK deployment
+if [[ -z "${WEBSITE_KEY_ARN}" ]]; then
+  printf "\nSomething went wrong - we didn't get a Key ARN as an output from the Website CDK Pipeline deployment"
+  exit
+fi
+
+# Update the CloudFormation roles with the Key ARNs in parallel
 printf "\nUpdating roles with policies in BETA and Prod\n"
 aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAccountRole.yml \
     --stack-name CodePipelineCrossAccountRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile beta \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN} &
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploymentRole.yml \
     --stack-name CloudFormationDeploymentRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile beta \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN} &
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploymentRole.yml \
     --stack-name CloudFormationDeploymentRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile prod \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN} &
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAccountRole.yml \
     --stack-name CodePipelineCrossAccountRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile prod \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN}
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN}
 
 # Commit initial code to new repo (which will trigger a fresh pipeline execution)
 printf "\nCommitting code to repository\n"
 git add . && git commit -m "Automated Commit" && git push
 
 # Get deployed API Gateway endpoints
-printf "\nUse the following commands to get the Endpoints for deployed environemnts: "
+printf "\nUse the following commands to get the Endpoints for deployed environments: "
 printf "\n  aws cloudformation describe-stacks --stack-name Betauswest2ServiceStack \
   --profile beta | grep OutputValue"
 printf "\n  aws cloudformation describe-stacks --stack-name Produswest2ServiceStack \
   --profile prod | grep OutputValue"
 
+# Get website URLs
+printf "\nWebsite URLs:"
+printf "\n  Beta: $(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2BucketStack \
+  --profile beta --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURLOutput`].OutputValue' --output text)"
+printf "\n  Prod: $(aws cloudformation describe-stacks --stack-name WebsiteProdus-west-2BucketStack \
+  --profile prod --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURLOutput`].OutputValue' --output text)"
+
 # Clean up temporary files
-rm ${CDK_OUTPUT_FILE} .cfn_outputs
+rm -f ${CDK_OUTPUT_FILE} .cfn_outputs

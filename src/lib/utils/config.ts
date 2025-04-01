@@ -47,7 +47,11 @@ export interface FrontEndStackConfigInterface {
   frontEndCodeDeploymentBucketArn: string;
 }
 
-// WEBSITE REF
+// WEBSITE END REF
 export interface WebsiteStackConfigInterface {
   config: StageConfigInterface;
+  websiteBucketArn: string;
+  websiteBucketName: string;
+  distributionId: string;
+  distributionDomainName: string;
 }

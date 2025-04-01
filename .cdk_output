@@ -1,54 +1,140 @@
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin#bind is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin#bind is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+  This API will be removed in the next major release.
 
-✨  Synthesis time: 7.93s
+✨  Synthesis time: 6.63s
 
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
-FrontEndPipelineDeploymentStack: start: Building ae933cb167eb3233d08fb645a9fc69bbcbb987d7fcaced5ffbe36be987d93a48:739275451028-us-west-2
-FrontEndPipelineDeploymentStack: success: Built ae933cb167eb3233d08fb645a9fc69bbcbb987d7fcaced5ffbe36be987d93a48:739275451028-us-west-2
-FrontEndPipelineDeploymentStack: start: Publishing ae933cb167eb3233d08fb645a9fc69bbcbb987d7fcaced5ffbe36be987d93a48:739275451028-us-west-2
+WebsitePipelineStack: start: Building 0504ecea98efd6b9a2880e605897e561532ffaa301fe46d6ccb27876f69ec62e:739275451028-us-west-2
+WebsitePipelineStack: success: Built 0504ecea98efd6b9a2880e605897e561532ffaa301fe46d6ccb27876f69ec62e:739275451028-us-west-2
+WebsitePipelineStack: start: Publishing 0504ecea98efd6b9a2880e605897e561532ffaa301fe46d6ccb27876f69ec62e:739275451028-us-west-2
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
-FrontEndPipelineDeploymentStack: success: Published ae933cb167eb3233d08fb645a9fc69bbcbb987d7fcaced5ffbe36be987d93a48:739275451028-us-west-2
-FrontEndPipelineDeploymentStack: deploying... [1/1]
-FrontEndPipelineDeploymentStack: creating CloudFormation changeset...
-FrontEndPipelineDeploymentStack |  0/22 | 5:33:24 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack User Initiated
-FrontEndPipelineDeploymentStack |  0/22 | 5:33:28 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleE1F5F7F4) 
-FrontEndPipelineDeploymentStack |  0/22 | 5:33:28 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | DeviceFarmResultsProcessor/Role (DeviceFarmResultsProcessorRoleA8251F34) 
-FrontEndPipelineDeploymentStack |  0/22 | 5:33:28 PM | UPDATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
-FrontEndPipelineDeploymentStack |  0/22 | 5:33:29 PM | UPDATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
-FrontEndPipelineDeploymentStack |  0/22 | 5:33:29 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleE1F5F7F4) Resource creation Initiated
-FrontEndPipelineDeploymentStack |  0/22 | 5:33:29 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | DeviceFarmResultsProcessor/Role (DeviceFarmResultsProcessorRoleA8251F34) Resource creation Initiated
-FrontEndPipelineDeploymentStack |  1/22 | 5:33:29 PM | UPDATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
-FrontEndPipelineDeploymentStack |  2/22 | 5:33:46 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleE1F5F7F4) 
-FrontEndPipelineDeploymentStack |  3/22 | 5:33:46 PM | CREATE_COMPLETE      | AWS::IAM::Role              | DeviceFarmResultsProcessor/Role (DeviceFarmResultsProcessorRoleA8251F34) 
- 3/22 Currently in progress: FrontEndPipelineDeploymentStack, ArtifactKey8D84C5F0
-FrontEndPipelineDeploymentStack |  4/22 | 5:35:31 PM | UPDATE_COMPLETE      | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
-FrontEndPipelineDeploymentStack |  4/22 | 5:35:32 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | DeviceFarmResultsProcessor (DeviceFarmResultsProcessor9A35F762) 
-FrontEndPipelineDeploymentStack |  4/22 | 5:35:33 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | DeviceFarmResultsProcessor (DeviceFarmResultsProcessor9A35F762) Resource creation Initiated
-FrontEndPipelineDeploymentStack |  4/22 | 5:35:33 PM | UPDATE_IN_PROGRESS   | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
-FrontEndPipelineDeploymentStack |  5/22 | 5:35:34 PM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | DeviceFarmResultsProcessor (DeviceFarmResultsProcessor9A35F762) 
-FrontEndPipelineDeploymentStack |  6/22 | 5:35:34 PM | UPDATE_COMPLETE      | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
-FrontEndPipelineDeploymentStack |  6/22 | 5:35:34 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | DeviceFarmResultsProcessor/Role/DefaultPolicy (DeviceFarmResultsProcessorRoleDefaultPolicy8EC7EFA3) 
-FrontEndPipelineDeploymentStack |  6/22 | 5:35:35 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole/DefaultPolicy (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleDefaultPolicy28908EE6) 
-FrontEndPipelineDeploymentStack |  6/22 | 5:35:35 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | DeviceFarmResultsProcessor/Role/DefaultPolicy (DeviceFarmResultsProcessorRoleDefaultPolicy8EC7EFA3) Resource creation Initiated
-FrontEndPipelineDeploymentStack |  6/22 | 5:35:36 PM | UPDATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
-FrontEndPipelineDeploymentStack |  6/22 | 5:35:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole/DefaultPolicy (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleDefaultPolicy28908EE6) Resource creation Initiated
-FrontEndPipelineDeploymentStack |  7/22 | 5:35:51 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | DeviceFarmResultsProcessor/Role/DefaultPolicy (DeviceFarmResultsProcessorRoleDefaultPolicy8EC7EFA3) 
-FrontEndPipelineDeploymentStack |  8/22 | 5:35:51 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Deploy_Beta/CheckDeviceFarmResults/CodePipelineActionRole/DefaultPolicy (PipelineDeployBetaCheckDeviceFarmResultsCodePipelineActionRoleDefaultPolicy28908EE6) 
-FrontEndPipelineDeploymentStack |  9/22 | 5:35:52 PM | UPDATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
-FrontEndPipelineDeploymentStack |  9/22 | 5:35:54 PM | UPDATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-FrontEndPipelineDeploymentStack | 10/22 | 5:35:57 PM | UPDATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-FrontEndPipelineDeploymentStack | 11/22 | 5:35:59 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
-FrontEndPipelineDeploymentStack | 12/22 | 5:36:00 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | FrontEndPipelineDeploymentStack 
+WebsitePipelineStack: success: Published 0504ecea98efd6b9a2880e605897e561532ffaa301fe46d6ccb27876f69ec62e:739275451028-us-west-2
+WebsitePipelineStack: deploying... [1/1]
+WebsitePipelineStack: creating CloudFormation changeset...
+WebsitePipelineStack |  0/34 | 9:36:27 PM | REVIEW_IN_PROGRESS   | AWS::CloudFormation::Stack  | WebsitePipelineStack User Initiated
+WebsitePipelineStack |  0/34 | 9:36:33 PM | CREATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | WebsitePipelineStack User Initiated
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Role (PipelineRoleD68726F7) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/CDK_Synth/CodePipelineActionRole (PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | ProdCloudFrontInvalidation/Role (ProdCloudFrontInvalidationRoleFB610E0C) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole (PipelinePipelineUpdateSelfMutateCodePipelineActionRole529AD9B9) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Manual_Approval/Approve/CodePipelineActionRole (PipelineManualApprovalApproveCodePipelineActionRole53989F82) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | CloudFrontInvalidation/Role (CloudFrontInvalidationRole8F958F69) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | WebsiteBuild/Role (WebsiteBuildRole829DF2B3) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/Website_Build/CodePipelineActionRole (PipelineBuildWebsiteBuildCodePipelineActionRole4FD0F991) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Deploy_Beta/InvalidateCloudFrontCache/CodePipelineActionRole (PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRole7332C43D) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | CdkBuild/Role (CdkBuildRoleBE66F777) 
+WebsitePipelineStack |  0/34 | 9:36:36 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/Role (PipelinePipelineUpdateSelfMutateRole336A6040) 
+WebsitePipelineStack |  0/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/Website_Build/CodePipelineActionRole (PipelineBuildWebsiteBuildCodePipelineActionRole4FD0F991) Resource creation Initiated
+WebsitePipelineStack |  0/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Deploy_Beta/InvalidateCloudFrontCache/CodePipelineActionRole (PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRole7332C43D) Resource creation Initiated
+WebsitePipelineStack |  0/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | WebsiteBuild/Role (WebsiteBuildRole829DF2B3) Resource creation Initiated
+WebsitePipelineStack |  0/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) Resource creation Initiated
+WebsitePipelineStack |  0/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) Resource creation Initiated
+WebsitePipelineStack |  0/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Build/CDK_Synth/CodePipelineActionRole (PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83) Resource creation Initiated
+WebsitePipelineStack |  0/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | CloudFrontInvalidation/Role (CloudFrontInvalidationRole8F958F69) Resource creation Initiated
+WebsitePipelineStack |  0/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole (PipelinePipelineUpdateSelfMutateCodePipelineActionRole529AD9B9) Resource creation Initiated
+WebsitePipelineStack |  0/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | CdkBuild/Role (CdkBuildRoleBE66F777) Resource creation Initiated
+WebsitePipelineStack |  1/34 | 9:36:37 PM | CREATE_COMPLETE      | AWS::CDK::Metadata          | CDKMetadata/Default (CDKMetadata) 
+WebsitePipelineStack |  1/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/Role (PipelinePipelineUpdateSelfMutateRole336A6040) Resource creation Initiated
+WebsitePipelineStack |  1/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Manual_Approval/Approve/CodePipelineActionRole (PipelineManualApprovalApproveCodePipelineActionRole53989F82) Resource creation Initiated
+WebsitePipelineStack |  1/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | Pipeline/Role (PipelineRoleD68726F7) Resource creation Initiated
+WebsitePipelineStack |  1/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | ProdCloudFrontInvalidation/Role (ProdCloudFrontInvalidationRoleFB610E0C) Resource creation Initiated
+WebsitePipelineStack |  1/34 | 9:36:37 PM | CREATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) Eventual consistency check initiated
+WebsitePipelineStack |  1/34 | 9:36:38 PM | CREATE_IN_PROGRESS   | AWS::KMS::Alias             | ArtifactKey/Alias (ArtifactKeyAliasB27DA94F) 
+WebsitePipelineStack |  1/34 | 9:36:39 PM | CREATE_IN_PROGRESS   | AWS::KMS::Alias             | ArtifactKey/Alias (ArtifactKeyAliasB27DA94F) Resource creation Initiated
+WebsitePipelineStack |  2/34 | 9:36:53 PM | CREATE_COMPLETE      | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
+WebsitePipelineStack |  2/34 | 9:36:53 PM | CREATE_IN_PROGRESS   | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) 
+WebsitePipelineStack |  3/34 | 9:36:53 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Build/Website_Build/CodePipelineActionRole (PipelineBuildWebsiteBuildCodePipelineActionRole4FD0F991) 
+WebsitePipelineStack |  4/34 | 9:36:53 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Deploy_Beta/InvalidateCloudFrontCache/CodePipelineActionRole (PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRole7332C43D) 
+WebsitePipelineStack |  5/34 | 9:36:53 PM | CREATE_COMPLETE      | AWS::IAM::Role              | WebsiteBuild/Role (WebsiteBuildRole829DF2B3) 
+WebsitePipelineStack |  6/34 | 9:36:53 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Build/CDK_Synth/CodePipelineActionRole (PipelineBuildCDKSynthCodePipelineActionRoleDAC58F83) 
+WebsitePipelineStack |  7/34 | 9:36:54 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole (PipelinePipelineUpdateSelfMutateCodePipelineActionRole529AD9B9) 
+WebsitePipelineStack |  8/34 | 9:36:54 PM | CREATE_COMPLETE      | AWS::IAM::Role              | ProdCloudFrontInvalidation/Role (ProdCloudFrontInvalidationRoleFB610E0C) 
+WebsitePipelineStack |  9/34 | 9:36:54 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Pipeline_Update/SelfMutate/Role (PipelinePipelineUpdateSelfMutateRole336A6040) 
+WebsitePipelineStack | 10/34 | 9:36:54 PM | CREATE_COMPLETE      | AWS::IAM::Role              | CloudFrontInvalidation/Role (CloudFrontInvalidationRole8F958F69) 
+WebsitePipelineStack | 11/34 | 9:36:54 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Manual_Approval/Approve/CodePipelineActionRole (PipelineManualApprovalApproveCodePipelineActionRole53989F82) 
+WebsitePipelineStack | 12/34 | 9:36:54 PM | CREATE_COMPLETE      | AWS::IAM::Role              | CdkBuild/Role (CdkBuildRoleBE66F777) 
+WebsitePipelineStack | 13/34 | 9:36:54 PM | CREATE_COMPLETE      | AWS::IAM::Role              | Pipeline/Role (PipelineRoleD68726F7) 
+WebsitePipelineStack | 13/34 | 9:36:54 PM | CREATE_IN_PROGRESS   | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) Resource creation Initiated
+WebsitePipelineStack | 13/34 | 9:36:54 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | WebsiteBuild (WebsiteBuildD5A80231) 
+WebsitePipelineStack | 13/34 | 9:36:54 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | ProdCloudFrontInvalidation (ProdCloudFrontInvalidation1D6AA974) 
+WebsitePipelineStack | 13/34 | 9:36:55 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CloudFrontInvalidation (CloudFrontInvalidation386AF106) 
+WebsitePipelineStack | 13/34 | 9:36:55 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
+WebsitePipelineStack | 13/34 | 9:36:55 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | WebsiteBuild (WebsiteBuildD5A80231) Resource creation Initiated
+WebsitePipelineStack | 13/34 | 9:36:56 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CloudFrontInvalidation (CloudFrontInvalidation386AF106) Resource creation Initiated
+WebsitePipelineStack | 13/34 | 9:36:56 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) Resource creation Initiated
+WebsitePipelineStack | 13/34 | 9:36:56 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | ProdCloudFrontInvalidation (ProdCloudFrontInvalidation1D6AA974) Resource creation Initiated
+WebsitePipelineStack | 14/34 | 9:36:56 PM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | ProdCloudFrontInvalidation (ProdCloudFrontInvalidation1D6AA974) 
+WebsitePipelineStack | 15/34 | 9:36:56 PM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | CloudFrontInvalidation (CloudFrontInvalidation386AF106) 
+WebsitePipelineStack | 16/34 | 9:36:56 PM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
+WebsitePipelineStack | 17/34 | 9:36:56 PM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | WebsiteBuild (WebsiteBuildD5A80231) 
+WebsitePipelineStack | 17/34 | 9:36:57 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/CDK_Synth/CodePipelineActionRole/DefaultPolicy (PipelineBuildCDKSynthCodePipelineActionRoleDefaultPolicy34E41D63) 
+WebsitePipelineStack | 17/34 | 9:36:57 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/Website_Build/CodePipelineActionRole/DefaultPolicy (PipelineBuildWebsiteBuildCodePipelineActionRoleDefaultPolicy599F96AB) 
+WebsitePipelineStack | 17/34 | 9:36:57 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Deploy_Beta/InvalidateCloudFrontCache/CodePipelineActionRole/DefaultPolicy (PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRoleDefaultPolicy6F76BD96) 
+WebsitePipelineStack | 17/34 | 9:36:58 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/CDK_Synth/CodePipelineActionRole/DefaultPolicy (PipelineBuildCDKSynthCodePipelineActionRoleDefaultPolicy34E41D63) Resource creation Initiated
+WebsitePipelineStack | 17/34 | 9:36:58 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Deploy_Beta/InvalidateCloudFrontCache/CodePipelineActionRole/DefaultPolicy (PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRoleDefaultPolicy6F76BD96) Resource creation Initiated
+WebsitePipelineStack | 17/34 | 9:36:58 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Build/Website_Build/CodePipelineActionRole/DefaultPolicy (PipelineBuildWebsiteBuildCodePipelineActionRoleDefaultPolicy599F96AB) Resource creation Initiated
+WebsitePipelineStack | 18/34 | 9:37:08 PM | CREATE_COMPLETE      | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) 
+WebsitePipelineStack | 18/34 | 9:37:09 PM | CREATE_IN_PROGRESS   | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
+WebsitePipelineStack | 18/34 | 9:37:10 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | ProdCloudFrontInvalidation/Role/DefaultPolicy (ProdCloudFrontInvalidationRoleDefaultPolicy768B9CBB) 
+WebsitePipelineStack | 18/34 | 9:37:10 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | CloudFrontInvalidation/Role/DefaultPolicy (CloudFrontInvalidationRoleDefaultPolicyE69E1E73) 
+WebsitePipelineStack | 18/34 | 9:37:10 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | WebsiteBuild/Role/DefaultPolicy (WebsiteBuildRoleDefaultPolicy8B34D127) 
+WebsitePipelineStack | 18/34 | 9:37:10 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/Role/DefaultPolicy (PipelinePipelineUpdateSelfMutateRoleDefaultPolicy840E466A) 
+WebsitePipelineStack | 18/34 | 9:37:10 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | CdkBuild/Role/DefaultPolicy (CdkBuildRoleDefaultPolicyD27F0F5C) 
+WebsitePipelineStack | 18/34 | 9:37:10 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole/DefaultPolicy (PipelinePipelineUpdateSelfMutateCodePipelineActionRoleDefaultPolicy0BC48BCB) 
+WebsitePipelineStack | 18/34 | 9:37:10 PM | CREATE_IN_PROGRESS   | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) Resource creation Initiated
+WebsitePipelineStack | 18/34 | 9:37:11 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | CloudFrontInvalidation/Role/DefaultPolicy (CloudFrontInvalidationRoleDefaultPolicyE69E1E73) Resource creation Initiated
+WebsitePipelineStack | 18/34 | 9:37:11 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | WebsiteBuild/Role/DefaultPolicy (WebsiteBuildRoleDefaultPolicy8B34D127) Resource creation Initiated
+WebsitePipelineStack | 18/34 | 9:37:11 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | ProdCloudFrontInvalidation/Role/DefaultPolicy (ProdCloudFrontInvalidationRoleDefaultPolicy768B9CBB) Resource creation Initiated
+WebsitePipelineStack | 18/34 | 9:37:11 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | CdkBuild/Role/DefaultPolicy (CdkBuildRoleDefaultPolicyD27F0F5C) Resource creation Initiated
+WebsitePipelineStack | 18/34 | 9:37:11 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/Role/DefaultPolicy (PipelinePipelineUpdateSelfMutateRoleDefaultPolicy840E466A) Resource creation Initiated
+WebsitePipelineStack | 19/34 | 9:37:11 PM | CREATE_COMPLETE      | AWS::S3::BucketPolicy       | ArtifactBucket/Policy (ArtifactBucketPolicy4B4B7752) 
+WebsitePipelineStack | 19/34 | 9:37:11 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole/DefaultPolicy (PipelinePipelineUpdateSelfMutateCodePipelineActionRoleDefaultPolicy0BC48BCB) Resource creation Initiated
+WebsitePipelineStack | 19/34 | 9:37:12 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
+WebsitePipelineStack | 20/34 | 9:37:13 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Build/CDK_Synth/CodePipelineActionRole/DefaultPolicy (PipelineBuildCDKSynthCodePipelineActionRoleDefaultPolicy34E41D63) 
+WebsitePipelineStack | 20/34 | 9:37:13 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) Resource creation Initiated
+WebsitePipelineStack | 21/34 | 9:37:14 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Deploy_Beta/InvalidateCloudFrontCache/CodePipelineActionRole/DefaultPolicy (PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRoleDefaultPolicy6F76BD96) 
+WebsitePipelineStack | 22/34 | 9:37:14 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Build/Website_Build/CodePipelineActionRole/DefaultPolicy (PipelineBuildWebsiteBuildCodePipelineActionRoleDefaultPolicy599F96AB) 
+WebsitePipelineStack | 23/34 | 9:37:26 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | WebsiteBuild/Role/DefaultPolicy (WebsiteBuildRoleDefaultPolicy8B34D127) 
+WebsitePipelineStack | 24/34 | 9:37:26 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | CloudFrontInvalidation/Role/DefaultPolicy (CloudFrontInvalidationRoleDefaultPolicyE69E1E73) 
+WebsitePipelineStack | 25/34 | 9:37:26 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | ProdCloudFrontInvalidation/Role/DefaultPolicy (ProdCloudFrontInvalidationRoleDefaultPolicy768B9CBB) 
+WebsitePipelineStack | 26/34 | 9:37:26 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | CdkBuild/Role/DefaultPolicy (CdkBuildRoleDefaultPolicyD27F0F5C) 
+WebsitePipelineStack | 27/34 | 9:37:26 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/Role/DefaultPolicy (PipelinePipelineUpdateSelfMutateRoleDefaultPolicy840E466A) 
+WebsitePipelineStack | 28/34 | 9:37:27 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Pipeline_Update/SelfMutate/CodePipelineActionRole/DefaultPolicy (PipelinePipelineUpdateSelfMutateCodePipelineActionRoleDefaultPolicy0BC48BCB) 
+WebsitePipelineStack | 29/34 | 9:37:29 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
+WebsitePipelineStack | 29/34 | 9:37:30 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+WebsitePipelineStack | 29/34 | 9:37:33 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) Resource creation Initiated
+WebsitePipelineStack | 30/34 | 9:37:34 PM | CREATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+WebsitePipelineStack | 30/34 | 9:37:34 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Webhook  | Pipeline/Source/GIDatingWebsite/WebhookResource (PipelineSourceGIDatingWebsiteWebhookResource031FAFF9) 
+WebsitePipelineStack | 30/34 | 9:37:34 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Webhook  | Pipeline/Source/GIDatingServiceCDK/WebhookResource (PipelineSourceGIDatingServiceCDKWebhookResourceFEFCD0EE) 
+WebsitePipelineStack | 30/34 | 9:37:36 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Webhook  | Pipeline/Source/GIDatingWebsite/WebhookResource (PipelineSourceGIDatingWebsiteWebhookResource031FAFF9) Resource creation Initiated
+WebsitePipelineStack | 31/34 | 9:37:36 PM | CREATE_COMPLETE      | AWS::CodePipeline::Webhook  | Pipeline/Source/GIDatingWebsite/WebhookResource (PipelineSourceGIDatingWebsiteWebhookResource031FAFF9) 
+WebsitePipelineStack | 32/34 | 9:37:41 PM | CREATE_COMPLETE      | AWS::KMS::Alias             | ArtifactKey/Alias (ArtifactKeyAliasB27DA94F) 
+WebsitePipelineStack | 32/34 | 9:37:51 PM | CREATE_IN_PROGRESS   | AWS::CodePipeline::Webhook  | Pipeline/Source/GIDatingServiceCDK/WebhookResource (PipelineSourceGIDatingServiceCDKWebhookResourceFEFCD0EE) Resource creation Initiated
+WebsitePipelineStack | 33/34 | 9:37:52 PM | CREATE_COMPLETE      | AWS::CodePipeline::Webhook  | Pipeline/Source/GIDatingServiceCDK/WebhookResource (PipelineSourceGIDatingServiceCDKWebhookResourceFEFCD0EE) 
+WebsitePipelineStack | 34/34 | 9:37:53 PM | CREATE_COMPLETE      | AWS::CloudFormation::Stack  | WebsitePipelineStack 
 
- ✅  FrontEndPipelineDeploymentStack
+ ✅  WebsitePipelineStack
 
-✨  Deployment time: 178.28s
+✨  Deployment time: 89.45s
 
 Outputs:
-FrontEndPipelineDeploymentStack.FrontEndArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/f2ac5a9a-6fdb-413a-951d-31b1c80af01a
+WebsitePipelineStack.WebsiteArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/9e5d4893-6433-429a-8c4c-e592f7fe7751
 Stack ARN:
-arn:aws:cloudformation:us-west-2:739275451028:stack/FrontEndPipelineDeploymentStack/83792ca0-0b93-11f0-965f-0240febb4ecb
+arn:aws:cloudformation:us-west-2:739275451028:stack/WebsitePipelineStack/dfc1e840-0eb2-11f0-8661-0269a69f9145
 
-✨  Total time: 186.21s
+✨  Total time: 96.09s
 
 
 NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)

@@ -13,3 +13,9 @@ export const SECRET_NAME = 'github-token-plaintext';
 export const BackendPipelineStackName = 'PipelineDeploymentStack';
 export const FrontendPipelineStackName = 'FrontEndPipelineDeploymentStack';
 export const TEMPLATE_ENDING = '.template.json';
+
+// website additions
+export const WebsitePipelineStackName = 'WebsitePipelineStack';
+export const WEBSITE = 'Website';
+export const WEBSITE_BUCKET_STACK = 'WebsiteBucketStack';
+export const DOMAIN_NAME = 'qandmedating.com';
