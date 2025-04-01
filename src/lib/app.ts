@@ -9,6 +9,8 @@ import {
   WebsiteDeploymentBucketStackProps,
   WebsiteDeploymentBucketStack,
 } from './stacks/website/websiteDeploymentBucketStack';
+// Fix the casing in the import to match the actual file name
+import { DomainConfigurationStack, DomainConfigurationStackProps } from './stacks/website/domainConfigurationStack';
 import { stageConfigurationList } from './utils/config';
 import {
   FrontEndStackConfigInterface,
@@ -32,10 +34,9 @@ import {
   createDeviceFarmStackName,
   createDeploymentBucketStackName,
   createWebsiteBucketStackName,
+  createDomainConfigStackName,
 } from './utils/utils';
 import { DeploymentBucketStackProps, DeploymentBucketStack } from './stacks/frontend/deploymentBucketStack';
-import { DomainConfigurationStack, DomainConfigurationStackProps } from './stacks/website/domainConfigurationStack';
-import { createDomainConfigStackName } from './utils/utils';
 
 const app = new cdk.App();
 
@@ -79,21 +80,31 @@ for (var stageConfig of stageConfigurationList) {
   const websiteBucketStackName: string = createWebsiteBucketStackName(stageConfig.stage, stageConfig.region, WEBSITE);
   new WebsiteDeploymentBucketStack(app, websiteBucketStackName, websiteBucketStackProps);
 
-  const bucketArn = cdk.Fn.importValue(`${stageConfig.stage}-WebsiteBucketArn`);
-  const bucketName = cdk.Fn.importValue(`${stageConfig.stage}-WebsiteBucketName`);
-  const distributionId = cdk.Fn.importValue(`${stageConfig.stage}-WebsiteDistributionId`);
-  const websiteUrl = cdk.Fn.importValue(`${stageConfig.stage}-WebsiteURL`);
+  // Create the domain configuration stack (only for beta)
+  if (stageConfig.stage.toLowerCase() === 'beta') {
+    // Generate the bucket name again inside this scope
+    const bucketNamePrefix = `website-${stageConfig.stage.toLowerCase()}-${stageConfig.accountId}`;
+    const betaBucketName = `${bucketNamePrefix}-${stageConfig.region}`;
 
-  // Use Fn.importValue to get values instead of direct references
-  const websiteStageConfigurationList: WebsiteStackConfigInterface = {
-    config: stageConfig,
-    websiteBucketArn: bucketArn.toString(),
-    websiteBucketName: bucketName.toString(),
-    distributionId: distributionId.toString(),
-    distributionDomainName: websiteUrl.toString().replace('https://', ''),
-  };
+    const domainConfigStackProps: DomainConfigurationStackProps = {
+      stageName: stageConfig.stage,
+      domainName: DOMAIN_NAME,
+      bucketName: betaBucketName, // Use the locally defined variable
+      env: {
+        account: stageConfig.accountId,
+        region: stageConfig.region,
+      },
+    };
 
-  websiteServiceStackList.push(websiteStageConfigurationList);
+    const domainConfigStackName: string = createDomainConfigStackName(
+      stageConfig.stage,
+      stageConfig.region,
+      WEBSITE,
+      DOMAIN_NAME.replace(/\./g, '-'),
+    );
+
+    new DomainConfigurationStack(app, domainConfigStackName, domainConfigStackProps);
+  }
 }
 
 // Now deploy the rest of the stacks

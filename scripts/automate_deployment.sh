@@ -40,19 +40,26 @@ aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploy
     --profile prod \
     --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod 
 
-# First, deploy the website bucket stacks to create exports
-printf "\nDeploying Website Bucket Stacks to Beta and Prod\n"
+# First, build the CDK app
+printf "\nBuilding CDK app\n"
 npm install
 npm audit fix
 npm run build
 
 # Deploy Website Bucket stacks to both environments
+printf "\nDeploying Website Bucket Stacks to Beta and Prod\n"
 npx cdk deploy WebsiteBetaus-west-2BucketStack \
   --profile beta \
   --require-approval never
 
 npx cdk deploy WebsiteProdus-west-2BucketStack \
   --profile prod \
+  --require-approval never
+
+# Deploy Domain Configuration stack (only for Beta)
+printf "\nDeploying Domain Configuration Stack to Beta\n"
+npx cdk deploy WebsiteBetaus-west-2Domainqandmedating-comStack \
+  --profile beta \
   --require-approval never
 
 # Deploy Pipeline CDK stack, write output to a file to gather key arn
@@ -147,10 +154,27 @@ printf "\n  aws cloudformation describe-stacks --stack-name Produswest2ServiceSt
 
 # Get website URLs
 printf "\nWebsite URLs:"
-printf "\n  Beta: $(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2BucketStack \
+printf "\n  Beta CloudFront: $(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2BucketStack \
   --profile beta --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURLOutput`].OutputValue' --output text)"
-printf "\n  Prod: $(aws cloudformation describe-stacks --stack-name WebsiteProdus-west-2BucketStack \
+printf "\n  Prod CloudFront: $(aws cloudformation describe-stacks --stack-name WebsiteProdus-west-2BucketStack \
   --profile prod --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURLOutput`].OutputValue' --output text)"
+
+# Get Domain Configuration information
+printf "\nDomain Configuration (Beta only):"
+printf "\n  Beta Domain: $(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2Domainqandmedating-comStack \
+  --profile beta --query 'Stacks[0].Outputs[?OutputKey==`DomainName`].OutputValue' --output text)"
+printf "\n  Name Servers: $(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2Domainqandmedating-comStack \
+  --profile beta --query 'Stacks[0].Outputs[?OutputKey==`NameServers`].OutputValue' --output text)"
 
 # Clean up temporary files
 rm -f ${CDK_OUTPUT_FILE} .cfn_outputs
+
+# Namecheap DNS Setup Instructions
+printf "\n\n=== IMPORTANT NEXT STEPS FOR DOMAIN MIGRATION ==="
+printf "\n1. Log in to your Namecheap account"
+printf "\n2. Go to Domain List and select qandmedating.com"
+printf "\n3. Select 'Custom DNS' as the Nameservers type"
+printf "\n4. Enter the AWS name servers shown above (separated by commas)"
+printf "\n5. Save changes and wait for DNS propagation (can take up to 48 hours)"
+printf "\n6. Once propagated, your site will be available at beta.qandmedating.com"
+printf "\n======================================================\n"

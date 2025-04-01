@@ -19,3 +19,7 @@ export function createDeploymentBucketStackName(stage: string, region: string, a
 export function createWebsiteBucketStackName(stage: string, region: string, prefix: string): string {
   return `${prefix}${stage}${region}BucketStack`;
 }
+
+export function createDomainConfigStackName(stage: string, region: string, prefix: string, domain: string): string {
+  return `${prefix}${stage}${region}Domain${domain}Stack`;
+}

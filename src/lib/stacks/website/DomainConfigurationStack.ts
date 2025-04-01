@@ -36,13 +36,12 @@ export class DomainConfigurationStack extends cdk.Stack {
 
     // Define the domain and subdomain
     const domainName = props.domainName;
-    const fullDomainName = props.stageName.toLowerCase() === 'prod' 
-      ? domainName 
-      : `${props.stageName.toLowerCase()}.${domainName}`;
+    const fullDomainName =
+      props.stageName.toLowerCase() === 'prod' ? domainName : `${props.stageName.toLowerCase()}.${domainName}`;
 
     // Create a hosted zone for the domain
     const hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: domainName
+      zoneName: domainName,
     });
 
     // Create ACM certificate for CloudFront (must be in us-east-1)
@@ -59,7 +58,7 @@ export class DomainConfigurationStack extends cdk.Stack {
 
     // Create CloudFront OAI
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'WebsiteOAI', {
-      comment: `OAI for ${fullDomainName}`
+      comment: `OAI for ${fullDomainName}`,
     });
 
     // Grant OAI read access to bucket
@@ -71,15 +70,15 @@ export class DomainConfigurationStack extends cdk.Stack {
         {
           s3OriginSource: {
             s3BucketSource: websiteBucket,
-            originAccessIdentity: originAccessIdentity
+            originAccessIdentity: originAccessIdentity,
           },
-          behaviors: [{ isDefaultBehavior: true }]
-        }
+          behaviors: [{ isDefaultBehavior: true }],
+        },
       ],
       viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
         aliases: [domainName, `*.${domainName}`],
         securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-        sslMethod: cloudfront.SSLMethod.SNI
+        sslMethod: cloudfront.SSLMethod.SNI,
       }),
       errorConfigurations: [
         {
@@ -87,15 +86,15 @@ export class DomainConfigurationStack extends cdk.Stack {
           responseCode: 200,
           responsePagePath: '/index.html', // For SPA routing
           errorCachingMinTtl: 300,
-        }
-      ]
+        },
+      ],
     });
 
     // Create DNS records pointing to CloudFront
     new route53.ARecord(this, 'AliasRecord', {
       zone: hostedZone,
       recordName: fullDomainName,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution))
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
     });
 
     // If using apex domain (without www), create a second record for www
@@ -103,7 +102,7 @@ export class DomainConfigurationStack extends cdk.Stack {
       new route53.ARecord(this, 'WwwAliasRecord', {
         zone: hostedZone,
         recordName: `www.${domainName}`,
-        target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution))
+        target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
       });
     }
 
