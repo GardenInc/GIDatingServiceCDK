@@ -43,14 +43,14 @@ export class DomainConfigurationStack extends cdk.Stack {
 
     // Use existing hosted zone or create a new one
     let hostedZone: route53.IHostedZone;
-    
+
     if (props.useExistingHostedZone && props.hostedZoneId) {
       // Use existing hosted zone
       hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ImportedHostedZone', {
         hostedZoneId: props.hostedZoneId,
         zoneName: domainName,
       });
-      
+
       // Output the imported hosted zone for verification
       new cdk.CfnOutput(this, 'ImportedHostedZoneOutput', {
         value: props.hostedZoneId,
@@ -61,7 +61,7 @@ export class DomainConfigurationStack extends cdk.Stack {
       hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
         zoneName: domainName,
       });
-      
+
       // Output the nameservers for the new hosted zone
       new cdk.CfnOutput(this, 'NameServers', {
         value: cdk.Fn.join(',', hostedZone.hostedZoneNameServers || []),

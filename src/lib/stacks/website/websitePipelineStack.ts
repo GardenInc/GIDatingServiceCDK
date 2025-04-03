@@ -134,41 +134,52 @@ export class WebsitePipelineStack extends Stack {
             },
             commands: [
               'npm install', // Install dependencies
-              'echo "Node version:" && node --version',
-              'echo "NPM version:" && npm --version',
             ],
           },
           pre_build: {
             commands: [
-              // Debug information to help with troubleshooting
-              'echo "Checking project structure:" && ls -la',
-              'echo "Checking src directory:" && ls -la src || echo "No src directory"',
-              'echo "Checking assets directory:" && ls -la src/assets || echo "No assets directory"',
-              // Ensure the assets directory exists and is prepared for the build
-              'mkdir -p build/assets || true',
-              'if [ -d "src/assets" ]; then cp -r src/assets/* build/assets/ || echo "No assets to copy"; fi',
-              'echo "Contents of build directory:" && ls -la build || echo "No build directory"',
+              // Create a custom Vite config that correctly handles asset imports
+              'echo "Creating custom vite config"',
+              'cat > vite.config.js << EOL',
+              'import { defineConfig } from "vite"',
+              'import react from "@vitejs/plugin-react"',
+              'import { resolve } from "path"',
+              '',
+              'export default defineConfig({',
+              '  plugins: [react()],',
+              '  build: {',
+              '    outDir: "build",',
+              '  },',
+              '  resolve: {',
+              '    alias: {',
+              '      "@assets": resolve(__dirname, "src/assets")',
+              '    }',
+              '  }',
+              '})',
+              'EOL',
+              // Create alias module to make imports work
+              'mkdir -p node_modules/@assets',
+              'echo "export * from \'../src/assets\';" > node_modules/@assets/index.js',
+              'cp -r src/assets/* node_modules/@assets/',
             ],
           },
           build: {
             commands: [
               'npm run build', // Build the website
-              // Additional asset handling if needed
-              'echo "Post-build directory check:" && ls -la build',
-              'if [ -d "src/assets" ] && [ ! -d "build/assets" ]; then mkdir -p build/assets && cp -r src/assets/* build/assets/; fi',
-              'echo "Ensuring all assets were copied:"',
-              'ls -la build/assets || echo "No build/assets directory after build"',
+              // Ensure assets get into the final build
+              'mkdir -p build/assets',
+              'cp -r src/assets/* build/assets/ || echo "No assets to copy"',
             ],
           },
         },
         artifacts: {
-          'base-directory': 'build', // Assuming React or similar that builds to a 'build' directory
+          'base-directory': 'build',
           files: ['**/*'],
         },
       }),
       environment: {
         buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
-        privileged: true, // Required for some operations
+        privileged: true,
       },
       encryptionKey: key,
     });
