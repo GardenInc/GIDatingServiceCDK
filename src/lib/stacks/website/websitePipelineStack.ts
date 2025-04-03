@@ -123,7 +123,7 @@ export class WebsitePipelineStack extends Stack {
       encryptionKey: key,
     });
 
-    // Website build definition
+    // Website build definition with asset handling
     const websiteBuild = new codebuild.PipelineProject(this, 'WebsiteBuild', {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
@@ -134,11 +134,30 @@ export class WebsitePipelineStack extends Stack {
             },
             commands: [
               'npm install', // Install dependencies
+              'echo "Node version:" && node --version',
+              'echo "NPM version:" && npm --version',
+            ],
+          },
+          pre_build: {
+            commands: [
+              // Debug information to help with troubleshooting
+              'echo "Checking project structure:" && ls -la',
+              'echo "Checking src directory:" && ls -la src || echo "No src directory"',
+              'echo "Checking assets directory:" && ls -la src/assets || echo "No assets directory"',
+              // Ensure the assets directory exists and is prepared for the build
+              'mkdir -p build/assets || true',
+              'if [ -d "src/assets" ]; then cp -r src/assets/* build/assets/ || echo "No assets to copy"; fi',
+              'echo "Contents of build directory:" && ls -la build || echo "No build directory"',
             ],
           },
           build: {
             commands: [
-              'npm run build', // Build the website (adjust as needed for your stack)
+              'npm run build', // Build the website
+              // Additional asset handling if needed
+              'echo "Post-build directory check:" && ls -la build',
+              'if [ -d "src/assets" ] && [ ! -d "build/assets" ]; then mkdir -p build/assets && cp -r src/assets/* build/assets/; fi',
+              'echo "Ensuring all assets were copied:"',
+              'ls -la build/assets || echo "No build/assets directory after build"',
             ],
           },
         },
@@ -149,6 +168,7 @@ export class WebsitePipelineStack extends Stack {
       }),
       environment: {
         buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+        privileged: true, // Required for some operations
       },
       encryptionKey: key,
     });

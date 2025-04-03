@@ -8,9 +8,11 @@ import { Construct } from 'constructs';
 
 export interface DomainConfigurationStackProps extends cdk.StackProps {
   readonly stageName: string;
-  readonly domainName: string; // Main domain name
+  readonly domainName: string; // Main domain name (qandmedating.com)
   readonly bucketName: string; // Name of the S3 bucket containing website content
   readonly distributionId?: string; // Existing CloudFront distribution ID, if any
+  readonly useExistingHostedZone?: boolean; // Flag to use existing hosted zone
+  readonly hostedZoneId?: string; // Existing hosted zone ID if available
 }
 
 export class DomainConfigurationStack extends cdk.Stack {
@@ -39,10 +41,33 @@ export class DomainConfigurationStack extends cdk.Stack {
     const fullDomainName =
       props.stageName.toLowerCase() === 'prod' ? domainName : `${props.stageName.toLowerCase()}.${domainName}`;
 
-    // Create a hosted zone for the domain
-    const hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: domainName,
-    });
+    // Use existing hosted zone or create a new one
+    let hostedZone: route53.IHostedZone;
+    
+    if (props.useExistingHostedZone && props.hostedZoneId) {
+      // Use existing hosted zone
+      hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ImportedHostedZone', {
+        hostedZoneId: props.hostedZoneId,
+        zoneName: domainName,
+      });
+      
+      // Output the imported hosted zone for verification
+      new cdk.CfnOutput(this, 'ImportedHostedZoneOutput', {
+        value: props.hostedZoneId,
+        description: 'The ID of the imported hosted zone',
+      });
+    } else {
+      // Create a new hosted zone
+      hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
+        zoneName: domainName,
+      });
+      
+      // Output the nameservers for the new hosted zone
+      new cdk.CfnOutput(this, 'NameServers', {
+        value: cdk.Fn.join(',', hostedZone.hostedZoneNameServers || []),
+        description: 'The name servers for the hosted zone. Update your domain registrar with these.',
+      });
+    }
 
     // Create ACM certificate for CloudFront (must be in us-east-1)
     const certificate = new acm.DnsValidatedCertificate(this, 'Certificate', {
@@ -142,11 +167,6 @@ export class DomainConfigurationStack extends cdk.Stack {
       value: distribution.distributionDomainName,
       description: 'The domain name of the CloudFront distribution',
       exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-DistributionDomainName`,
-    });
-
-    new cdk.CfnOutput(this, 'NameServers', {
-      value: cdk.Fn.join(',', hostedZone.hostedZoneNameServers || []),
-      description: 'The name servers for the hosted zone. Update your domain registrar with these.',
     });
   }
 }

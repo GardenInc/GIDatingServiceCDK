@@ -17,21 +17,32 @@
   Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
   This API will be removed in the next major release.
 
-✨  Synthesis time: 8.01s
+✨  Synthesis time: 7.41s
 
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+WebsitePipelineStack: start: Building 3c33b91bdaf1eedeb0facb31b2ea671c7b3ee7ad02e2bfb2906fc2890b6818a3:739275451028-us-west-2
+WebsitePipelineStack: success: Built 3c33b91bdaf1eedeb0facb31b2ea671c7b3ee7ad02e2bfb2906fc2890b6818a3:739275451028-us-west-2
+WebsitePipelineStack: start: Publishing 3c33b91bdaf1eedeb0facb31b2ea671c7b3ee7ad02e2bfb2906fc2890b6818a3:739275451028-us-west-2
+current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
+WebsitePipelineStack: success: Published 3c33b91bdaf1eedeb0facb31b2ea671c7b3ee7ad02e2bfb2906fc2890b6818a3:739275451028-us-west-2
 WebsitePipelineStack: deploying... [1/1]
+WebsitePipelineStack: creating CloudFormation changeset...
+WebsitePipelineStack | 0/6 | 9:13:45 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | WebsitePipelineStack User Initiated
+WebsitePipelineStack | 0/6 | 9:13:51 PM | UPDATE_IN_PROGRESS   | AWS::CodeBuild::Project     | WebsiteBuild (WebsiteBuildD5A80231) 
+WebsitePipelineStack | 1/6 | 9:13:52 PM | UPDATE_COMPLETE      | AWS::CodeBuild::Project     | WebsiteBuild (WebsiteBuildD5A80231) 
+WebsitePipelineStack | 2/6 | 9:13:58 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | WebsitePipelineStack 
+WebsitePipelineStack | 3/6 | 9:13:59 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | WebsitePipelineStack 
 
- ✅  WebsitePipelineStack (no changes)
+ ✅  WebsitePipelineStack
 
-✨  Deployment time: 0.61s
+✨  Deployment time: 33.73s
 
 Outputs:
 WebsitePipelineStack.WebsiteArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/9e5d4893-6433-429a-8c4c-e592f7fe7751
 Stack ARN:
 arn:aws:cloudformation:us-west-2:739275451028:stack/WebsitePipelineStack/dfc1e840-0eb2-11f0-8661-0269a69f9145
 
-✨  Total time: 8.61s
+✨  Total time: 41.15s
 
 
 NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)
