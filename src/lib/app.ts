@@ -79,29 +79,31 @@ for (var stageConfig of stageConfigurationList) {
   const websiteBucketStackName: string = createWebsiteBucketStackName(stageConfig.stage, stageConfig.region, WEBSITE);
   new WebsiteDeploymentBucketStack(app, websiteBucketStackName, websiteBucketStackProps);
 
-  // Create the domain configuration stack (only for beta)
+  // Create the domain configuration stack for both beta and prod
+  // We'll create the domain config for both environments to properly handle Route53
+  const bucketNamePrefix = `website-${stageConfig.stage.toLowerCase()}-${stageConfig.accountId}`;
+  const bucketName = `${bucketNamePrefix}-${stageConfig.region}`;
+
+  const domainConfigStackProps: DomainConfigurationStackProps = {
+    stageName: stageConfig.stage,
+    domainName: DOMAIN_NAME,
+    bucketName: bucketName,
+    env: {
+      account: stageConfig.accountId,
+      region: stageConfig.region,
+    },
+  };
+
+  const domainConfigStackName: string = createDomainConfigStackName(
+    stageConfig.stage,
+    stageConfig.region,
+    WEBSITE,
+    DOMAIN_NAME.replace(/\./g, '-'),
+  );
+
+  // Only create domain config for Beta initially
+  // For production, we'll set up the domain after beta is confirmed working
   if (stageConfig.stage.toLowerCase() === 'beta') {
-    // Generate the bucket name again inside this scope
-    const bucketNamePrefix = `website-${stageConfig.stage.toLowerCase()}-${stageConfig.accountId}`;
-    const betaBucketName = `${bucketNamePrefix}-${stageConfig.region}`;
-
-    const domainConfigStackProps: DomainConfigurationStackProps = {
-      stageName: stageConfig.stage,
-      domainName: DOMAIN_NAME,
-      bucketName: betaBucketName, // Use the locally defined variable
-      env: {
-        account: stageConfig.accountId,
-        region: stageConfig.region,
-      },
-    };
-
-    const domainConfigStackName: string = createDomainConfigStackName(
-      stageConfig.stage,
-      stageConfig.region,
-      WEBSITE,
-      DOMAIN_NAME.replace(/\./g, '-'),
-    );
-
     new DomainConfigurationStack(app, domainConfigStackName, domainConfigStackProps);
   }
 }

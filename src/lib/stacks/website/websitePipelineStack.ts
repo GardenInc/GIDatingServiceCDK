@@ -4,7 +4,6 @@ import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
-import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
 import { WebsiteStackConfigInterface } from '../../utils/config'; // You'll need to create this interface
@@ -67,6 +66,8 @@ export class WebsitePipelineStack extends Stack {
     // Create KMS key and update policy with cross-account access
     const key = new kms.Key(this, 'ArtifactKey', {
       alias: 'key/website-pipeline-artifact-key',
+      enableKeyRotation: true, // Enable key rotation for better security
+      description: 'KMS key for website pipeline artifacts',
     });
     key.grantDecrypt(betaAccountRootPrincipal);
     key.grantDecrypt(betaCodePipelineRole);
@@ -86,6 +87,7 @@ export class WebsitePipelineStack extends Stack {
           noncurrentVersionExpiration: Duration.days(30),
         },
       ],
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, // Enhanced security
     });
     artifactBucket.grantPut(betaAccountRootPrincipal);
     artifactBucket.grantRead(betaAccountRootPrincipal);
@@ -114,7 +116,12 @@ export class WebsitePipelineStack extends Stack {
         },
         artifacts: {
           'base-directory': 'dist',
-          files: [`${WebsitePipelineStackName}${TEMPLATE_ENDING}`, `*${WEBSITE_BUCKET_STACK}${TEMPLATE_ENDING}`],
+          files: [
+            `${WebsitePipelineStackName}${TEMPLATE_ENDING}`,
+            `*${WEBSITE_BUCKET_STACK}${TEMPLATE_ENDING}`,
+            // Add domain configuration templates
+            `Website*Domain*${TEMPLATE_ENDING}`,
+          ],
         },
       }),
       environment: {
@@ -190,6 +197,48 @@ export class WebsitePipelineStack extends Stack {
     const websiteBuildOutput = new codepipeline.Artifact('websiteBuildOutput');
     const cdkBuildOutput = new codepipeline.Artifact('cdkBuildOutput');
 
+    // Create CloudFront invalidation project for Beta - without cross-account role
+    const betaCloudFrontInvalidation = new codebuild.PipelineProject(this, 'BetaCloudFrontInvalidation', {
+      buildSpec: codebuild.BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          build: {
+            commands: [
+              // Get the real distribution ID from CloudFormation outputs first
+              'export DIST_ID=$(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2BucketStack --query "Stacks[0].Outputs[?OutputKey==\'WebsiteDistributionIdOutput\'].OutputValue" --output text)',
+              'echo "Invalidating CloudFront distribution: $DIST_ID"',
+              'aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"',
+            ],
+          },
+        },
+      }),
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+      },
+      // IMPORTANT: Removed the cross-account role here
+    });
+
+    // Create CloudFront invalidation project for Prod - without cross-account role
+    const prodCloudFrontInvalidation = new codebuild.PipelineProject(this, 'ProdCloudFrontInvalidation', {
+      buildSpec: codebuild.BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          build: {
+            commands: [
+              // Get the real distribution ID from CloudFormation outputs first
+              'export DIST_ID=$(aws cloudformation describe-stacks --stack-name WebsiteProdus-west-2BucketStack --query "Stacks[0].Outputs[?OutputKey==\'WebsiteDistributionIdOutput\'].OutputValue" --output text)',
+              'echo "Invalidating CloudFront distribution: $DIST_ID"',
+              'aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"',
+            ],
+          },
+        },
+      }),
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+      },
+      // IMPORTANT: Removed the cross-account role here
+    });
+
     // Pipeline definition
     const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
       pipelineName: 'WebsiteCrossAccountPipeline',
@@ -261,34 +310,31 @@ export class WebsitePipelineStack extends Stack {
               deploymentRole: betaCloudFormationRole,
               runOrder: 1,
             }),
+            // Deploy domain configuration for Beta
+            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+              actionName: 'DeployBetaDomainConfig',
+              templatePath: cdkBuildOutput.atPath(`WebsiteBetaus-west-2Domainqandmedating-comStack${TEMPLATE_ENDING}`),
+              stackName: 'WebsiteBetaus-west-2Domainqandmedating-comStack',
+              adminPermissions: false,
+              cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
+              role: betaCodePipelineRole,
+              deploymentRole: betaCloudFormationRole,
+              runOrder: 2,
+            }),
             new codepipeline_actions.S3DeployAction({
               actionName: 'DeployWebsiteContent',
               input: websiteBuildOutput,
               bucket: s3.Bucket.fromBucketName(this, 'WebsiteS3Bucket', betaConfig.websiteBucketName),
               role: betaCodePipelineRole,
-              runOrder: 2,
+              runOrder: 3,
             }),
-            // Add a step to invalidate CloudFront cache
+            // Add a step to invalidate CloudFront cache with cross-account role on the action
             new codepipeline_actions.CodeBuildAction({
               actionName: 'InvalidateCloudFrontCache',
-              project: new codebuild.PipelineProject(this, 'CloudFrontInvalidation', {
-                buildSpec: codebuild.BuildSpec.fromObject({
-                  version: '0.2',
-                  phases: {
-                    build: {
-                      commands: [
-                        // Use the string value, not a resource reference
-                        `aws cloudfront create-invalidation --distribution-id ${betaConfig.distributionId} --paths "/*"`,
-                      ],
-                    },
-                  },
-                }),
-                environment: {
-                  buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
-                },
-              }),
+              project: betaCloudFrontInvalidation,
               input: websiteBuildOutput,
-              runOrder: 3,
+              runOrder: 4,
+              role: betaCodePipelineRole, // Specify the role on the action instead
             }),
           ],
         },
@@ -297,6 +343,8 @@ export class WebsitePipelineStack extends Stack {
           actions: [
             new codepipeline_actions.ManualApprovalAction({
               actionName: 'Approve',
+              additionalInformation: 'Approve deployment to production environment',
+              externalEntityLink: `https://beta.${betaConfig.config.domainName ?? 'qandmedating.com'}`, // Fixed with nullish coalescing
             }),
           ],
         },
@@ -322,29 +370,13 @@ export class WebsitePipelineStack extends Stack {
               role: prodCodeDeployRole,
               runOrder: 2,
             }),
-            // Add a step to invalidate CloudFront cache for prod
+            // Add a step to invalidate CloudFront cache for prod with cross-account role on the action
             new codepipeline_actions.CodeBuildAction({
               actionName: 'InvalidateCloudFrontCache',
-              project: new codebuild.PipelineProject(this, 'ProdCloudFrontInvalidation', {
-                buildSpec: codebuild.BuildSpec.fromObject({
-                  version: '0.2',
-                  phases: {
-                    build: {
-                      commands: [
-                        'aws cloudfront create-invalidation --distribution-id ' +
-                          prodConfig.distributionId +
-                          ' --paths "/*"',
-                      ],
-                    },
-                  },
-                }),
-                environment: {
-                  buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
-                },
-              }),
+              project: prodCloudFrontInvalidation,
               input: websiteBuildOutput, // Just needs some input artifact
               runOrder: 3,
-              role: prodCodeDeployRole,
+              role: prodCodeDeployRole, // Specify the role on the action instead
             }),
           ],
         },

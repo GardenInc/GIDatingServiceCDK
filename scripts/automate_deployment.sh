@@ -21,18 +21,18 @@ aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAcc
     --stack-name CodePipelineCrossAccountRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile beta \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploymentRole.yml \
     --stack-name CloudFormationDeploymentRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile beta \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAccountRole.yml \
     --stack-name CodePipelineCrossAccountRole \
     --capabilities CAPABILITY_NAMED_IAM \
-    --profile prod --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod &
+    --profile prod --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod
     
 aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploymentRole.yml \
     --stack-name CloudFormationDeploymentRole \
@@ -46,21 +46,31 @@ npm install
 npm audit fix
 npm run build
 
-# Deploy Website Bucket stacks to both environments
-printf "\nDeploying Website Bucket Stacks to Beta and Prod\n"
+# Clean up the cdk.out directory before starting
+rm -rf cdk.out
+mkdir -p cdk.out
+
+# Deploy Website Bucket stacks to both environments ONE AT A TIME
+printf "\nDeploying Website Bucket Stack to Beta\n"
 npx cdk deploy WebsiteBetaus-west-2BucketStack \
   --profile beta \
-  --require-approval never
-
-npx cdk deploy WebsiteProdus-west-2BucketStack \
-  --profile prod \
-  --require-approval never
+  --require-approval never \
+  --output cdk.out/beta
 
 # Deploy Domain Configuration stack (only for Beta)
 printf "\nDeploying Domain Configuration Stack to Beta\n"
 npx cdk deploy WebsiteBetaus-west-2Domainqandmedating-comStack \
   --profile beta \
-  --require-approval never
+  --require-approval never \
+  --output cdk.out/beta-domain
+
+# At this point, you should update Namecheap DNS with Route53 nameservers
+printf "\n\n=== IMPORTANT DNS SETUP STEP ===\n"
+printf "Before continuing, get the Route53 nameservers and update your Namecheap configuration:\n"
+printf "aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2Domainqandmedating-comStack --profile beta --query 'Stacks[0].Outputs[?OutputKey==\`NameServers\`].OutputValue' --output text\n"
+printf "Then follow the Namecheap DNS update instructions at the end of this script.\n"
+printf "Press Enter to continue deployment after updating Namecheap DNS..."
+read
 
 # Deploy Pipeline CDK stack, write output to a file to gather key arn
 printf "\nDeploying Cross-Account Deployment Pipeline Stack\n"
@@ -71,6 +81,7 @@ npx cdk deploy PipelineDeploymentStack \
   --context beta-account=${BETA_ACCOUNT_ID} \
   --profile pipeline \
   --require-approval never \
+  --output cdk.out/pipeline \
   2>&1 | tee -a ${CDK_OUTPUT_FILE}
 sed -n -e '/Outputs:/,/^$/ p' ${CDK_OUTPUT_FILE} > .cfn_outputs
 KEY_ARN=$(awk -F " " '/KeyArn/ { print $3 }' .cfn_outputs)
@@ -88,6 +99,7 @@ npx cdk deploy FrontEndPipelineDeploymentStack \
   --context beta-account=${BETA_ACCOUNT_ID} \
   --profile pipeline \
   --require-approval never \
+  --output cdk.out/frontend-pipeline \
   2>&1 | tee -a ${CDK_OUTPUT_FILE}
 sed -n -e '/Outputs:/,/^$/ p' ${CDK_OUTPUT_FILE} > .cfn_outputs
 FRONT_END_KEY_ARN=$(awk -F " " '/KeyArn/ { print $3 }' .cfn_outputs)
@@ -105,6 +117,7 @@ npx cdk deploy WebsitePipelineStack \
   --context beta-account=${BETA_ACCOUNT_ID} \
   --profile pipeline \
   --require-approval never \
+  --output cdk.out/website-pipeline \
   2>&1 | tee -a ${CDK_OUTPUT_FILE}
 sed -n -e '/Outputs:/,/^$/ p' ${CDK_OUTPUT_FILE} > .cfn_outputs
 WEBSITE_KEY_ARN=$(awk -F " " '/WebsiteArtifactBucketEncryptionKeyArn/ { print $3 }' .cfn_outputs)
@@ -115,25 +128,25 @@ if [[ -z "${WEBSITE_KEY_ARN}" ]]; then
   exit
 fi
 
-# Update the CloudFormation roles with the Key ARNs in parallel
+# Update the CloudFormation roles with the Key ARNs - Run these one at a time to prevent throttling
 printf "\nUpdating roles with policies in BETA and Prod\n"
 aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAccountRole.yml \
     --stack-name CodePipelineCrossAccountRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile beta \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN} &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN}
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploymentRole.yml \
     --stack-name CloudFormationDeploymentRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile beta \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN} &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Beta KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN}
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CloudFormationDeploymentRole.yml \
     --stack-name CloudFormationDeploymentRole \
     --capabilities CAPABILITY_NAMED_IAM \
     --profile prod \
-    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN} &
+    --parameter-overrides PipelineAccountID=${PIPELINE_ACCOUNT_ID} Stage=Prod KeyArn=${KEY_ARN} FrontEndKeyArn=${FRONT_END_KEY_ARN} WebsiteKeyArn=${WEBSITE_KEY_ARN}
 
 aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAccountRole.yml \
     --stack-name CodePipelineCrossAccountRole \
@@ -149,15 +162,11 @@ git add . && git commit -m "Automated Commit" && git push
 printf "\nUse the following commands to get the Endpoints for deployed environments: "
 printf "\n  aws cloudformation describe-stacks --stack-name Betauswest2ServiceStack \
   --profile beta | grep OutputValue"
-printf "\n  aws cloudformation describe-stacks --stack-name Produswest2ServiceStack \
-  --profile prod | grep OutputValue"
 
 # Get website URLs
 printf "\nWebsite URLs:"
 printf "\n  Beta CloudFront: $(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2BucketStack \
   --profile beta --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURLOutput`].OutputValue' --output text)"
-printf "\n  Prod CloudFront: $(aws cloudformation describe-stacks --stack-name WebsiteProdus-west-2BucketStack \
-  --profile prod --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURLOutput`].OutputValue' --output text)"
 
 # Get Domain Configuration information
 printf "\nDomain Configuration (Beta only):"
@@ -170,11 +179,18 @@ printf "\n  Name Servers: $(aws cloudformation describe-stacks --stack-name Webs
 rm -f ${CDK_OUTPUT_FILE} .cfn_outputs
 
 # Namecheap DNS Setup Instructions
-printf "\n\n=== IMPORTANT NEXT STEPS FOR DOMAIN MIGRATION ==="
+printf "\n\n=== IMPORTANT NEXT STEPS FOR DOMAIN MANAGEMENT ==="
 printf "\n1. Log in to your Namecheap account"
 printf "\n2. Go to Domain List and select qandmedating.com"
 printf "\n3. Select 'Custom DNS' as the Nameservers type"
-printf "\n4. Enter the AWS name servers shown above (separated by commas)"
+printf "\n4. Enter the AWS name servers shown above (there should be 4 of them, separated by commas)"
 printf "\n5. Save changes and wait for DNS propagation (can take up to 48 hours)"
-printf "\n6. Once propagated, your site will be available at beta.qandmedating.com"
+printf "\n6. To check DNS propagation progress, use: dig +trace qandmedating.com"
+printf "\n7. Once propagated, your site will be available at:"
+printf "\n   - Beta: beta.qandmedating.com"
 printf "\n======================================================\n"
+
+# Check certificate validation status
+printf "\nTo check certificate validation status (must be ISSUED before your site will work):"
+printf "\naws acm list-certificates --region us-east-1 --profile beta | grep qandmedating"
+printf "\naws acm describe-certificate --region us-east-1 --profile beta --certificate-arn YOUR_CERT_ARN | grep Status\n"

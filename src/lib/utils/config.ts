@@ -19,6 +19,7 @@ interface StageConfigInterface {
   stage: string;
   region: string;
   isProd: boolean;
+  domainName?: string; // Added optional domainName property
 }
 
 export const stageConfigurationList: StageConfigInterface[] = [
@@ -27,12 +28,14 @@ export const stageConfigurationList: StageConfigInterface[] = [
     stage: STAGES.BETA,
     region: REGIONS.US_WEST_2,
     isProd: false,
+    domainName: 'qandmedating.com', // Add domain name for Beta
   },
   {
     accountId: prodAccountId,
     stage: STAGES.PROD,
     region: REGIONS.US_WEST_2,
     isProd: true,
+    domainName: 'qandmedating.com', // Add domain name for Prod
   },
 ];
 

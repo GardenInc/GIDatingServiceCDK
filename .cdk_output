@@ -4,11 +4,11 @@
 [WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin#bind is deprecated.
   Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
   This API will be removed in the next major release.
-[WARNING] aws-cdk-lib.aws_certificatemanager.DnsValidatedCertificate is deprecated.
-  use {@link Certificate } instead
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
   This API will be removed in the next major release.
-[WARNING] aws-cdk-lib.aws_cloudfront.CloudFrontWebDistribution is deprecated.
-  Use `Distribution` instead
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin#bind is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
   This API will be removed in the next major release.
 [WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
   Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
@@ -17,32 +17,62 @@
   Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
   This API will be removed in the next major release.
 
-✨  Synthesis time: 6.48s
+✨  Synthesis time: 10.32s
 
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-deploy-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
-WebsitePipelineStack: start: Building bfd4bed9e7e1f30f204388fa0174f6d4894a72b041160d4450180619238994a6:739275451028-us-west-2
-WebsitePipelineStack: success: Built bfd4bed9e7e1f30f204388fa0174f6d4894a72b041160d4450180619238994a6:739275451028-us-west-2
-WebsitePipelineStack: start: Publishing bfd4bed9e7e1f30f204388fa0174f6d4894a72b041160d4450180619238994a6:739275451028-us-west-2
+WebsitePipelineStack: start: Building 5437337c63e575c578c974c7c8e086b5e24c56326ba32fe7a549be043fc5e5ff:739275451028-us-west-2
+WebsitePipelineStack: success: Built 5437337c63e575c578c974c7c8e086b5e24c56326ba32fe7a549be043fc5e5ff:739275451028-us-west-2
+WebsitePipelineStack: start: Publishing 5437337c63e575c578c974c7c8e086b5e24c56326ba32fe7a549be043fc5e5ff:739275451028-us-west-2
 current credentials could not be used to assume 'arn:aws:iam::739275451028:role/cdk-hnb659fds-file-publishing-role-739275451028-us-west-2', but are for the right account. Proceeding anyway.
-WebsitePipelineStack: success: Published bfd4bed9e7e1f30f204388fa0174f6d4894a72b041160d4450180619238994a6:739275451028-us-west-2
+WebsitePipelineStack: success: Published 5437337c63e575c578c974c7c8e086b5e24c56326ba32fe7a549be043fc5e5ff:739275451028-us-west-2
 WebsitePipelineStack: deploying... [1/1]
 WebsitePipelineStack: creating CloudFormation changeset...
-WebsitePipelineStack | 0/3 | 6:17:16 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | WebsitePipelineStack User Initiated
-WebsitePipelineStack | 0/3 | 6:17:25 PM | UPDATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-WebsitePipelineStack | 1/3 | 6:17:28 PM | UPDATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
-WebsitePipelineStack | 2/3 | 6:17:30 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | WebsitePipelineStack 
-WebsitePipelineStack | 3/3 | 6:17:31 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | WebsitePipelineStack 
+WebsitePipelineStack |  0/26 | 1:03:58 PM | UPDATE_IN_PROGRESS   | AWS::CloudFormation::Stack  | WebsitePipelineStack User Initiated
+WebsitePipelineStack |  0/26 | 1:04:03 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | BetaCloudFrontInvalidation/Role (BetaCloudFrontInvalidationRoleCF3EAA9A) 
+WebsitePipelineStack |  0/26 | 1:04:03 PM | UPDATE_IN_PROGRESS   | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
+WebsitePipelineStack |  0/26 | 1:04:04 PM | CREATE_IN_PROGRESS   | AWS::IAM::Role              | BetaCloudFrontInvalidation/Role (BetaCloudFrontInvalidationRoleCF3EAA9A) Resource creation Initiated
+WebsitePipelineStack |  1/26 | 1:04:20 PM | CREATE_COMPLETE      | AWS::IAM::Role              | BetaCloudFrontInvalidation/Role (BetaCloudFrontInvalidationRoleCF3EAA9A) 
+ 1/26 Currently in progress: WebsitePipelineStack, ArtifactKey8D84C5F0
+WebsitePipelineStack |  2/26 | 1:05:05 PM | UPDATE_COMPLETE      | AWS::KMS::Key               | ArtifactKey (ArtifactKey8D84C5F0) 
+WebsitePipelineStack |  2/26 | 1:05:06 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | BetaCloudFrontInvalidation (BetaCloudFrontInvalidation9A31E089) 
+WebsitePipelineStack |  2/26 | 1:05:06 PM | UPDATE_IN_PROGRESS   | AWS::CodeBuild::Project     | ProdCloudFrontInvalidation (ProdCloudFrontInvalidation1D6AA974) 
+WebsitePipelineStack |  2/26 | 1:05:06 PM | UPDATE_IN_PROGRESS   | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
+WebsitePipelineStack |  2/26 | 1:05:07 PM | UPDATE_IN_PROGRESS   | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) 
+WebsitePipelineStack |  2/26 | 1:05:07 PM | CREATE_IN_PROGRESS   | AWS::CodeBuild::Project     | BetaCloudFrontInvalidation (BetaCloudFrontInvalidation9A31E089) Resource creation Initiated
+WebsitePipelineStack |  3/26 | 1:05:07 PM | UPDATE_COMPLETE      | AWS::CodeBuild::Project     | ProdCloudFrontInvalidation (ProdCloudFrontInvalidation1D6AA974) 
+WebsitePipelineStack |  4/26 | 1:05:08 PM | CREATE_COMPLETE      | AWS::CodeBuild::Project     | BetaCloudFrontInvalidation (BetaCloudFrontInvalidation9A31E089) 
+WebsitePipelineStack |  5/26 | 1:05:08 PM | UPDATE_COMPLETE      | AWS::CodeBuild::Project     | CdkBuild (CdkBuild455F642E) 
+WebsitePipelineStack |  6/26 | 1:05:30 PM | UPDATE_COMPLETE      | AWS::S3::Bucket             | ArtifactBucket (ArtifactBucket7410C9EF) 
+WebsitePipelineStack |  6/26 | 1:05:31 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | BetaCloudFrontInvalidation/Role/DefaultPolicy (BetaCloudFrontInvalidationRoleDefaultPolicy18DE8900) 
+WebsitePipelineStack |  6/26 | 1:05:32 PM | CREATE_IN_PROGRESS   | AWS::IAM::Policy            | BetaCloudFrontInvalidation/Role/DefaultPolicy (BetaCloudFrontInvalidationRoleDefaultPolicy18DE8900) Resource creation Initiated
+WebsitePipelineStack |  6/26 | 1:05:33 PM | UPDATE_IN_PROGRESS   | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
+WebsitePipelineStack |  7/26 | 1:05:48 PM | CREATE_COMPLETE      | AWS::IAM::Policy            | BetaCloudFrontInvalidation/Role/DefaultPolicy (BetaCloudFrontInvalidationRoleDefaultPolicy18DE8900) 
+WebsitePipelineStack |  8/26 | 1:05:49 PM | UPDATE_COMPLETE      | AWS::IAM::Policy            | Pipeline/Role/DefaultPolicy (PipelineRoleDefaultPolicyC7A05455) 
+WebsitePipelineStack |  8/26 | 1:05:52 PM | UPDATE_IN_PROGRESS   | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+WebsitePipelineStack |  9/26 | 1:05:55 PM | UPDATE_COMPLETE      | AWS::CodePipeline::Pipeline | Pipeline (PipelineC660917D) 
+WebsitePipelineStack | 10/26 | 1:05:57 PM | UPDATE_COMPLETE_CLEA | AWS::CloudFormation::Stack  | WebsitePipelineStack 
+WebsitePipelineStack | 10/26 | 1:05:58 PM | DELETE_IN_PROGRESS   | AWS::IAM::Policy            | CloudFrontInvalidationRoleDefaultPolicyE69E1E73 
+WebsitePipelineStack | 10/26 | 1:05:58 PM | DELETE_IN_PROGRESS   | AWS::IAM::Policy            | PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRoleDefaultPolicy6F76BD96 
+WebsitePipelineStack | 11/26 | 1:05:59 PM | DELETE_COMPLETE      | AWS::IAM::Policy            | CloudFrontInvalidationRoleDefaultPolicyE69E1E73 
+WebsitePipelineStack | 12/26 | 1:05:59 PM | DELETE_COMPLETE      | AWS::IAM::Policy            | PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRoleDefaultPolicy6F76BD96 
+WebsitePipelineStack | 12/26 | 1:06:00 PM | DELETE_IN_PROGRESS   | AWS::CodeBuild::Project     | CloudFrontInvalidation386AF106 
+WebsitePipelineStack | 12/26 | 1:06:00 PM | DELETE_IN_PROGRESS   | AWS::IAM::Role              | PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRole7332C43D 
+WebsitePipelineStack | 13/26 | 1:06:01 PM | DELETE_COMPLETE      | AWS::CodeBuild::Project     | CloudFrontInvalidation386AF106 
+WebsitePipelineStack | 13/26 | 1:06:01 PM | DELETE_IN_PROGRESS   | AWS::IAM::Role              | CloudFrontInvalidationRole8F958F69 
+WebsitePipelineStack | 14/26 | 1:06:09 PM | DELETE_COMPLETE      | AWS::IAM::Role              | PipelineDeployBetaInvalidateCloudFrontCacheCodePipelineActionRole7332C43D 
+WebsitePipelineStack | 15/26 | 1:06:10 PM | DELETE_COMPLETE      | AWS::IAM::Role              | CloudFrontInvalidationRole8F958F69 
+WebsitePipelineStack | 16/26 | 1:06:10 PM | UPDATE_COMPLETE      | AWS::CloudFormation::Stack  | WebsitePipelineStack 
 
  ✅  WebsitePipelineStack
 
-✨  Deployment time: 33.62s
+✨  Deployment time: 151.66s
 
 Outputs:
 WebsitePipelineStack.WebsiteArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/9e5d4893-6433-429a-8c4c-e592f7fe7751
 Stack ARN:
 arn:aws:cloudformation:us-west-2:739275451028:stack/WebsitePipelineStack/dfc1e840-0eb2-11f0-8661-0269a69f9145
 
-✨  Total time: 40.1s
+✨  Total time: 161.98s
 
 
 NOTICES         (What's this? https://github.com/aws/aws-cdk/wiki/CLI-Notices)

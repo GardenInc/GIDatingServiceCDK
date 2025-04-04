@@ -1,10 +1,9 @@
-// Create a file at: src/stacks/website/domainConfigurationStack.ts
 import * as cdk from 'aws-cdk-lib';
 import * as route53 from 'aws-cdk-lib/aws-route53';
-import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import { Construct } from 'constructs';
 
 export interface DomainConfigurationStackProps extends cdk.StackProps {
@@ -42,44 +41,19 @@ export class DomainConfigurationStack extends cdk.Stack {
     const fullDomainName =
       props.stageName.toLowerCase() === 'prod' ? domainName : `${props.stageName.toLowerCase()}.${domainName}`;
 
-    // Use existing hosted zone or create a new one
-    let hostedZone: route53.IHostedZone;
-
-    if (props.useExistingHostedZone && props.hostedZoneId) {
-      // Use existing hosted zone
-      hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ImportedHostedZone', {
-        hostedZoneId: props.hostedZoneId,
-        zoneName: domainName,
-      });
-
-      // Output the imported hosted zone for verification
-      new cdk.CfnOutput(this, 'ImportedHostedZoneOutput', {
-        value: props.hostedZoneId,
-        description: 'The ID of the imported hosted zone',
-      });
-    } else {
-      // Create a new hosted zone
-      hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
-        zoneName: domainName,
-      });
-
-      // Output the nameservers for the new hosted zone
-      new cdk.CfnOutput(this, 'NameServers', {
-        value: cdk.Fn.join(',', hostedZone.hostedZoneNameServers || []),
-        description: 'The name servers for the hosted zone. Update your domain registrar with these.',
-      });
-    }
-
-    // Create ACM certificate for CloudFront (must be in us-east-1)
-    const certificate = new acm.DnsValidatedCertificate(this, 'Certificate', {
-      domainName: domainName,
-      subjectAlternativeNames: [`*.${domainName}`], // Includes all subdomains
-      hostedZone: hostedZone,
-      region: 'us-east-1', // CloudFront requires certificates in us-east-1
-      validation: acm.CertificateValidation.fromDns(hostedZone),
+    // Create Route53 hosted zone
+    const hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
+      zoneName: domainName,
+      comment: `Hosted zone for ${domainName}, managed via CDK`,
     });
 
-    // Get reference to the S3 bucket
+    // Output the nameservers for the hosted zone
+    new cdk.CfnOutput(this, 'NameServers', {
+      value: cdk.Fn.join(',', hostedZone.hostedZoneNameServers || []),
+      description: 'The name servers for the hosted zone. Update your Namecheap DNS with these.',
+    });
+
+    // Get the S3 bucket reference
     const websiteBucket = s3.Bucket.fromBucketName(this, 'WebsiteBucket', props.bucketName);
 
     // Create CloudFront OAI
@@ -90,30 +64,24 @@ export class DomainConfigurationStack extends cdk.Stack {
     // Grant OAI read access to bucket
     websiteBucket.grantRead(originAccessIdentity);
 
-    // Create or update CloudFront distribution
-    const distribution = new cloudfront.CloudFrontWebDistribution(this, 'WebsiteDistribution', {
-      originConfigs: [
+    // Create CloudFront distribution without a certificate first
+    const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
+      defaultBehavior: {
+        origin: new origins.S3Origin(websiteBucket, {
+          originAccessIdentity,
+        }),
+        compress: true,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+      errorResponses: [
         {
-          s3OriginSource: {
-            s3BucketSource: websiteBucket,
-            originAccessIdentity: originAccessIdentity,
-          },
-          behaviors: [{ isDefaultBehavior: true }],
-        },
-      ],
-      viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
-        aliases: [fullDomainName],
-        securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
-        sslMethod: cloudfront.SSLMethod.SNI,
-      }),
-      errorConfigurations: [
-        {
-          errorCode: 404,
-          responseCode: 200,
+          httpStatus: 404,
+          responseHttpStatus: 200,
           responsePagePath: '/index.html', // For SPA routing
-          errorCachingMinTtl: 300,
         },
       ],
+      defaultRootObject: 'index.html',
     });
 
     // Create DNS records pointing to CloudFront
@@ -132,9 +100,39 @@ export class DomainConfigurationStack extends cdk.Stack {
       });
     }
 
+    // Set placeholder value for certificate ARN
+    this.certificateArn = 'manual-certificate-creation-required';
+
+    // Add instructions for certificate creation and validation
+    new cdk.CfnOutput(this, 'ManualSteps', {
+      value: `After updating your Namecheap DNS with the Route53 nameservers, follow these steps:
+
+1. Request a certificate in ACM:
+   aws acm request-certificate --region us-east-1 --profile beta \\
+     --domain-name ${domainName} \\
+     --subject-alternative-names "*.${domainName}" \\
+     --validation-method DNS
+
+2. Get the certificate ARN:
+   aws acm list-certificates --region us-east-1 --profile beta --query "CertificateSummaryList[?DomainName=='${domainName}']"
+
+3. Get validation record details:
+   aws acm describe-certificate --region us-east-1 --profile beta --certificate-arn YOUR_CERT_ARN
+
+4. Create validation records in Route53:
+   aws route53 change-resource-record-sets --hosted-zone-id ${hostedZone.hostedZoneId} --profile beta \\
+     --change-batch file://validation-records.json
+
+   (Create validation-records.json with the proper validation data from step 3)
+
+5. Update CloudFront with the certificate once validated:
+   aws cloudfront update-distribution --id ${distribution.distributionId} --profile beta \\
+     --viewer-certificate "CertificateSource=acm,ACMCertificateArn=YOUR_CERT_ARN,SSLSupportMethod=sni-only,MinimumProtocolVersion=TLSv1.2_2021"`,
+      description: 'Manual steps for certificate setup',
+    });
+
     // Export values for use in other stacks
     this.hostedZoneId = hostedZone.hostedZoneId;
-    this.certificateArn = certificate.certificateArn;
     this.domainName = fullDomainName;
     this.distributionId = distribution.distributionId;
     this.distributionDomainName = distribution.distributionDomainName;
@@ -144,12 +142,6 @@ export class DomainConfigurationStack extends cdk.Stack {
       value: hostedZone.hostedZoneId,
       description: 'The ID of the hosted zone',
       exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-HostedZoneId`,
-    });
-
-    new cdk.CfnOutput(this, 'CertificateArn', {
-      value: certificate.certificateArn,
-      description: 'The ARN of the certificate',
-      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-CertificateArn`,
     });
 
     new cdk.CfnOutput(this, 'DomainName', {
