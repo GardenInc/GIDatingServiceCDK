@@ -185,8 +185,8 @@ export class WebsitePipelineStack extends Stack {
     });
 
     // Define pipeline stage output artifacts
-    const cdkSource = new codepipeline.Artifact('websiteSourceCDK');
-    const websiteSource = new codepipeline.Artifact('websiteSourceCode');
+    const cdkSource = new codepipeline.Artifact('websiteCDKSource');
+    const websiteSource = new codepipeline.Artifact('websiteCodeSource');
     const websiteBuildOutput = new codepipeline.Artifact('websiteBuildOutput');
     const cdkBuildOutput = new codepipeline.Artifact('cdkBuildOutput');
 

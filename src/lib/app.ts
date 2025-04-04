@@ -9,7 +9,6 @@ import {
   WebsiteDeploymentBucketStackProps,
   WebsiteDeploymentBucketStack,
 } from './stacks/website/websiteDeploymentBucketStack';
-// Fix the casing in the import to match the actual file name
 import { DomainConfigurationStack, DomainConfigurationStackProps } from './stacks/website/domainConfigurationStack';
 import { stageConfigurationList } from './utils/config';
 import {

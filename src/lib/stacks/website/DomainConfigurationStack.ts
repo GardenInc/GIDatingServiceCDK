@@ -1,3 +1,4 @@
+// Create a file at: src/stacks/website/domainConfigurationStack.ts
 import * as cdk from 'aws-cdk-lib';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
@@ -8,7 +9,7 @@ import { Construct } from 'constructs';
 
 export interface DomainConfigurationStackProps extends cdk.StackProps {
   readonly stageName: string;
-  readonly domainName: string; // Main domain name (qandmedating.com)
+  readonly domainName: string; // Main domain name
   readonly bucketName: string; // Name of the S3 bucket containing website content
   readonly distributionId?: string; // Existing CloudFront distribution ID, if any
   readonly useExistingHostedZone?: boolean; // Flag to use existing hosted zone
@@ -25,9 +26,9 @@ export class DomainConfigurationStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DomainConfigurationStackProps) {
     super(scope, id, props);
 
-    // Only deploy for Beta stage
-    if (props.stageName.toLowerCase() !== 'beta') {
-      // For non-beta environments, just set empty values
+    // Only deploy for Beta and Prod stages
+    if (props.stageName.toLowerCase() !== 'beta' && props.stageName.toLowerCase() !== 'prod') {
+      // For non-beta/prod environments, just set empty values
       this.hostedZoneId = '';
       this.certificateArn = '';
       this.domainName = '';
@@ -101,7 +102,7 @@ export class DomainConfigurationStack extends cdk.Stack {
         },
       ],
       viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
-        aliases: [domainName, `*.${domainName}`],
+        aliases: [fullDomainName],
         securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
         sslMethod: cloudfront.SSLMethod.SNI,
       }),
