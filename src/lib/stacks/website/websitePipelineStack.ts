@@ -146,9 +146,6 @@ export class WebsitePipelineStack extends Stack {
           build: {
             commands: [
               'npm run build', // Build the website
-              // Ensure assets get into the final build
-              'mkdir -p build/assets',
-              'cp -r src/assets/* build/assets/ || echo "No assets to copy"',
             ],
           },
         },
