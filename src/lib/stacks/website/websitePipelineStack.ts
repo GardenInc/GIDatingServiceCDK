@@ -143,33 +143,6 @@ export class WebsitePipelineStack extends Stack {
               'npm install', // Install dependencies
             ],
           },
-          pre_build: {
-            commands: [
-              // Create a custom Vite config that correctly handles asset imports
-              'echo "Creating custom vite config"',
-              "cat > vite.config.js << 'EOL'",
-              'import { defineConfig } from "vite"',
-              'import react from "@vitejs/plugin-react"',
-              'import { resolve } from "path"',
-              '',
-              'export default defineConfig({',
-              '  plugins: [react()],',
-              '  build: {',
-              '    outDir: "build",',
-              '  },',
-              '  resolve: {',
-              '    alias: {',
-              '      "@assets": resolve(__dirname, "src/assets")',
-              '    }',
-              '  }',
-              '})',
-              'EOL',
-              // Create alias module to make imports work
-              'mkdir -p node_modules/@assets',
-              'echo "export * from \'../src/assets\';" > node_modules/@assets/index.js',
-              'cp -r src/assets/* node_modules/@assets/ || echo "No assets directory found"',
-            ],
-          },
           build: {
             commands: [
               'npm run build', // Build the website
