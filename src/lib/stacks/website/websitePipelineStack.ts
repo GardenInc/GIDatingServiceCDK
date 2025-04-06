@@ -147,7 +147,7 @@ export class WebsitePipelineStack extends Stack {
             commands: [
               // Create a custom Vite config that correctly handles asset imports
               'echo "Creating custom vite config"',
-              'cat > vite.config.js << \'EOL\'',
+              "cat > vite.config.js << 'EOL'",
               'import { defineConfig } from "vite"',
               'import react from "@vitejs/plugin-react"',
               'import { resolve } from "path"',
