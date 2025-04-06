@@ -147,7 +147,7 @@ export class WebsitePipelineStack extends Stack {
             commands: [
               // Create a custom Vite config that correctly handles asset imports
               'echo "Creating custom vite config"',
-              'cat > vite.config.js << EOL',
+              'cat > vite.config.js << \'EOL\'',
               'import { defineConfig } from "vite"',
               'import react from "@vitejs/plugin-react"',
               'import { resolve } from "path"',
@@ -167,7 +167,7 @@ export class WebsitePipelineStack extends Stack {
               // Create alias module to make imports work
               'mkdir -p node_modules/@assets',
               'echo "export * from \'../src/assets\';" > node_modules/@assets/index.js',
-              'cp -r src/assets/* node_modules/@assets/',
+              'cp -r src/assets/* node_modules/@assets/ || echo "No assets directory found"',
             ],
           },
           build: {
