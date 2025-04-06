@@ -1,5 +1,0 @@
-Outputs:
-WebsitePipelineStack.WebsiteArtifactBucketEncryptionKeyArn = arn:aws:kms:us-west-2:739275451028:key/9e5d4893-6433-429a-8c4c-e592f7fe7751
-Stack ARN:
-arn:aws:cloudformation:us-west-2:739275451028:stack/WebsitePipelineStack/dfc1e840-0eb2-11f0-8661-0269a69f9145
-

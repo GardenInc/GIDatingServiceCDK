@@ -178,18 +178,6 @@ printf "\n  Name Servers: $(aws cloudformation describe-stacks --stack-name Webs
 # Clean up temporary files
 rm -f ${CDK_OUTPUT_FILE} .cfn_outputs
 
-# Namecheap DNS Setup Instructions
-printf "\n\n=== IMPORTANT NEXT STEPS FOR DOMAIN MANAGEMENT ==="
-printf "\n1. Log in to your Namecheap account"
-printf "\n2. Go to Domain List and select qandmedating.com"
-printf "\n3. Select 'Custom DNS' as the Nameservers type"
-printf "\n4. Enter the AWS name servers shown above (there should be 4 of them, separated by commas)"
-printf "\n5. Save changes and wait for DNS propagation (can take up to 48 hours)"
-printf "\n6. To check DNS propagation progress, use: dig +trace qandmedating.com"
-printf "\n7. Once propagated, your site will be available at:"
-printf "\n   - Beta: beta.qandmedating.com"
-printf "\n======================================================\n"
-
 # Check certificate validation status
 printf "\nTo check certificate validation status (must be ISSUED before your site will work):"
 printf "\naws acm list-certificates --region us-east-1 --profile beta | grep qandmedating"

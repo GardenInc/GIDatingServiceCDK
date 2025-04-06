@@ -9,7 +9,7 @@ import {
   WebsiteDeploymentBucketStackProps,
   WebsiteDeploymentBucketStack,
 } from './stacks/website/websiteDeploymentBucketStack';
-import { DomainConfigurationStack, DomainConfigurationStackProps } from './stacks/website/domainConfigurationStack';
+import { DomainConfigurationStack, DomainConfigurationStackProps } from './stacks/website/DomainConfigurationStack';
 import { stageConfigurationList } from './utils/config';
 import {
   FrontEndStackConfigInterface,

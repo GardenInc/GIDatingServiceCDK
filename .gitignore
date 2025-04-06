@@ -6,5 +6,7 @@ node_modules
 
 # CDK asset staging directory
 .cdk.staging
+.cdk_output
+.cfn_outputs
 cdk.out
 build
