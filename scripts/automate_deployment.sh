@@ -50,28 +50,6 @@ npm run build
 rm -rf cdk.out
 mkdir -p cdk.out
 
-# Deploy Website Bucket stacks to both environments ONE AT A TIME
-printf "\nDeploying Website Bucket Stack to Beta\n"
-npx cdk deploy WebsiteBetaus-west-2BucketStack \
-  --profile beta \
-  --require-approval never \
-  --output cdk.out/beta
-
-# Deploy Domain Configuration stack (only for Beta)
-printf "\nDeploying Domain Configuration Stack to Beta\n"
-npx cdk deploy WebsiteBetaus-west-2Domainqandmedating-comStack \
-  --profile beta \
-  --require-approval never \
-  --output cdk.out/beta-domain
-
-# At this point, you should update Namecheap DNS with Route53 nameservers
-printf "\n\n=== IMPORTANT DNS SETUP STEP ===\n"
-printf "Before continuing, get the Route53 nameservers and update your Namecheap configuration:\n"
-printf "aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2Domainqandmedating-comStack --profile beta --query 'Stacks[0].Outputs[?OutputKey==\`NameServers\`].OutputValue' --output text\n"
-printf "Then follow the Namecheap DNS update instructions at the end of this script.\n"
-printf "Press Enter to continue deployment after updating Namecheap DNS..."
-read
-
 # Deploy Pipeline CDK stack, write output to a file to gather key arn
 printf "\nDeploying Cross-Account Deployment Pipeline Stack\n"
 CDK_OUTPUT_FILE='.cdk_output'
