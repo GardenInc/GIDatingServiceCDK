@@ -194,10 +194,7 @@ export class WebsitePipelineStack extends Stack {
         artifacts: {
           'base-directory': 'dist',
           files: [
-            `${WebsitePipelineStackName}${TEMPLATE_ENDING}`,
-            `*${WEBSITE_BUCKET_STACK}${TEMPLATE_ENDING}`,
-            // Add domain configuration templates
-            `Website*Domain*${TEMPLATE_ENDING}`,
+            '**/*.template.json', // Include all template files
           ],
         },
       }),
