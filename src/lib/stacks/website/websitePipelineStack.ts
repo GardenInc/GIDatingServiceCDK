@@ -417,13 +417,13 @@ export class WebsitePipelineStack extends Stack {
                 codepipeline_actions.CacheControl.sMaxAge(Duration.days(7)),
               ],
             }),
-            // Add CloudFront invalidation step
-            new codepipeline_actions.CodeBuildAction({
-              actionName: 'InvalidateCloudFrontCache',
-              project: betaCloudFrontInvalidation,
-              input: websiteBuildOutput,
+            // Add instructions for manual invalidation instead of failing CodeBuild action
+            // This is a temporary solution until we implement the Lambda function
+            new codepipeline_actions.ManualApprovalAction({
+              actionName: 'InvalidateCache',
+              additionalInformation: `CloudFront cache invalidation required. Run:
+          aws cloudfront create-invalidation --distribution-id ${betaConfig.distributionId} --paths "/*"`,
               runOrder: 4,
-              role: betaCodePipelineRole,
             }),
           ],
         },
