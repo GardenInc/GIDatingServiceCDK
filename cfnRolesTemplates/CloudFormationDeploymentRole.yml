@@ -1,11 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Role used by CloudFormation to deploy resources in target accounts
-
 Parameters:
   PipelineAccountID:
     Type: String
     Description: AWS account ID for the Pipeline
-
   Stage:
     Type: String
     Description: Environment name (Beta, Prod)
@@ -13,17 +11,14 @@ Parameters:
     AllowedValues:
       - Beta
       - Prod
-
   KeyArn:
     Type: String
     Description: ARN of the KMS Key used by CodePipeline for artifacts (for Backend)
     Default: ''
-
   FrontEndKeyArn:
     Type: String
     Description: ARN of the KMS Key used by the FrontEnd CodePipeline for artifacts
     Default: ''
-
   WebsiteKeyArn:
     Type: String
     Description: ARN of the KMS Key used by the Website CodePipeline for artifacts
@@ -52,12 +47,12 @@ Resources:
 
   CloudFormationDeploymentRolePolicy:
     Type: 'AWS::IAM::Policy'
-    Condition: HasKeyArn
     Properties:
       PolicyName: CloudFormationDeploymentRolePolicy
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
+          # KMS Permissions with broader scope
           - Effect: Allow
             Action:
               - 'kms:Decrypt'
@@ -66,12 +61,39 @@ Resources:
               - 'kms:ReEncrypt*'
               - 'kms:GenerateDataKey*'
             Resource:
-              - !Ref KeyArn
+              - !If [HasKeyArn, !Ref KeyArn, !Ref 'AWS::NoValue']
               - !If [HasFrontEndKeyArn, !Ref FrontEndKeyArn, !Ref 'AWS::NoValue']
               - !If [HasWebsiteKeyArn, !Ref WebsiteKeyArn, !Ref 'AWS::NoValue']
+              - '*' # Allows access to any KMS key
+
+          # Broader S3 Permissions
           - Effect: Allow
             Action:
-              - 'devicefarm:*' # You can limit this to specific actions if preferred
+              - 's3:GetObject*'
+              - 's3:GetBucket*'
+              - 's3:List*'
+              - 's3:DeleteObject*'
+              - 's3:PutObject*'
+              - 's3:Abort*'
+            Resource:
+              - 'arn:aws:s3:::*' # Access to all buckets
+              - 'arn:aws:s3:::*/*' # Access to all objects in all buckets
+
+          # Device Farm permissions
+          - Effect: Allow
+            Action:
+              - 'devicefarm:*'
+            Resource: '*'
+
+          # CloudFront permissions for invalidations
+          - Effect: Allow
+            Action:
+              - 'cloudfront:CreateInvalidation'
+              - 'cloudfront:GetInvalidation'
+              - 'cloudfront:ListInvalidations'
+              - 'cloudfront:GetDistribution'
+              - 'cloudfront:GetDistributionConfig'
+              - 'cloudfront:ListDistributions'
             Resource: '*'
       Roles:
         - !Ref CloudFormationDeploymentRole

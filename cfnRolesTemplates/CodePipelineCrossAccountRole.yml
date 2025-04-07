@@ -1,11 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Role used by CodePipeline to operate in target accounts
-
 Parameters:
   PipelineAccountID:
     Type: String
     Description: AWS account ID for the Pipeline
-
   Stage:
     Type: String
     Description: Environment name (Beta, Prod)
@@ -13,17 +11,14 @@ Parameters:
     AllowedValues:
       - Beta
       - Prod
-
   KeyArn:
     Type: String
     Description: ARN of the KMS Key used by CodePipeline for artifacts (for Backend)
     Default: ''
-
   FrontEndKeyArn:
     Type: String
     Description: ARN of the KMS Key used by the FrontEnd CodePipeline for artifacts
     Default: ''
-
   WebsiteKeyArn:
     Type: String
     Description: ARN of the KMS Key used by the Website CodePipeline for artifacts
@@ -47,21 +42,22 @@ Resources:
               AWS: !Sub 'arn:aws:iam::${PipelineAccountID}:root'
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
         - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
 
   CodePipelineCrossAccountRolePolicy:
     Type: 'AWS::IAM::Policy'
-    Condition: HasKeyArn
     Properties:
       PolicyName: CodePipelineCrossAccountRolePolicy
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
+          # CloudFormation permissions
           - Effect: Allow
             Action:
               - 'cloudformation:*'
             Resource: '*'
+
+          # KMS Permissions with broader scope
           - Effect: Allow
             Action:
               - 'kms:Decrypt'
@@ -70,20 +66,47 @@ Resources:
               - 'kms:ReEncrypt*'
               - 'kms:GenerateDataKey*'
             Resource:
-              - !Ref KeyArn
+              - !If [HasKeyArn, !Ref KeyArn, !Ref 'AWS::NoValue']
               - !If [HasFrontEndKeyArn, !Ref FrontEndKeyArn, !Ref 'AWS::NoValue']
               - !If [HasWebsiteKeyArn, !Ref WebsiteKeyArn, !Ref 'AWS::NoValue']
+              - '*' # Allows access to any KMS key
+
+          # Broader S3 Permissions
+          - Effect: Allow
+            Action:
+              - 's3:*' # All S3 actions
+            Resource:
+              - 'arn:aws:s3:::*' # All buckets
+              - 'arn:aws:s3:::*/*' # All objects in all buckets
+
+          # Lambda permissions
           - Effect: Allow
             Action:
               - 'lambda:InvokeFunction'
             Resource: '*'
+
+          # CloudFront permissions
           - Effect: Allow
             Action:
               - 'cloudfront:CreateInvalidation'
+              - 'cloudfront:GetInvalidation'
+              - 'cloudfront:ListInvalidations'
+              - 'cloudfront:GetDistribution'
+              - 'cloudfront:GetDistributionConfig'
+              - 'cloudfront:ListDistributions'
             Resource: '*'
+
+          # Device Farm permissions
           - Effect: Allow
             Action:
-              - 'devicefarm:*' # You can limit this to specific actions if preferred
+              - 'devicefarm:*'
+            Resource: '*'
+
+          # CodeBuild permissions for the CloudFront invalidation project
+          - Effect: Allow
+            Action:
+              - 'codebuild:StartBuild'
+              - 'codebuild:BatchGetBuilds'
             Resource: '*'
       Roles:
         - !Ref CodePipelineCrossAccountRole

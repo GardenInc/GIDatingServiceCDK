@@ -63,18 +63,78 @@ export class WebsitePipelineStack extends Stack {
     const betaAccountRootPrincipal = new iam.AccountPrincipal(betaAccountId);
     const prodAccountRootPrincipal = new iam.AccountPrincipal(prodAccountId);
 
-    // Create KMS key and update policy with cross-account access
+    // Create KMS key with enhanced cross-account access
     const key = new kms.Key(this, 'ArtifactKey', {
       alias: 'key/website-pipeline-artifact-key',
-      enableKeyRotation: true, // Enable key rotation for better security
+      enableKeyRotation: true,
       description: 'KMS key for website pipeline artifacts',
     });
-    key.grantDecrypt(betaAccountRootPrincipal);
-    key.grantDecrypt(betaCodePipelineRole);
-    key.grantDecrypt(prodAccountRootPrincipal);
-    key.grantDecrypt(prodCodeDeployRole);
 
-    // Create S3 bucket with target account cross-account access
+    // Add explicit key policy for cross-account access
+    key.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: 'AllowCrossAccountAccess',
+        effect: iam.Effect.ALLOW,
+        principals: [new iam.AccountPrincipal(betaAccountId), new iam.AccountPrincipal(prodAccountId)],
+        actions: ['kms:Decrypt', 'kms:DescribeKey', 'kms:Encrypt', 'kms:ReEncrypt*', 'kms:GenerateDataKey*'],
+        resources: ['*'],
+      }),
+    );
+
+    // Add explicit key policy for the cross-account roles
+    key.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: 'AllowCrossAccountRoleAccess',
+        effect: iam.Effect.ALLOW,
+        principals: [
+          new iam.ArnPrincipal(betaCodePipelineRole.roleArn),
+          new iam.ArnPrincipal(betaCloudFormationRole.roleArn),
+          new iam.ArnPrincipal(prodCodeDeployRole.roleArn),
+          new iam.ArnPrincipal(prodCloudFormationRole.roleArn),
+        ],
+        actions: ['kms:Decrypt', 'kms:DescribeKey', 'kms:Encrypt', 'kms:ReEncrypt*', 'kms:GenerateDataKey*'],
+        resources: ['*'],
+      }),
+    );
+
+    // Replace simple grantDecrypt with more comprehensive grants
+    key.grant(
+      betaAccountRootPrincipal,
+      'kms:Decrypt',
+      'kms:DescribeKey',
+      'kms:Encrypt',
+      'kms:ReEncrypt*',
+      'kms:GenerateDataKey*',
+    );
+
+    key.grant(
+      betaCodePipelineRole,
+      'kms:Decrypt',
+      'kms:DescribeKey',
+      'kms:Encrypt',
+      'kms:ReEncrypt*',
+      'kms:GenerateDataKey*',
+    );
+
+    key.grant(
+      prodAccountRootPrincipal,
+      'kms:Decrypt',
+      'kms:DescribeKey',
+      'kms:Encrypt',
+      'kms:ReEncrypt*',
+      'kms:GenerateDataKey*',
+    );
+
+    key.grant(
+      prodCodeDeployRole,
+      'kms:Decrypt',
+      'kms:DescribeKey',
+      'kms:Encrypt',
+      'kms:ReEncrypt*',
+      'kms:GenerateDataKey*',
+    );
+
+    // Create S3 bucket with enhanced cross-account access
     const artifactBucket = new s3.Bucket(this, 'ArtifactBucket', {
       bucketName: `website-artifact-bucket-${this.account}`,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -89,10 +149,27 @@ export class WebsitePipelineStack extends Stack {
       ],
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, // Enhanced security
     });
-    artifactBucket.grantPut(betaAccountRootPrincipal);
-    artifactBucket.grantRead(betaAccountRootPrincipal);
-    artifactBucket.grantPut(prodAccountRootPrincipal);
-    artifactBucket.grantRead(prodAccountRootPrincipal);
+
+    // Grant comprehensive bucket permissions to cross-account roles
+    artifactBucket.grantRead(betaCodePipelineRole);
+    artifactBucket.grantRead(betaCloudFormationRole);
+    artifactBucket.grantRead(prodCodeDeployRole);
+    artifactBucket.grantRead(prodCloudFormationRole);
+
+    // Grant root principals access too
+    artifactBucket.grantReadWrite(betaAccountRootPrincipal);
+    artifactBucket.grantReadWrite(prodAccountRootPrincipal);
+
+    // Add bucket policy for cross-account access
+    artifactBucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: 'AllowCrossAccountBucketAccess',
+        effect: iam.Effect.ALLOW,
+        principals: [new iam.AccountPrincipal(betaAccountId), new iam.AccountPrincipal(prodAccountId)],
+        actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
+        resources: [artifactBucket.bucketArn, `${artifactBucket.bucketArn}/*`],
+      }),
+    );
 
     // CDK build definition
     const cdkBuild = new codebuild.PipelineProject(this, 'CdkBuild', {
@@ -130,7 +207,7 @@ export class WebsitePipelineStack extends Stack {
       encryptionKey: key,
     });
 
-    // Website build definition with asset handling
+    // Website build definition with improved asset handling
     const websiteBuild = new codebuild.PipelineProject(this, 'WebsiteBuild', {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
@@ -154,9 +231,9 @@ export class WebsitePipelineStack extends Stack {
               'echo "Creating Vite config file..."',
               "echo \"import { defineConfig } from 'vite'; import react from '@vitejs/plugin-react'; export default defineConfig({ plugins: [react()], build: { outDir: 'build' } });\" > vite.config.js",
 
-              // Create placeholder assets if they're missing
-              'echo "Creating placeholder assets..."',
-              'touch src/assets/charlie-headshot.jpeg',
+              // Create placeholder assets with actual content instead of empty files
+              'echo "Creating proper placeholder image for assets..."',
+              'echo "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" | base64 -d > src/assets/charlie-headshot.jpeg',
 
               // Print the file structure for debugging
               'find . -type f -name "*.jsx" -exec grep -l "assets" {} \\;',
@@ -169,7 +246,7 @@ export class WebsitePipelineStack extends Stack {
               'find src -type f -name "*.jsx" -exec sed -i "s|../assets/|./assets/|g" {} \\;',
               'find src -type f -name "*.jsx" -exec sed -i "s|../imgs/|./assets/|g" {} \\;',
 
-              // Try the build
+              // Try the build with fallbacks
               'npm run build || { echo "Build failed, trying fallback solution"; mkdir -p build; cp -r public/* build/ 2>/dev/null || echo "No public directory"; exit 0; }',
             ],
           },
@@ -192,14 +269,14 @@ export class WebsitePipelineStack extends Stack {
     const websiteBuildOutput = new codepipeline.Artifact('websiteBuildOutput');
     const cdkBuildOutput = new codepipeline.Artifact('cdkBuildOutput');
 
-    // Create CloudFront invalidation project for Beta - without cross-account role
+    // Create CloudFront invalidation project for Beta
     const betaCloudFrontInvalidation = new codebuild.PipelineProject(this, 'BetaCloudFrontInvalidation', {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
           build: {
             commands: [
-              // Get the real distribution ID from CloudFormation outputs first
+              // Get the real distribution ID from CloudFormation outputs
               'export DIST_ID=$(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2BucketStack --query "Stacks[0].Outputs[?OutputKey==\'WebsiteDistributionIdOutput\'].OutputValue" --output text)',
               'echo "Invalidating CloudFront distribution: $DIST_ID"',
               'aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"',
@@ -210,17 +287,17 @@ export class WebsitePipelineStack extends Stack {
       environment: {
         buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
       },
-      // IMPORTANT: Removed the cross-account role here
+      encryptionKey: key,
     });
 
-    // Create CloudFront invalidation project for Prod - without cross-account role
+    // Create CloudFront invalidation project for Prod
     const prodCloudFrontInvalidation = new codebuild.PipelineProject(this, 'ProdCloudFrontInvalidation', {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
           build: {
             commands: [
-              // Get the real distribution ID from CloudFormation outputs first
+              // Get the real distribution ID from CloudFormation outputs
               'export DIST_ID=$(aws cloudformation describe-stacks --stack-name WebsiteProdus-west-2BucketStack --query "Stacks[0].Outputs[?OutputKey==\'WebsiteDistributionIdOutput\'].OutputValue" --output text)',
               'echo "Invalidating CloudFront distribution: $DIST_ID"',
               'aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"',
@@ -231,7 +308,7 @@ export class WebsitePipelineStack extends Stack {
       environment: {
         buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
       },
-      // IMPORTANT: Removed the cross-account role here
+      encryptionKey: key,
     });
 
     // Pipeline definition
@@ -323,13 +400,13 @@ export class WebsitePipelineStack extends Stack {
               role: betaCodePipelineRole,
               runOrder: 3,
             }),
-            // Add a step to invalidate CloudFront cache with cross-account role on the action
+            // Add a step to invalidate CloudFront cache with cross-account role
             new codepipeline_actions.CodeBuildAction({
               actionName: 'InvalidateCloudFrontCache',
               project: betaCloudFrontInvalidation,
               input: websiteBuildOutput,
               runOrder: 4,
-              role: betaCodePipelineRole, // Specify the role on the action instead
+              role: betaCodePipelineRole,
             }),
           ],
         },
@@ -339,7 +416,7 @@ export class WebsitePipelineStack extends Stack {
             new codepipeline_actions.ManualApprovalAction({
               actionName: 'Approve',
               additionalInformation: 'Approve deployment to production environment',
-              externalEntityLink: `https://beta.${betaConfig.config.domainName ?? 'qandmedating.com'}`, // Fixed with nullish coalescing
+              externalEntityLink: `https://beta.${betaConfig.config.domainName ?? 'qandmedating.com'}`,
             }),
           ],
         },
@@ -360,18 +437,18 @@ export class WebsitePipelineStack extends Stack {
               actionName: 'DeployWebsiteContent',
               input: websiteBuildOutput,
               bucket: s3.Bucket.fromBucketAttributes(this, 'ProdWebsiteS3Bucket', {
-                bucketArn: prodConfig.websiteBucketArn, // You'll need to pass this from the website bucket stack
+                bucketArn: prodConfig.websiteBucketArn,
               }),
               role: prodCodeDeployRole,
               runOrder: 2,
             }),
-            // Add a step to invalidate CloudFront cache for prod with cross-account role on the action
+            // Add a step to invalidate CloudFront cache for prod
             new codepipeline_actions.CodeBuildAction({
               actionName: 'InvalidateCloudFrontCache',
               project: prodCloudFrontInvalidation,
-              input: websiteBuildOutput, // Just needs some input artifact
+              input: websiteBuildOutput,
               runOrder: 3,
-              role: prodCodeDeployRole, // Specify the role on the action instead
+              role: prodCodeDeployRole,
             }),
           ],
         },
@@ -404,10 +481,27 @@ export class WebsitePipelineStack extends Stack {
       }),
     );
 
+    // Allow pipeline role to use the KMS key
+    pipeline.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['kms:Decrypt', 'kms:DescribeKey', 'kms:Encrypt', 'kms:ReEncrypt*', 'kms:GenerateDataKey*'],
+        resources: [key.keyArn],
+      }),
+    );
+
     // Publish the KMS Key ARN as an output
     new CfnOutput(this, 'WebsiteArtifactBucketEncryptionKeyArn', {
       value: key.keyArn,
       exportName: 'WebsiteArtifactBucketEncryptionKey',
+      description: 'The ARN of the KMS key used to encrypt artifacts for the Website pipeline',
+    });
+
+    // Publish the S3 Artifact Bucket ARN as an output
+    new CfnOutput(this, 'WebsiteArtifactBucketArn', {
+      value: artifactBucket.bucketArn,
+      exportName: 'WebsiteArtifactBucketArn',
+      description: 'The ARN of the S3 bucket used to store artifacts for the Website pipeline',
     });
   }
 }
