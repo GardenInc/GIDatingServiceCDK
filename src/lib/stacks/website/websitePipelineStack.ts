@@ -371,8 +371,8 @@ export class WebsitePipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployWebsiteBucket',
-              templatePath: cdkBuildOutput.atPath(`WebsiteBetauswest2BucketStack${TEMPLATE_ENDING}`),
-              stackName: 'WebsiteBetauswest2BucketStack',
+              templatePath: cdkBuildOutput.atPath(`WebsiteBetaus-west-2BucketStack${TEMPLATE_ENDING}`),
+              stackName: 'WebsiteBetaus-west-2BucketStack',
               adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: betaCodePipelineRole,
