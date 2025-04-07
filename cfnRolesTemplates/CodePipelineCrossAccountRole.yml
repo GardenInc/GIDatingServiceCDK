@@ -108,6 +108,15 @@ Resources:
               - 'codebuild:StartBuild'
               - 'codebuild:BatchGetBuilds'
             Resource: '*'
+
+          # Critical: IAM PassRole permission
+          - Effect: Allow
+            Action:
+              - 'iam:PassRole'
+            Resource:
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudFormationDeploymentRole'
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/*' # Broader permission if needed
+
       Roles:
         - !Ref CodePipelineCrossAccountRole
 

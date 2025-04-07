@@ -84,7 +84,6 @@ Resources:
             Action:
               - 'devicefarm:*'
             Resource: '*'
-
           # CloudFront permissions for invalidations
           - Effect: Allow
             Action:
@@ -95,6 +94,12 @@ Resources:
               - 'cloudfront:GetDistributionConfig'
               - 'cloudfront:ListDistributions'
             Resource: '*'
+          # IAM PassRole permission
+          - Effect: Allow
+            Action:
+              - 'iam:PassRole'
+            Resource: '*'
+
       Roles:
         - !Ref CloudFormationDeploymentRole
 
