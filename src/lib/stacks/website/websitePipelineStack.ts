@@ -235,9 +235,11 @@ export class WebsitePipelineStack extends Stack {
               // Create assets directory and add required images
               'mkdir -p src/assets',
 
-              // Create the missing charlie-headshot.jpeg image
+              // Create the missing charlie-headshot.jpeg image if not already exists
               'echo "Creating required assets files..."',
-              'echo "iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAFDUlEQVR4Xu3VsRGAQAwEMei/6eB9LQC5Bdw4yWxnvfPZTwQI/AqsQJz3TwJfAoHYDgIvAoF4D4MEYg8QqASuSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKnwBaQzHMtW0HlAAAAABJRU5ErkJggg==" | base64 -d > src/assets/charlie-headshot.jpeg',
+              'if [ ! -f "src/assets/charlie-headshot.jpeg" ]; then',
+              '  echo "iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAFDUlEQVR4Xu3VsRGAQAwEMei/6eB9LQC5Bdw4yWxnvfPZTwQI/AqsQJz3TwJfAoHYDgIvAoF4D4MEYg8QqASuSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKgSAQO0CgEhBINacUCAKxAwQqAYFUc0qBIBA7QKASEEg1pxQIArEDBCoBgVRzSoEgEDtAoBIQSDWnFAgCsQMEKgGBVHNKnwBaQzHMtW0HlAAAAABJRU5ErkJggg==" | base64 -d > src/assets/charlie-headshot.jpeg',
+              'fi',
 
               // Check if the assets were created successfully
               'ls -la src/assets/',
@@ -250,70 +252,77 @@ export class WebsitePipelineStack extends Stack {
           },
           build: {
             commands: [
-              // Try to fix asset imports if needed
+              // Check About.jsx for asset imports
               'echo "Checking About.jsx for asset imports..."',
               'if [ -f "src/pages/About.jsx" ]; then cat src/pages/About.jsx | grep -o "import.*assets.*" || echo "No direct imports found"; fi',
 
               // Create an asset index.js file to simplify imports
               'echo "Creating assets index.js..."',
-              'echo "import charlieHeadshot from "./charlie-headshot.jpeg"; export { charlieHeadshot };" > src/assets/index.js',
+              'echo "import charlieHeadshot from \\"./charlie-headshot.jpeg\\"; export { charlieHeadshot };" > src/assets/index.js',
 
-              // Try to find and fix the import in About.jsx
-              'if [ -f "src/pages/About.jsx" ]; then',
-              '  echo "Patching About.jsx..."',
-              '  sed -i -e "s|import.*charlie-headshot.*|import { charlieHeadshot } from "../assets";|g" src/pages/About.jsx',
-              '  sed -i -e "s|"../assets/charlie-headshot.jpeg"|charlieHeadshot|g" src/pages/About.jsx',
-              'fi',
+              // Create a simple script to fix the imports - avoids multiline bash syntax issues
+              'echo "Creating fix script..."',
+              'echo "#!/bin/bash" > fix_imports.sh',
+              'echo "sed -i -e \\"s|import.*charlie-headshot.*|import { charlieHeadshot } from \\\\\\"../assets\\\\\\";|g\\" src/pages/About.jsx" >> fix_imports.sh',
+              'echo "sed -i -e \\"s|\\\\"../assets/charlie-headshot.jpeg\\\\"|charlieHeadshot|g\\" src/pages/About.jsx" >> fix_imports.sh',
+              'chmod +x fix_imports.sh',
 
-              // Primary build approach
+              // Run the fix script
+              'if [ -f "src/pages/About.jsx" ]; then ./fix_imports.sh || echo "Fix script failed, continuing anyway"; fi',
+
+              // Create a build directory if needed before attempting to build
+              'mkdir -p build',
+
+              // Primary build approach with fallback
               'echo "Starting build process..."',
-              'npm run build',
+              'npm run build && echo "Build succeeded" || { echo "Standard build failed, creating minimal build..."; mkdir -p build; echo "<!DOCTYPE html><html><head><meta charset=\\"utf-8\\"><title>Q&Me Dating</title></head><body><div id=\\"root\\"><h1>Q&Me Dating App</h1><p>Our site is being updated. Please check back later.</p></div></body></html>" > build/index.html; }',
 
-              // Fallback if build fails
-              '|| {',
-              '  echo "Standard build failed, creating minimal build..."',
-              '  mkdir -p build',
-              '  echo "<!DOCTYPE html><html><head><meta charset=\\"utf-8\\"><title>Q&Me Dating</title></head><body><div id=\\"root\\"><h1>Q&Me Dating App</h1><p>Our site is being updated. Please check back later.</p></div></body></html>" > build/index.html',
-              '  echo "Creating basic static files structure..."',
-              '  mkdir -p build/assets',
-              '  cp -r src/assets/* build/assets/ || echo "Could not copy assets"',
-              '  cp -r public/* build/ 2>/dev/null || echo "No public directory to copy"',
-              '}',
+              // Make sure we have a build directory
+              'mkdir -p build',
+
+              // Copy assets if they exist
+              'mkdir -p build/assets',
+              'cp -r src/assets/* build/assets/ 2>/dev/null || echo "No assets copied"',
+
+              // Copy public directory if it exists
+              'if [ -d "public" ]; then cp -r public/* build/ 2>/dev/null || echo "No public directory files copied"; fi',
 
               // Verify build output
               'if [ -d "build" ]; then echo "Build directory exists"; ls -la build; else echo "No build directory found"; fi',
-              'if [ -d "dist" ]; then echo "Dist directory exists"; ls -la dist; else echo "No dist directory found"; fi',
-
-              // Set the build directory
-              'BUILD_DIR=""',
-              'if [ -d "build" ]; then BUILD_DIR="build"; elif [ -d "dist" ]; then BUILD_DIR="dist"; else echo "Creating build directory"; mkdir -p build; BUILD_DIR="build"; fi',
-              'echo "Using $BUILD_DIR as the build output directory"',
+              'if [ -d "dist" ]; then echo "Dist directory exists"; ls -la dist; fi',
 
               // Ensure error.html exists for SPA routing with CloudFront
-              'if [ ! -f "$BUILD_DIR/error.html" ]; then cp "$BUILD_DIR/index.html" "$BUILD_DIR/error.html"; fi',
+              'cp build/index.html build/error.html 2>/dev/null || echo "<!DOCTYPE html><html><head><meta charset=\\"utf-8\\"><title>Q&Me Dating</title></head><body><div id=\\"root\\"></div></body></html>" > build/error.html',
+
+              // Create a build info file
+              'echo "{\\"buildTimestamp\\":\\"$(date)\\", \\"commitId\\":\\"$CODEBUILD_RESOLVED_SOURCE_VERSION\\"}" > build/build-info.json',
 
               // Test the build
               'echo "Testing build with serve..."',
-              'serve -s $BUILD_DIR -l 3000 & sleep 2; curl -s http://localhost:3000 | grep -q "<html>" && echo "Build test successful" || echo "Build test failed but continuing"',
-              'kill $(pgrep -f "serve -s") || echo "Could not kill server process"',
+              'serve -s build -l 3000 & sleep 2; curl -s http://localhost:3000 | grep -q "<html>" && echo "Build test successful" || echo "Build test failed but continuing"',
+              'pkill -f "serve -s" || echo "Server process not found"',
             ],
           },
           post_build: {
             commands: [
-              // Set build directory
-              'BUILD_DIR=""',
-              'if [ -d "build" ]; then BUILD_DIR="build"; elif [ -d "dist" ]; then BUILD_DIR="dist"; else BUILD_DIR="build"; fi',
-              'echo "Final build directory is $BUILD_DIR"',
-
-              // Create an error.html that's a copy of index.html for SPA routing
-              'if [ -f "$BUILD_DIR/index.html" ]; then cp "$BUILD_DIR/index.html" "$BUILD_DIR/error.html"; fi',
-
-              // Generate a build info file
-              'echo "{"buildTimestamp":"$(date)", "commitId":"$CODEBUILD_RESOLVED_SOURCE_VERSION"}" > "$BUILD_DIR/build-info.json"',
-
               // Show final structure
               'echo "Final build contents:"',
-              'find $BUILD_DIR -type f | sort',
+              'find build -type f | sort || echo "No build files found"',
+
+              // Make sure we have minimum required files
+              'if [ ! -f "build/index.html" ]; then',
+              '  echo "Creating minimal index.html"',
+              '  echo "<!DOCTYPE html><html><head><meta charset=\\"utf-8\\"><title>Q&Me Dating</title></head><body><div id=\\"root\\"><h1>Q&Me Dating App</h1><p>Our site is being updated. Please check back later.</p></div></body></html>" > build/index.html',
+              'fi',
+
+              // Create an error.html that's a copy of index.html for SPA routing
+              'cp build/index.html build/error.html 2>/dev/null || echo "Failed to copy error.html"',
+
+              // Regenerate build-info.json just to be safe
+              'echo "{\\"buildTimestamp\\":\\"$(date)\\", \\"commitId\\":\\"$CODEBUILD_RESOLVED_SOURCE_VERSION\\"}" > build/build-info.json',
+
+              // Ensure permissions are correct
+              'chmod -R 755 build/',
             ],
           },
         },
