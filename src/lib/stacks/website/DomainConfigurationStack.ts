@@ -4,6 +4,9 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 
 export interface DomainConfigurationStackProps extends cdk.StackProps {
@@ -41,11 +44,16 @@ export class DomainConfigurationStack extends cdk.Stack {
     const fullDomainName =
       props.stageName.toLowerCase() === 'prod' ? domainName : `${props.stageName.toLowerCase()}.${domainName}`;
 
-    // Create Route53 hosted zone
-    const hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: domainName,
-      comment: `Hosted zone for ${domainName}, managed via CDK`,
-    });
+    // Create or use existing Route53 hosted zone
+    let hostedZone;
+    if (props.useExistingHostedZone && props.hostedZoneId) {
+      hostedZone = route53.HostedZone.fromHostedZoneId(this, 'ExistingHostedZone', props.hostedZoneId);
+    } else {
+      hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
+        zoneName: domainName,
+        comment: `Hosted zone for ${domainName}, managed via CDK`,
+      });
+    }
 
     // Output the nameservers for the hosted zone
     new cdk.CfnOutput(this, 'NameServers', {
@@ -61,10 +69,72 @@ export class DomainConfigurationStack extends cdk.Stack {
       comment: `OAI for ${fullDomainName}`,
     });
 
-    // Grant OAI read access to bucket
-    websiteBucket.grantRead(originAccessIdentity);
+    // Grant OAI read access to bucket with explicit policy statement
+    websiteBucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: 'AllowCloudFrontServicePrincipal',
+        effect: iam.Effect.ALLOW,
+        actions: ['s3:GetObject'],
+        resources: [`${websiteBucket.bucketArn}/*`],
+        principals: [
+          new iam.CanonicalUserPrincipal(originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId),
+        ],
+      }),
+    );
 
-    // Create CloudFront distribution without a certificate first
+    // Import the existing certificate by ID
+    const certificate = acm.Certificate.fromCertificateArn(
+      this,
+      'ExistingCertificate',
+      `arn:aws:acm:us-east-1:${this.account}:certificate/53943950-4479-4e30-a7fb-2cbf2ecb766f`,
+    );
+
+    // Create CloudFront log bucket with appropriate lifecycle rules
+    const logBucket = new s3.Bucket(this, 'CloudFrontLogBucket', {
+      bucketName: `cloudfront-logs-${props.stageName.toLowerCase()}-${this.account}-${this.region}`,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      lifecycleRules: [
+        {
+          id: 'DeleteOldLogs',
+          expiration: cdk.Duration.days(90),
+          noncurrentVersionExpiration: cdk.Duration.days(30),
+        },
+      ],
+    });
+
+    // Also create CloudWatch log group for CloudFront logs
+    const logGroup = new logs.LogGroup(this, 'CloudFrontLogGroup', {
+      logGroupName: `/aws/cloudfront/${props.stageName.toLowerCase()}-${domainName.replace(/\./g, '-')}`,
+      retention: logs.RetentionDays.THREE_MONTHS,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Add cloudfront function for default SPA routing
+    const spaRedirectFunction = new cloudfront.Function(this, 'SPARedirectFunction', {
+      code: cloudfront.FunctionCode.fromInline(`
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+          
+          // Check whether the URI is missing a file name.
+          if (uri.endsWith('/')) {
+            request.uri += 'index.html';
+          } 
+          // Check whether the URI is for a file that doesn't exist
+          else if (!uri.includes('.')) {
+            request.uri = '/index.html';
+          }
+          
+          return request;
+        }
+      `),
+      comment: 'Redirect all paths to index.html for SPA routing',
+    });
+
+    // Create optimized CloudFront distribution with logging enabled
     const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
       defaultBehavior: {
         origin: new origins.S3Origin(websiteBucket, {
@@ -73,15 +143,41 @@ export class DomainConfigurationStack extends cdk.Stack {
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        originRequestPolicy: cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
+        responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
+        functionAssociations: [
+          {
+            function: spaRedirectFunction,
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          },
+        ],
       },
       errorResponses: [
         {
-          httpStatus: 404,
+          httpStatus: 403, // Access Denied - replace with index.html
           responseHttpStatus: 200,
-          responsePagePath: '/index.html', // For SPA routing
+          responsePagePath: '/index.html',
+          ttl: cdk.Duration.minutes(5),
+        },
+        {
+          httpStatus: 404, // Not Found - replace with index.html
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+          ttl: cdk.Duration.minutes(5),
         },
       ],
       defaultRootObject: 'index.html',
+      domainNames: [fullDomainName],
+      certificate: certificate,
+      logBucket: logBucket,
+      logFilePrefix: `${props.stageName.toLowerCase()}/${domainName}/`,
+      logIncludesCookies: true, // Enabling cookies in logs for debugging
+      enableLogging: true,
+      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+      httpVersion: cloudfront.HttpVersion.HTTP2,
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
     });
 
     // Create DNS records pointing to CloudFront
@@ -100,36 +196,8 @@ export class DomainConfigurationStack extends cdk.Stack {
       });
     }
 
-    // Set placeholder value for certificate ARN
-    this.certificateArn = 'manual-certificate-creation-required';
-
-    // Add instructions for certificate creation and validation
-    new cdk.CfnOutput(this, 'ManualSteps', {
-      value: `After updating your Namecheap DNS with the Route53 nameservers, follow these steps:
-
-1. Request a certificate in ACM:
-   aws acm request-certificate --region us-east-1 --profile beta \\
-     --domain-name ${domainName} \\
-     --subject-alternative-names "*.${domainName}" \\
-     --validation-method DNS
-
-2. Get the certificate ARN:
-   aws acm list-certificates --region us-east-1 --profile beta --query "CertificateSummaryList[?DomainName=='${domainName}']"
-
-3. Get validation record details:
-   aws acm describe-certificate --region us-east-1 --profile beta --certificate-arn YOUR_CERT_ARN
-
-4. Create validation records in Route53:
-   aws route53 change-resource-record-sets --hosted-zone-id ${hostedZone.hostedZoneId} --profile beta \\
-     --change-batch file://validation-records.json
-
-   (Create validation-records.json with the proper validation data from step 3)
-
-5. Update CloudFront with the certificate once validated:
-   aws cloudfront update-distribution --id ${distribution.distributionId} --profile beta \\
-     --viewer-certificate "CertificateSource=acm,ACMCertificateArn=YOUR_CERT_ARN,SSLSupportMethod=sni-only,MinimumProtocolVersion=TLSv1.2_2021"`,
-      description: 'Manual steps for certificate setup',
-    });
+    // Save the certificate ARN
+    this.certificateArn = certificate.certificateArn;
 
     // Export values for use in other stacks
     this.hostedZoneId = hostedZone.hostedZoneId;
@@ -160,6 +228,30 @@ export class DomainConfigurationStack extends cdk.Stack {
       value: distribution.distributionDomainName,
       description: 'The domain name of the CloudFront distribution',
       exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-DistributionDomainName`,
+    });
+
+    new cdk.CfnOutput(this, 'CertificateArn', {
+      value: this.certificateArn,
+      description: 'The ARN of the ACM certificate',
+      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-CertificateArn`,
+    });
+
+    new cdk.CfnOutput(this, 'LogBucketName', {
+      value: logBucket.bucketName,
+      description: 'The S3 bucket for CloudFront logs',
+      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-LogBucketName`,
+    });
+
+    new cdk.CfnOutput(this, 'LogGroupName', {
+      value: logGroup.logGroupName,
+      description: 'The CloudWatch log group for CloudFront logs',
+      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-LogGroupName`,
+    });
+
+    // Add a CloudFront invalidation command output
+    new cdk.CfnOutput(this, 'InvalidationCommand', {
+      value: `aws cloudfront create-invalidation --distribution-id ${distribution.distributionId} --paths "/*"`,
+      description: 'Command to invalidate CloudFront cache after deployment',
     });
   }
 }

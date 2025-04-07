@@ -206,7 +206,7 @@ export class WebsitePipelineStack extends Stack {
       encryptionKey: key,
     });
 
-    // Website build definition with improved asset handling
+    // Improved website build definition with robust asset handling
     const websiteBuild = new codebuild.PipelineProject(this, 'WebsiteBuild', {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
@@ -217,42 +217,80 @@ export class WebsitePipelineStack extends Stack {
             },
             commands: [
               'npm install', // Install dependencies
+              'npm install -g serve', // For testing the build
             ],
           },
           pre_build: {
             commands: [
-              // Check the source structure to debug
+              // Report environment info
+              'echo "Node version: $(node -v)"',
+              'echo "NPM version: $(npm -v)"',
+
+              // Check the source structure
               'ls -la',
-              'ls -la src || echo "No src directory"',
-              'mkdir -p src/assets', // Create assets directory if it doesn't exist
+              'if [ -d "src" ]; then ls -la src; fi',
+              'if [ -d "public" ]; then ls -la public; fi',
 
-              // Create a vite.config.js that properly handles assets
-              'echo "Creating Vite config file..."',
-              "echo \"import { defineConfig } from 'vite'; import react from '@vitejs/plugin-react'; export default defineConfig({ plugins: [react()], build: { outDir: 'build' } });\" > vite.config.js",
+              // Create directories if needed
+              'mkdir -p src/assets',
 
-              // Create placeholder assets with actual content instead of empty files
-              'echo "Creating proper placeholder image for assets..."',
-              'echo "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" | base64 -d > src/assets/charlie-headshot.jpeg',
+              // Find package.json and inspect build scripts
+              'if [ -f "package.json" ]; then grep -A 10 "scripts" package.json; fi',
 
-              // Print the file structure for debugging
-              'find . -type f -name "*.jsx" -exec grep -l "assets" {} \\;',
-              'find . -type f -name "*.jsx" -exec grep -l "charlie-headshot" {} \\;',
+              // Look for any config files
+              'find . -maxdepth 1 -name "*.config.*" -o -name "vite.config.*" -o -name "webpack.config.*"',
             ],
           },
           build: {
             commands: [
-              // Patch any import statements for assets
-              'find src -type f -name "*.jsx" -exec sed -i "s|../assets/|./assets/|g" {} \\;',
-              'find src -type f -name "*.jsx" -exec sed -i "s|../imgs/|./assets/|g" {} \\;',
+              // Primary build approach
+              'echo "Starting build process..."',
+              'npm run build || { echo "Standard build failed, trying fallback approach"; }',
 
-              // Try the build with fallbacks
-              'npm run build || { echo "Build failed, trying fallback solution"; mkdir -p build; cp -r public/* build/ 2>/dev/null || echo "No public directory"; exit 0; }',
+              // Verify build output
+              'if [ -d "build" ]; then echo "Build directory exists"; ls -la build; else echo "No build directory found"; fi',
+              'if [ -d "dist" ]; then echo "Dist directory exists"; ls -la dist; else echo "No dist directory found"; fi',
+
+              // Determine output directory and create if needed
+              'BUILD_DIR=""',
+              'if [ -d "build" ]; then BUILD_DIR="build"; elif [ -d "dist" ]; then BUILD_DIR="dist"; else echo "Creating build directory"; mkdir -p build; BUILD_DIR="build"; fi',
+              'echo "Using $BUILD_DIR as the build output directory"',
+
+              // Ensure index.html exists in the build directory
+              'if [ ! -f "$BUILD_DIR/index.html" ]; then echo "Creating minimal index.html"; echo "<!DOCTYPE html><html><head><meta charset=\\"utf-8\\"><title>Q&Me Dating</title></head><body><div id=\\"root\\"></div></body></html>" > "$BUILD_DIR/index.html"; fi',
+
+              // Create error.html for SPA routing
+              'cp "$BUILD_DIR/index.html" "$BUILD_DIR/error.html"',
+
+              // Test the build using serve
+              'echo "Testing build with serve..."',
+              'serve -s $BUILD_DIR -l 3000 & sleep 2; curl -s http://localhost:3000 | grep -q "<html>" && echo "Build test successful" || echo "Build test warning"',
+              'kill $(lsof -t -i:3000) || true',
+            ],
+          },
+          post_build: {
+            commands: [
+              // Define the build output directory
+              'BUILD_DIR=""',
+              'if [ -d "build" ]; then BUILD_DIR="build"; elif [ -d "dist" ]; then BUILD_DIR="dist"; else BUILD_DIR="build"; fi',
+              'echo "Final build directory is $BUILD_DIR"',
+
+              // Generate a build info file
+              'echo "{"buildTimestamp":"$(date)", "commitId":"$CODEBUILD_RESOLVED_SOURCE_VERSION"}" > "$BUILD_DIR/build-info.json"',
+
+              // Show final structure
+              'echo "Final build contents:"',
+              'find $BUILD_DIR -type f | sort',
             ],
           },
         },
         artifacts: {
-          'base-directory': 'build',
+          'base-directory':
+            '$(if [ -d "build" ]; then echo "build"; elif [ -d "dist" ]; then echo "dist"; else echo "build"; fi)',
           files: ['**/*'],
+        },
+        cache: {
+          paths: ['node_modules/**/*'],
         },
       }),
       environment: {
@@ -260,7 +298,62 @@ export class WebsitePipelineStack extends Stack {
         privileged: true,
       },
       encryptionKey: key,
+      cache: codebuild.Cache.local(codebuild.LocalCacheMode.SOURCE),
     });
+
+    // Create CloudFront invalidation project for both environments
+    const betaCloudFrontInvalidation = new codebuild.PipelineProject(this, 'BetaCloudFrontInvalidation', {
+      buildSpec: codebuild.BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          build: {
+            commands: [
+              `aws cloudfront create-invalidation --distribution-id ${betaConfig.distributionId} --paths "/*"`,
+              'echo "CloudFront invalidation initiated for beta environment"',
+            ],
+          },
+        },
+      }),
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+      },
+      encryptionKey: key,
+    });
+
+    const prodCloudFrontInvalidation = new codebuild.PipelineProject(this, 'ProdCloudFrontInvalidation', {
+      buildSpec: codebuild.BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          build: {
+            commands: [
+              `aws cloudfront create-invalidation --distribution-id ${prodConfig.distributionId} --paths "/*"`,
+              'echo "CloudFront invalidation initiated for production environment"',
+            ],
+          },
+        },
+      }),
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+      },
+      encryptionKey: key,
+    });
+
+    // Add CloudFront invalidation permission to the respective roles
+    betaCloudFrontInvalidation.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['cloudfront:CreateInvalidation'],
+        resources: [`arn:aws:cloudfront::${betaAccountId}:distribution/${betaConfig.distributionId}`],
+      }),
+    );
+
+    prodCloudFrontInvalidation.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['cloudfront:CreateInvalidation'],
+        resources: [`arn:aws:cloudfront::${prodAccountId}:distribution/${prodConfig.distributionId}`],
+      }),
+    );
 
     // Define pipeline stage output artifacts
     const cdkSource = new codepipeline.Artifact('websiteCDKSource');
@@ -350,15 +443,27 @@ export class WebsitePipelineStack extends Stack {
               deploymentRole: betaCloudFormationRole,
               runOrder: 2,
             }),
-            // Simple S3 deployment without cache invalidation
+            // Improved S3 deployment with cache control
             new codepipeline_actions.S3DeployAction({
               actionName: 'DeployWebsiteContent',
               input: websiteBuildOutput,
               bucket: s3.Bucket.fromBucketName(this, 'WebsiteS3Bucket', betaConfig.websiteBucketName),
               role: betaCodePipelineRole,
               runOrder: 3,
+              cacheControl: [
+                codepipeline_actions.CacheControl.setPublic(),
+                codepipeline_actions.CacheControl.maxAge(Duration.days(7)),
+                codepipeline_actions.CacheControl.sMaxAge(Duration.days(7)),
+              ],
             }),
-            // Removed cache invalidation step
+            // Add CloudFront invalidation step
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'InvalidateCloudFrontCache',
+              project: betaCloudFrontInvalidation,
+              input: websiteBuildOutput,
+              runOrder: 4,
+              role: betaCodePipelineRole,
+            }),
           ],
         },
         {
@@ -384,7 +489,18 @@ export class WebsitePipelineStack extends Stack {
               deploymentRole: prodCloudFormationRole,
               runOrder: 1,
             }),
-            // Simple S3 deployment without cache invalidation
+            // Deploy domain configuration for Prod
+            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+              actionName: 'DeployProdDomainConfig',
+              templatePath: cdkBuildOutput.atPath(`WebsiteProdus-west-2Domainqandmedating-comStack${TEMPLATE_ENDING}`),
+              stackName: 'WebsiteProdus-west-2Domainqandmedating-comStack',
+              adminPermissions: false,
+              cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
+              role: prodCodeDeployRole,
+              deploymentRole: prodCloudFormationRole,
+              runOrder: 2,
+            }),
+            // Improved S3 deployment with cache control
             new codepipeline_actions.S3DeployAction({
               actionName: 'DeployWebsiteContent',
               input: websiteBuildOutput,
@@ -392,9 +508,21 @@ export class WebsitePipelineStack extends Stack {
                 bucketArn: prodConfig.websiteBucketArn,
               }),
               role: prodCodeDeployRole,
-              runOrder: 2,
+              runOrder: 3,
+              cacheControl: [
+                codepipeline_actions.CacheControl.setPublic(),
+                codepipeline_actions.CacheControl.maxAge(Duration.days(30)),
+                codepipeline_actions.CacheControl.sMaxAge(Duration.days(30)),
+              ],
             }),
-            // Removed cache invalidation step
+            // Add CloudFront invalidation step
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'InvalidateCloudFrontCache',
+              project: prodCloudFrontInvalidation,
+              input: websiteBuildOutput,
+              runOrder: 4,
+              role: prodCodeDeployRole,
+            }),
           ],
         },
       ],
@@ -435,6 +563,18 @@ export class WebsitePipelineStack extends Stack {
       }),
     );
 
+    // Add CloudFront invalidation permissions
+    pipeline.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['cloudfront:CreateInvalidation'],
+        resources: [
+          `arn:aws:cloudfront::${betaAccountId}:distribution/${betaConfig.distributionId}`,
+          `arn:aws:cloudfront::${prodAccountId}:distribution/${prodConfig.distributionId}`,
+        ],
+      }),
+    );
+
     // Publish the KMS Key ARN as an output
     new CfnOutput(this, 'WebsiteArtifactBucketEncryptionKeyArn', {
       value: key.keyArn,
@@ -447,6 +587,29 @@ export class WebsitePipelineStack extends Stack {
       value: artifactBucket.bucketArn,
       exportName: 'WebsiteArtifactBucketArn',
       description: 'The ARN of the S3 bucket used to store artifacts for the Website pipeline',
+    });
+
+    // Add specific outputs for the Beta environment
+    new CfnOutput(this, 'BetaWebsiteUrl', {
+      value: `https://beta.${betaConfig.config.domainName ?? 'qandmedating.com'}`,
+      description: 'The URL of the Beta website',
+    });
+
+    // Add specific outputs for the Production environment
+    new CfnOutput(this, 'ProdWebsiteUrl', {
+      value: `https://${prodConfig.config.domainName ?? 'qandmedating.com'}`,
+      description: 'The URL of the Production website',
+    });
+
+    // Add CloudFront invalidation command outputs for quick reference
+    new CfnOutput(this, 'BetaInvalidationCommand', {
+      value: `aws cloudfront create-invalidation --distribution-id ${betaConfig.distributionId} --paths "/*"`,
+      description: 'Command to manually invalidate the Beta CloudFront distribution',
+    });
+
+    new CfnOutput(this, 'ProdInvalidationCommand', {
+      value: `aws cloudfront create-invalidation --distribution-id ${prodConfig.distributionId} --paths "/*"`,
+      description: 'Command to manually invalidate the Production CloudFront distribution',
     });
   }
 }

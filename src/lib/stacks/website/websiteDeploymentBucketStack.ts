@@ -24,18 +24,25 @@ export class WebsiteDeploymentBucketStack extends cdk.Stack {
 
     // Create S3 bucket for website hosting with an explicit physical name
     const websiteBucket = new s3.Bucket(this, 'WebsiteHostingBucket', {
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'error.html',
-      publicReadAccess: false,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      bucketName: uniqueBucketName, // Explicit bucket name
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
-      bucketName: uniqueBucketName, // Explicit bucket name
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       cors: [
         {
           allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.HEAD],
           allowedOrigins: ['*'],
           allowedHeaders: ['*'],
+          maxAge: 3000,
+        },
+      ],
+      versioned: true, // Enable versioning for easy rollbacks
+      lifecycleRules: [
+        {
+          id: 'DeleteOldVersions',
+          enabled: true,
+          noncurrentVersionExpiration: cdk.Duration.days(30),
+          abortIncompleteMultipartUploadAfter: cdk.Duration.days(7),
         },
       ],
     });
@@ -45,9 +52,11 @@ export class WebsiteDeploymentBucketStack extends cdk.Stack {
       comment: `OAI for ${id}`,
     });
 
-    // Grant read access to CloudFront
+    // Grant read access to CloudFront with explicit policy statement
     websiteBucket.addToResourcePolicy(
       new iam.PolicyStatement({
+        sid: 'AllowCloudFrontServicePrincipal',
+        effect: iam.Effect.ALLOW,
         actions: ['s3:GetObject'],
         resources: [websiteBucket.arnForObjects('*')],
         principals: [
@@ -56,7 +65,8 @@ export class WebsiteDeploymentBucketStack extends cdk.Stack {
       }),
     );
 
-    // Create CloudFront distribution
+    // Create basic CloudFront distribution
+    // Note: This will be overridden by the DomainConfigurationStack when deployed
     const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
       defaultRootObject: 'index.html',
       defaultBehavior: {
@@ -66,15 +76,23 @@ export class WebsiteDeploymentBucketStack extends cdk.Stack {
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
       },
       errorResponses: [
         {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+          ttl: cdk.Duration.minutes(0),
+        },
+        {
           httpStatus: 404,
           responseHttpStatus: 200,
-          responsePagePath: '/index.html', // For SPA routing
+          responsePagePath: '/index.html',
+          ttl: cdk.Duration.minutes(0),
         },
       ],
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_100, // Use more regions as needed
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
     });
 
     // Export values for cross-stack references
