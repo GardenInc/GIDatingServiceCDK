@@ -89,7 +89,7 @@ export class DomainConfigurationStack extends cdk.Stack {
       `arn:aws:acm:us-east-1:${this.account}:certificate/53943950-4479-4e30-a7fb-2cbf2ecb766f`,
     );
 
-    // Create CloudFront log bucket with appropriate lifecycle rules
+    // Create CloudFront log bucket with ACLs enabled (required for CloudFront logs)
     const logBucket = new s3.Bucket(this, 'CloudFrontLogBucket', {
       bucketName: `cloudfront-logs-${props.stageName.toLowerCase()}-${this.account}-${this.region}`,
       encryption: s3.BucketEncryption.S3_MANAGED,
@@ -103,7 +103,24 @@ export class DomainConfigurationStack extends cdk.Stack {
           noncurrentVersionExpiration: cdk.Duration.days(30),
         },
       ],
+      // Enable ACLs - required for CloudFront logs
+      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
     });
+
+    // Grant CloudFront service principal the permissions to write logs
+    logBucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
+        actions: ['s3:GetBucketAcl', 's3:PutObject'],
+        resources: [logBucket.bucketArn, `${logBucket.bucketArn}/*`],
+        conditions: {
+          StringEquals: {
+            'aws:SourceArn': `arn:aws:cloudfront::${this.account}:distribution/*`,
+          },
+        },
+      }),
+    );
 
     // Also create CloudWatch log group for CloudFront logs
     const logGroup = new logs.LogGroup(this, 'CloudFrontLogGroup', {
@@ -172,8 +189,8 @@ export class DomainConfigurationStack extends cdk.Stack {
       domainNames: [fullDomainName],
       certificate: certificate,
       logBucket: logBucket,
-      logFilePrefix: `${props.stageName.toLowerCase()}/${domainName}/`,
-      logIncludesCookies: true, // Enabling cookies in logs for debugging
+      logFilePrefix: `${props.stageName.toLowerCase()}/`, // Simplified log path
+      logIncludesCookies: false, // Set to false to reduce log size
       enableLogging: true,
       minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
       httpVersion: cloudfront.HttpVersion.HTTP2,
