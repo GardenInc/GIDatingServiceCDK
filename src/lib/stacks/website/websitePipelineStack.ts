@@ -2,10 +2,10 @@ import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'; // Add this import
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
-import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
-import { Duration } from 'aws-cdk-lib';
+import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue, Duration } from 'aws-cdk-lib';
 import { WebsiteStackConfigInterface } from '../../utils/config'; // You'll need to create this interface
 import { SECRET_NAME, WebsitePipelineStackName, TEMPLATE_ENDING, WEBSITE_BUCKET_STACK } from '../../utils/constants'; // You'll need to add these constants
 import { pipelineAccountId } from '../../utils/accounts';
@@ -188,6 +188,8 @@ export class WebsitePipelineStack extends Stack {
             commands: [
               'npm run build', // Compile TypeScript
               'npm run cdk synth -- -o dist', // Generate CloudFormation template
+              'echo "Generated template files:"',
+              'find dist -name "*.template.json" | sort', // List all template files for debugging
             ],
           },
         },
@@ -266,44 +268,38 @@ export class WebsitePipelineStack extends Stack {
     const websiteBuildOutput = new codepipeline.Artifact('websiteBuildOutput');
     const cdkBuildOutput = new codepipeline.Artifact('cdkBuildOutput');
 
-    // Create CloudFront invalidation project for Beta
-    const betaCloudFrontInvalidation = new codebuild.PipelineProject(this, 'BetaCloudFrontInvalidation', {
+    // Create a combined deploy and invalidate project for Prod
+    const prodDeployAndInvalidate = new codebuild.PipelineProject(this, 'ProdDeployAndInvalidate', {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
           build: {
             commands: [
-              // Get the real distribution ID from CloudFormation outputs
-              'export DIST_ID=$(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2BucketStack --query "Stacks[0].Outputs[?OutputKey==\'WebsiteDistributionIdOutput\'].OutputValue" --output text)',
-              'echo "Invalidating CloudFront distribution: $DIST_ID"',
-              'aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"',
-            ],
-          },
-        },
-      }),
-      environment: {
-        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
-      },
-      encryptionKey: key,
-    });
+              // First, deploy the content to S3
+              'echo "Deploying website content to Prod S3 bucket..."',
+              'aws s3 sync . s3://$S3_BUCKET_NAME/ --delete',
 
-    // Create CloudFront invalidation project for Prod
-    const prodCloudFrontInvalidation = new codebuild.PipelineProject(this, 'ProdCloudFrontInvalidation', {
-      buildSpec: codebuild.BuildSpec.fromObject({
-        version: '0.2',
-        phases: {
-          build: {
-            commands: [
-              // Get the real distribution ID from CloudFormation outputs
+              // Then, invalidate the CloudFront distribution
+              'echo "Fetching CloudFront distribution ID..."',
               'export DIST_ID=$(aws cloudformation describe-stacks --stack-name WebsiteProdus-west-2BucketStack --query "Stacks[0].Outputs[?OutputKey==\'WebsiteDistributionIdOutput\'].OutputValue" --output text)',
               'echo "Invalidating CloudFront distribution: $DIST_ID"',
               'aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"',
             ],
           },
         },
+        artifacts: {
+          'base-directory': '.',
+          files: [],
+        },
       }),
       environment: {
         buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+        environmentVariables: {
+          S3_BUCKET_NAME: {
+            value: prodConfig.websiteBucketName,
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          },
+        },
       },
       encryptionKey: key,
     });
@@ -390,20 +386,38 @@ export class WebsitePipelineStack extends Stack {
               deploymentRole: betaCloudFormationRole,
               runOrder: 2,
             }),
-            new codepipeline_actions.S3DeployAction({
-              actionName: 'DeployWebsiteContent',
+
+            // UPDATED: Combined S3 Deploy with CloudFront invalidation using CodeBuild
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'DeployWebsiteAndInvalidateCache',
+              project: new codebuild.PipelineProject(this, 'BetaDeployAndInvalidate', {
+                buildSpec: codebuild.BuildSpec.fromObject({
+                  version: '0.2',
+                  phases: {
+                    build: {
+                      commands: [
+                        // First, deploy the content to S3
+                        'echo "Deploying website content to Beta S3 bucket..."',
+                        'aws s3 sync . s3://' + betaConfig.websiteBucketName + '/ --delete',
+
+                        // Then, invalidate the CloudFront distribution
+                        'echo "Fetching CloudFront distribution ID..."',
+                        'export DIST_ID=$(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2BucketStack --query "Stacks[0].Outputs[?OutputKey==\'WebsiteDistributionIdOutput\'].OutputValue" --output text)',
+                        'echo "Invalidating CloudFront distribution: $DIST_ID"',
+                        'aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"',
+                        'echo "Website deployment and invalidation complete"',
+                      ],
+                    },
+                  },
+                }),
+                environment: {
+                  buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+                },
+                encryptionKey: key,
+              }),
               input: websiteBuildOutput,
-              bucket: s3.Bucket.fromBucketName(this, 'WebsiteS3Bucket', betaConfig.websiteBucketName),
               role: betaCodePipelineRole,
               runOrder: 3,
-            }),
-            // Add a step to invalidate CloudFront cache with cross-account role
-            new codepipeline_actions.CodeBuildAction({
-              actionName: 'InvalidateCloudFrontCache',
-              project: betaCloudFrontInvalidation,
-              input: websiteBuildOutput,
-              runOrder: 4,
-              role: betaCodePipelineRole,
             }),
           ],
         },
@@ -422,30 +436,22 @@ export class WebsitePipelineStack extends Stack {
           actions: [
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
               actionName: 'DeployWebsiteBucket',
-              templatePath: cdkBuildOutput.atPath(`WebsiteProduswest2BucketStack${TEMPLATE_ENDING}`),
-              stackName: 'WebsiteProduswest2BucketStack',
+              templatePath: cdkBuildOutput.atPath(`WebsiteProdus-west-2BucketStack${TEMPLATE_ENDING}`),
+              stackName: 'WebsiteProdus-west-2BucketStack',
               adminPermissions: false,
               cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
               role: prodCodeDeployRole,
               deploymentRole: prodCloudFormationRole,
               runOrder: 1,
             }),
-            new codepipeline_actions.S3DeployAction({
-              actionName: 'DeployWebsiteContent',
+
+            // UPDATED: Combined S3 Deploy with CloudFront invalidation for Production
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'DeployWebsiteAndInvalidateCache',
+              project: prodDeployAndInvalidate,
               input: websiteBuildOutput,
-              bucket: s3.Bucket.fromBucketAttributes(this, 'ProdWebsiteS3Bucket', {
-                bucketArn: prodConfig.websiteBucketArn,
-              }),
               role: prodCodeDeployRole,
               runOrder: 2,
-            }),
-            // Add a step to invalidate CloudFront cache for prod
-            new codepipeline_actions.CodeBuildAction({
-              actionName: 'InvalidateCloudFrontCache',
-              project: prodCloudFrontInvalidation,
-              input: websiteBuildOutput,
-              runOrder: 3,
-              role: prodCodeDeployRole,
             }),
           ],
         },
