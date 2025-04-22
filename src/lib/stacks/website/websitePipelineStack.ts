@@ -222,7 +222,7 @@ export class WebsitePipelineStack extends Stack {
           },
         },
         artifacts: {
-          'base-directory': 'build',
+          'base-directory': 'dist',
           files: ['**/*'],
         },
       }),

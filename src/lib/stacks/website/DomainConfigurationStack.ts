@@ -229,6 +229,32 @@ export class DomainConfigurationStack extends cdk.Stack {
       });
     }
 
+    if (props.stageName.toLowerCase() == 'prod') {
+      new route53.MxRecord(this, 'MxRecords', {
+        zone: hostedZone,
+        recordName: fullDomainName, // This will be beta.qandmedating.com
+        values: [
+          {
+            hostName: 'mx1.improvmx.com',
+            priority: 10,
+          },
+          {
+            hostName: 'mx2.improvmx.com',
+            priority: 20,
+          },
+        ],
+        ttl: cdk.Duration.minutes(5),
+      });
+
+      // Create the TXT record for SPF support
+      new route53.TxtRecord(this, 'SpfRecord', {
+        zone: hostedZone,
+        recordName: fullDomainName, // This will be beta.qandmedating.com
+        values: ['v=spf1 include:spf.improvmx.com -all'],
+        ttl: cdk.Duration.minutes(5),
+      });
+    }
+
     // Save the certificate ARN
     this.certificateArn = certificate.certificateArn;
 
