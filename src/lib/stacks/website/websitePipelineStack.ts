@@ -218,21 +218,7 @@ export class WebsitePipelineStack extends Stack {
             commands: ['npm install'],
           },
           build: {
-            commands: [
-              // Always create a minimal working site even if the build fails
-              'mkdir -p build',
-              'echo "<!DOCTYPE html><html><head><title>Q&Me Dating</title></head><body><h1>Q&Me Dating</h1><p>Site is coming soon!</p></body></html>" > build/index.html',
-              'echo "<!DOCTYPE html><html><head><title>Q&Me Dating</title></head><body><h1>Q&Me Dating</h1><p>Page not found</p></body></html>" > build/error.html',
-
-              // Try the real build (but don't fail the process if it fails)
-              'npm run build || echo "Build failed, using minimal site"',
-
-              // If the build succeeded and created a dist directory, use that instead
-              'if [ -d "dist" ]; then cp -r dist/* build/ || echo "Could not copy dist contents"; fi',
-
-              // Ensure the critical files exist
-              'ls -la build/',
-            ],
+            commands: ['npm run build'],
           },
         },
         artifacts: {

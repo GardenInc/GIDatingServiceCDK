@@ -82,6 +82,22 @@ export class DomainConfigurationStack extends cdk.Stack {
       }),
     );
 
+    // Add an additional policy statement for CloudFront service principal if needed
+    websiteBucket.addToResourcePolicy(
+      new iam.PolicyStatement({
+        sid: 'AllowCloudFrontServicePrincipalReadOnly',
+        effect: iam.Effect.ALLOW,
+        actions: ['s3:GetObject', 's3:ListBucket'],
+        resources: [websiteBucket.bucketArn, `${websiteBucket.bucketArn}/*`],
+        principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
+        conditions: {
+          StringEquals: {
+            'AWS:SourceArn': `arn:aws:cloudfront::${this.account}:distribution/${this.distributionId}`,
+          },
+        },
+      }),
+    );
+
     // Import the existing certificate by ID
     const certificate = acm.Certificate.fromCertificateArn(
       this,

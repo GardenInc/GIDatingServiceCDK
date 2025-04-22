@@ -55,7 +55,6 @@ for (var stageConfig of stageConfigurationList) {
     config: stageConfig,
     websiteBucketArn: `arn:aws:s3:::${uniqueBucketName}`,
     websiteBucketName: uniqueBucketName,
-    // For initial deployment, use dummy values that will be replaced after first deployment
     distributionId: `E35HC17VOZGC7F`,
     distributionDomainName: `https://de833z6icjhaj.cloudfront.net`,
   };
