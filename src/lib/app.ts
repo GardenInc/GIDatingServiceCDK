@@ -26,7 +26,8 @@ import {
   BACK_END,
   WEBSITE,
   DOMAIN_NAME,
-  SHARED_CERTIFICATE_ARN,
+  BETA_CERTIFICATE_ARN,
+  PROD_CERTIFICATE_ARN,
 } from './utils/constants';
 import {
   createServiceStackName,
@@ -102,8 +103,8 @@ for (var stageConfig of stageConfigurationList) {
     bucketName: bucketName,
     certificateArn:
       stageConfig.stage == STAGES.BETA
-        ? SHARED_CERTIFICATE_ARN.replace('${AWS::AccountId}', stageConfig.accountId)
-        : undefined,
+        ? BETA_CERTIFICATE_ARN.replace('${AWS::AccountId}', stageConfig.accountId)
+        : PROD_CERTIFICATE_ARN.replace('${AWS::AccountId}', stageConfig.accountId),
     env: {
       account: stageConfig.accountId,
       region: stageConfig.region,

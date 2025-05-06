@@ -14,10 +14,8 @@ export interface DomainConfigurationStackProps extends cdk.StackProps {
   readonly stageName: string;
   readonly domainName: string; // Main domain name
   readonly bucketName: string; // Name of the S3 bucket containing website content
+  readonly certificateArn: string; // existing certificate ARN
   readonly distributionId?: string; // Existing CloudFront distribution ID, if any
-  readonly useExistingHostedZone?: boolean; // Flag to use existing hosted zone
-  readonly hostedZoneId?: string; // Existing hosted zone ID if available
-  readonly certificateArn?: string; // Optional existing certificate ARN
 }
 
 export class DomainConfigurationStack extends cdk.Stack {
@@ -36,15 +34,10 @@ export class DomainConfigurationStack extends cdk.Stack {
       props.stageName === STAGES.PROD ? domainName : `${props.stageName.toLowerCase()}.${domainName}`;
 
     // Create or use existing Route53 hosted zone
-    let hostedZone;
-    if (props.useExistingHostedZone && props.hostedZoneId) {
-      hostedZone = route53.HostedZone.fromHostedZoneId(this, 'ExistingHostedZone', props.hostedZoneId);
-    } else {
-      hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
-        zoneName: domainName,
-        comment: `Hosted zone for ${domainName}, managed via CDK`,
-      });
-    }
+    let hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
+      zoneName: domainName,
+      comment: `Hosted zone for ${domainName}, managed via CDK`,
+    });
 
     // Output the nameservers for the hosted zone
     new cdk.CfnOutput(this, 'NameServers', {
@@ -90,30 +83,7 @@ export class DomainConfigurationStack extends cdk.Stack {
     );
 
     // Import the existing certificate by ID
-    let certificate;
-    if (props.certificateArn) {
-      certificate = acm.Certificate.fromCertificateArn(this, 'ExistingCertificate', props.certificateArn);
-    } else {
-      const certificateDomainName =
-        props.stageName.toLowerCase() === 'prod'
-          ? props.domainName
-          : `${props.stageName.toLowerCase()}.${props.domainName}`;
-
-      // For subdomains, include both the subdomain and apex domain as SANs
-      const subjectAlternativeNames =
-        props.stageName.toLowerCase() === 'prod'
-          ? [`www.${props.domainName}`] // For prod, include www subdomain
-          : []; // For beta, just use the beta subdomain
-
-      // Create a new certificate if none is provided
-      certificate = new acm.DnsValidatedCertificate(this, 'SiteCertificate', {
-        domainName: certificateDomainName,
-        hostedZone,
-        region: 'us-east-1', // CloudFront requires certificates in us-east-1
-        validation: acm.CertificateValidation.fromDns(hostedZone),
-        subjectAlternativeNames,
-      });
-    }
+    let certificate = acm.Certificate.fromCertificateArn(this, 'ExistingCertificate', props.certificateArn);
 
     // Create CloudFront log bucket with ACLs enabled (required for CloudFront logs)
     const logBucket = new s3.Bucket(this, 'CloudFrontLogBucket', {
@@ -239,7 +209,7 @@ export class DomainConfigurationStack extends cdk.Stack {
       });
     }
 
-    if (props.stageName.toLowerCase() == 'prod') {
+    if (props.stageName == STAGES.PROD) {
       new route53.MxRecord(this, 'MxRecords', {
         zone: hostedZone,
         recordName: fullDomainName, // This will be beta.qandmedating.com

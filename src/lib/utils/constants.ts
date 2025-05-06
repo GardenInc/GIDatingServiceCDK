@@ -21,5 +21,7 @@ export const WEBSITE_BUCKET_STACK = 'WebsiteBucketStack';
 export const DOMAIN_NAME = 'qandmedating.com';
 
 // BETA CERT
-export const SHARED_CERTIFICATE_ARN =
+export const BETA_CERTIFICATE_ARN =
   'arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/53943950-4479-4e30-a7fb-2cbf2ecb766f';
+export const PROD_CERTIFICATE_ARN =
+  'arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/007039fb-1c94-4d20-a655-f8fb0538622d';
