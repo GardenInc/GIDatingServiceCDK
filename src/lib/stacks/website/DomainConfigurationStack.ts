@@ -94,12 +94,24 @@ export class DomainConfigurationStack extends cdk.Stack {
     if (props.certificateArn) {
       certificate = acm.Certificate.fromCertificateArn(this, 'ExistingCertificate', props.certificateArn);
     } else {
+      const certificateDomainName =
+        props.stageName.toLowerCase() === 'prod'
+          ? props.domainName
+          : `${props.stageName.toLowerCase()}.${props.domainName}`;
+
+      // For subdomains, include both the subdomain and apex domain as SANs
+      const subjectAlternativeNames =
+        props.stageName.toLowerCase() === 'prod'
+          ? [`www.${props.domainName}`] // For prod, include www subdomain
+          : []; // For beta, just use the beta subdomain
+
       // Create a new certificate if none is provided
       certificate = new acm.DnsValidatedCertificate(this, 'SiteCertificate', {
-        domainName: fullDomainName,
+        domainName: certificateDomainName,
         hostedZone,
         region: 'us-east-1', // CloudFront requires certificates in us-east-1
         validation: acm.CertificateValidation.fromDns(hostedZone),
+        subjectAlternativeNames,
       });
     }
 
