@@ -146,6 +146,53 @@ export class DomainConfigurationStack extends cdk.Stack {
       comment: 'Redirect all paths to index.html for SPA routing',
     });
 
+    // Create Basic Auth function for Beta environment
+    let basicAuthFunction;
+    if (props.stageName === STAGES.BETA) {
+      // Generate base64 encoded credential string for testUser:qandmedating
+      // This is equivalent to: echo -n "testUser:qandmedating" | base64
+      const encodedCredentials = 'Basic dGVzdFVzZXI6cWFuZG1lZGF0aW5n';
+
+      basicAuthFunction = new cloudfront.Function(this, 'BasicAuthFunction', {
+        code: cloudfront.FunctionCode.fromInline(`
+          function handler(event) {
+            var request = event.request;
+            var headers = request.headers;
+            
+            // Check for the authorization header
+            if (!headers.authorization || headers.authorization.value !== '${encodedCredentials}') {
+              return {
+                statusCode: 401,
+                statusDescription: 'Unauthorized',
+                headers: {
+                  'www-authenticate': { value: 'Basic realm="Beta Access"' }
+                }
+              };
+            }
+            
+            return request;
+          }
+        `),
+        comment: 'Basic authentication for beta environment',
+      });
+    }
+
+    // Prepare function associations for CloudFront
+    const functionAssociations = [
+      {
+        function: spaRedirectFunction,
+        eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+      },
+    ];
+
+    // Add basic auth function association for Beta environment
+    if (props.stageName === STAGES.BETA && basicAuthFunction) {
+      functionAssociations.push({
+        function: basicAuthFunction,
+        eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+      });
+    }
+
     // Create optimized CloudFront distribution with logging enabled
     const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
       defaultBehavior: {
@@ -159,12 +206,7 @@ export class DomainConfigurationStack extends cdk.Stack {
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         originRequestPolicy: cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
         responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
-        functionAssociations: [
-          {
-            function: spaRedirectFunction,
-            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-          },
-        ],
+        functionAssociations: functionAssociations,
       },
       errorResponses: [
         {
@@ -256,6 +298,14 @@ export class DomainConfigurationStack extends cdk.Stack {
       exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-DomainName`,
     });
 
+    // Add login credentials output for Beta environment
+    if (props.stageName === STAGES.BETA) {
+      new cdk.CfnOutput(this, 'BetaCredentials', {
+        value: 'Username: testUser, Password: qandmedating',
+        description: 'Login credentials for beta website access',
+      });
+    }
+
     new cdk.CfnOutput(this, 'DistributionId', {
       value: distribution.distributionId,
       description: 'The ID of the CloudFront distribution',
@@ -268,7 +318,6 @@ export class DomainConfigurationStack extends cdk.Stack {
       exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-DistributionDomainName`,
     });
 
-    // TODO Add back
     new cdk.CfnOutput(this, 'CertificateArn', {
       value: this.certificateArn,
       description: 'The ARN of the ACM certificate',
