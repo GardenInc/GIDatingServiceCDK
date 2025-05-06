@@ -155,8 +155,3 @@ printf "\n  Name Servers: $(aws cloudformation describe-stacks --stack-name Webs
 
 # Clean up temporary files
 rm -f ${CDK_OUTPUT_FILE} .cfn_outputs
-
-# Check certificate validation status
-printf "\nTo check certificate validation status (must be ISSUED before your site will work):"
-printf "\naws acm list-certificates --region us-east-1 --profile beta | grep qandmedating"
-printf "\naws acm describe-certificate --region us-east-1 --profile beta --certificate-arn YOUR_CERT_ARN | grep Status\n"
