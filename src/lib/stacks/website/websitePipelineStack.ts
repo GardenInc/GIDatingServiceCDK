@@ -244,9 +244,7 @@ export class WebsitePipelineStack extends Stack {
           build: {
             commands: [
               // Get the CloudFront distribution ID from CloudFormation outputs
-              'export DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2Domainqandmedating-comStack --profile beta --query "Stacks[0].Outputs[?OutputKey==\'DistributionId\'].OutputValue" --output text)',
-              'echo "Retrieved distribution ID: $DISTRIBUTION_ID"',
-              'aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"',
+              'aws cloudfront create-invalidation --distribution-id E35HC17VOZGC7F --paths "/*"',
               'echo "CloudFront invalidation initiated for beta environment"',
             ],
           },
