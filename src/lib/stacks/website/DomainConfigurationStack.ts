@@ -19,22 +19,81 @@ export interface DomainConfigurationStackProps extends cdk.StackProps {
 }
 
 export class DomainConfigurationStack extends cdk.Stack {
+  // Public properties for external access
   public readonly hostedZoneId: string;
   public readonly certificateArn: string;
   public readonly domainName: string;
   public readonly distributionId: string;
   public readonly distributionDomainName: string;
 
+  // Private properties
+  private readonly props: DomainConfigurationStackProps;
+  private readonly fullDomainName: string;
+  private readonly stageName: string;
+
   constructor(scope: Construct, id: string, props: DomainConfigurationStackProps) {
     super(scope, id, props);
 
-    // Define the domain and subdomain
-    const domainName = props.domainName;
-    const fullDomainName =
-      props.stageName === STAGES.PROD ? domainName : `${props.stageName.toLowerCase()}.${domainName}`;
+    this.props = props;
+    this.stageName = props.stageName;
+    this.fullDomainName = this.formatDomainName(props.domainName, props.stageName);
 
-    // Create or use existing Route53 hosted zone
-    let hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
+    // Create all resources
+    const hostedZone = this.createHostedZone(props.domainName);
+    const websiteBucket = this.getBucketReference(props.bucketName);
+    const originAccessIdentity = this.createOriginAccessIdentity();
+    const certificate = this.getCertificate();
+    const { logBucket, logGroup } = this.createLoggingResources(props.domainName);
+
+    // Configure bucket policies
+    this.configureBucketPolicies(websiteBucket, originAccessIdentity);
+
+    // Create CloudFront functions
+    const functions = this.createCloudFrontFunctions();
+
+    // Create distribution
+    const distribution = this.createDistribution({
+      websiteBucket,
+      originAccessIdentity,
+      certificate,
+      logBucket,
+      functions,
+    });
+
+    // Create DNS records
+    this.createDnsRecords(hostedZone, distribution);
+
+    // Set public properties
+    this.hostedZoneId = hostedZone.hostedZoneId;
+    this.domainName = this.fullDomainName;
+    this.distributionId = distribution.distributionId;
+    this.distributionDomainName = distribution.distributionDomainName;
+
+    if (certificate) {
+      this.certificateArn = certificate.certificateArn;
+    }
+
+    // Create outputs
+    this.createOutputs({
+      hostedZone,
+      distribution,
+      logBucket,
+      logGroup,
+    });
+  }
+
+  /**
+   * Formats the full domain name based on environment
+   */
+  private formatDomainName(domainName: string, stageName: string): string {
+    return stageName === STAGES.PROD ? domainName : `${stageName.toLowerCase()}.${domainName}`;
+  }
+
+  /**
+   * Creates or uses an existing Route53 hosted zone
+   */
+  private createHostedZone(domainName: string): route53.PublicHostedZone {
+    const hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
       zoneName: domainName,
       comment: `Hosted zone for ${domainName}, managed via CDK`,
     });
@@ -45,34 +104,49 @@ export class DomainConfigurationStack extends cdk.Stack {
       description: 'The name servers for the hosted zone. Update your Namecheap DNS with these.',
     });
 
-    // Get the S3 bucket reference
-    const websiteBucket = s3.Bucket.fromBucketName(this, 'WebsiteBucket', props.bucketName);
+    return hostedZone;
+  }
 
-    // Create CloudFront OAI
-    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'WebsiteOAI', {
-      comment: `OAI for ${fullDomainName}`,
+  /**
+   * Gets a reference to the S3 bucket
+   */
+  private getBucketReference(bucketName: string): s3.IBucket {
+    return s3.Bucket.fromBucketName(this, 'WebsiteBucket', bucketName);
+  }
+
+  /**
+   * Creates a CloudFront Origin Access Identity
+   */
+  private createOriginAccessIdentity(): cloudfront.OriginAccessIdentity {
+    return new cloudfront.OriginAccessIdentity(this, 'WebsiteOAI', {
+      comment: `OAI for ${this.fullDomainName}`,
     });
+  }
 
+  /**
+   * Configures the bucket policies for S3 access
+   */
+  private configureBucketPolicies(bucket: s3.IBucket, originAccessIdentity: cloudfront.OriginAccessIdentity): void {
     // Grant OAI read access to bucket with explicit policy statement
-    websiteBucket.addToResourcePolicy(
+    bucket.addToResourcePolicy(
       new iam.PolicyStatement({
         sid: 'AllowCloudFrontServicePrincipal',
         effect: iam.Effect.ALLOW,
         actions: ['s3:GetObject'],
-        resources: [`${websiteBucket.bucketArn}/*`],
+        resources: [`${bucket.bucketArn}/*`],
         principals: [
           new iam.CanonicalUserPrincipal(originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId),
         ],
       }),
     );
 
-    // Add an additional policy statement for CloudFront service principal if needed
-    websiteBucket.addToResourcePolicy(
+    // Add an additional policy statement for CloudFront service principal
+    bucket.addToResourcePolicy(
       new iam.PolicyStatement({
         sid: 'AllowCloudFrontServicePrincipalReadOnly',
         effect: iam.Effect.ALLOW,
         actions: ['s3:GetObject', 's3:ListBucket'],
-        resources: [websiteBucket.bucketArn, `${websiteBucket.bucketArn}/*`],
+        resources: [bucket.bucketArn, `${bucket.bucketArn}/*`],
         principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
         conditions: {
           StringEquals: {
@@ -81,12 +155,28 @@ export class DomainConfigurationStack extends cdk.Stack {
         },
       }),
     );
+  }
 
-    let certificate = acm.Certificate.fromCertificateArn(this, 'ExistingCertificate', props.certificateArn);
+  /**
+   * Gets a certificate based on environment
+   */
+  private getCertificate(): acm.ICertificate | undefined {
+    if (this.stageName === STAGES.BETA) {
+      return acm.Certificate.fromCertificateArn(this, 'ExistingCertificate', this.props.certificateArn);
+    }
+    return undefined;
+  }
 
+  /**
+   * Creates logging resources for CloudFront
+   */
+  private createLoggingResources(domainName: string): {
+    logBucket: s3.Bucket;
+    logGroup: logs.LogGroup;
+  } {
     // Create CloudFront log bucket with ACLs enabled (required for CloudFront logs)
     const logBucket = new s3.Bucket(this, 'CloudFrontLogBucket', {
-      bucketName: `cloudfront-logs-${props.stageName.toLowerCase()}-${this.account}-${this.region}`,
+      bucketName: `cloudfront-logs-${this.stageName.toLowerCase()}-${this.account}-${this.region}`,
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -119,13 +209,46 @@ export class DomainConfigurationStack extends cdk.Stack {
 
     // Also create CloudWatch log group for CloudFront logs
     const logGroup = new logs.LogGroup(this, 'CloudFrontLogGroup', {
-      logGroupName: `/aws/cloudfront/${props.stageName.toLowerCase()}-${domainName.replace(/\./g, '-')}`,
+      logGroupName: `/aws/cloudfront/${this.stageName.toLowerCase()}-${domainName.replace(/\./g, '-')}`,
       retention: logs.RetentionDays.THREE_MONTHS,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // Add cloudfront function for default SPA routing
-    const spaRedirectFunction = new cloudfront.Function(this, 'SPARedirectFunction', {
+    return { logBucket, logGroup };
+  }
+
+  /**
+   * Creates CloudFront functions for the distribution
+   */
+  private createCloudFrontFunctions(): {
+    functionAssociations: cloudfront.FunctionAssociation[];
+  } {
+    const functionAssociations: cloudfront.FunctionAssociation[] = [];
+
+    // Add SPA redirect function
+    const spaRedirectFunction = this.createSpaRedirectFunction();
+    functionAssociations.push({
+      function: spaRedirectFunction,
+      eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+    });
+
+    // Add basic auth function for Beta environment
+    if (this.stageName === STAGES.BETA) {
+      const basicAuthFunction = this.createBasicAuthFunction();
+      functionAssociations.push({
+        function: basicAuthFunction,
+        eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+      });
+    }
+
+    return { functionAssociations };
+  }
+
+  /**
+   * Creates the SPA redirect function for CloudFront
+   */
+  private createSpaRedirectFunction(): cloudfront.Function {
+    return new cloudfront.Function(this, 'SPARedirectFunction', {
       code: cloudfront.FunctionCode.fromInline(`
         function handler(event) {
           var request = event.request;
@@ -145,59 +268,54 @@ export class DomainConfigurationStack extends cdk.Stack {
       `),
       comment: 'Redirect all paths to index.html for SPA routing',
     });
+  }
 
-    // Create Basic Auth function for Beta environment
-    let basicAuthFunction;
-    if (props.stageName === STAGES.BETA) {
-      // Generate base64 encoded credential string for testUser:qandmedating
-      // This is equivalent to: echo -n "testUser:qandmedating" | base64
-      const encodedCredentials = 'Basic dGVzdFVzZXI6cWFuZG1lZGF0aW5n';
+  /**
+   * Creates the basic auth function for CloudFront
+   */
+  private createBasicAuthFunction(): cloudfront.Function {
+    // Generate base64 encoded credential string for testUser:qandmedating
+    // This is equivalent to: echo -n "testUser:qandmedating" | base64
+    const encodedCredentials = 'Basic dGVzdFVzZXI6cWFuZG1lZGF0aW5n';
 
-      basicAuthFunction = new cloudfront.Function(this, 'BasicAuthFunction', {
-        code: cloudfront.FunctionCode.fromInline(`
-          function handler(event) {
-            var request = event.request;
-            var headers = request.headers;
-            
-            // Check for the authorization header
-            if (!headers.authorization || headers.authorization.value !== '${encodedCredentials}') {
-              return {
-                statusCode: 401,
-                statusDescription: 'Unauthorized',
-                headers: {
-                  'www-authenticate': { value: 'Basic realm="Beta Access"' }
-                }
-              };
-            }
-            
-            return request;
+    return new cloudfront.Function(this, 'BasicAuthFunction', {
+      code: cloudfront.FunctionCode.fromInline(`
+        function handler(event) {
+          var request = event.request;
+          var headers = request.headers;
+          
+          // Check for the authorization header
+          if (!headers.authorization || headers.authorization.value !== '${encodedCredentials}') {
+            return {
+              statusCode: 401,
+              statusDescription: 'Unauthorized',
+              headers: {
+                'www-authenticate': { value: 'Basic realm="Beta Access"' }
+              }
+            };
           }
-        `),
-        comment: 'Basic authentication for beta environment',
-      });
-    }
+          
+          return request;
+        }
+      `),
+      comment: 'Basic authentication for beta environment',
+    });
+  }
 
-    // Prepare function associations for CloudFront
-    const functionAssociations = [
-      {
-        function: spaRedirectFunction,
-        eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-      },
-    ];
-
-    // Add basic auth function association for Beta environment
-    if (props.stageName === STAGES.BETA && basicAuthFunction) {
-      functionAssociations.push({
-        function: basicAuthFunction,
-        eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-      });
-    }
-
-    // Create optimized CloudFront distribution with logging enabled
-    const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
+  /**
+   * Creates the CloudFront distribution
+   */
+  private createDistribution(props: {
+    websiteBucket: s3.IBucket;
+    originAccessIdentity: cloudfront.OriginAccessIdentity;
+    certificate?: acm.ICertificate;
+    logBucket: s3.Bucket;
+    functions: { functionAssociations: cloudfront.FunctionAssociation[] };
+  }): cloudfront.Distribution {
+    return new cloudfront.Distribution(this, 'WebsiteDistribution', {
       defaultBehavior: {
-        origin: new origins.S3Origin(websiteBucket, {
-          originAccessIdentity,
+        origin: new origins.S3Origin(props.websiteBucket, {
+          originAccessIdentity: props.originAccessIdentity,
         }),
         compress: true,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -206,139 +324,162 @@ export class DomainConfigurationStack extends cdk.Stack {
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         originRequestPolicy: cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
         responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
-        functionAssociations: functionAssociations,
+        functionAssociations: props.functions.functionAssociations,
       },
-      errorResponses: [
-        {
-          httpStatus: 403, // Access Denied - replace with index.html
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: cdk.Duration.minutes(5),
-        },
-        {
-          httpStatus: 404, // Not Found - replace with index.html
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: cdk.Duration.minutes(5),
-        },
-      ],
+      errorResponses: this.getErrorResponses(),
       defaultRootObject: 'index.html',
-      domainNames: [fullDomainName],
-      certificate: certificate,
-      logBucket: logBucket,
-      logFilePrefix: `${props.stageName.toLowerCase()}/`, // Simplified log path
+      domainNames: [this.fullDomainName],
+      certificate: props.certificate,
+      logBucket: props.logBucket,
+      logFilePrefix: `${this.stageName.toLowerCase()}/`, // Simplified log path
       logIncludesCookies: false, // Set to false to reduce log size
       enableLogging: true,
       minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
       httpVersion: cloudfront.HttpVersion.HTTP2,
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
     });
+  }
 
-    // Create DNS records pointing to CloudFront
+  /**
+   * Returns CloudFront error responses configurations
+   */
+  private getErrorResponses(): cloudfront.ErrorResponse[] {
+    return [
+      {
+        httpStatus: 403, // Access Denied - replace with index.html
+        responseHttpStatus: 200,
+        responsePagePath: '/index.html',
+        ttl: cdk.Duration.minutes(5),
+      },
+      {
+        httpStatus: 404, // Not Found - replace with index.html
+        responseHttpStatus: 200,
+        responsePagePath: '/index.html',
+        ttl: cdk.Duration.minutes(5),
+      },
+    ];
+  }
+
+  /**
+   * Creates DNS records for the distribution
+   */
+  private createDnsRecords(hostedZone: route53.PublicHostedZone, distribution: cloudfront.Distribution): void {
+    // Create DNS record pointing to CloudFront
     new route53.ARecord(this, 'AliasRecord', {
       zone: hostedZone,
-      recordName: fullDomainName,
+      recordName: this.fullDomainName,
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
     });
 
     // If using apex domain (without www), create a second record for www
-    if (fullDomainName === domainName) {
+    if (this.fullDomainName === this.props.domainName) {
       new route53.ARecord(this, 'WwwAliasRecord', {
         zone: hostedZone,
-        recordName: `www.${domainName}`,
+        recordName: `www.${this.props.domainName}`,
         target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
       });
     }
 
-    if (props.stageName == STAGES.PROD) {
-      new route53.MxRecord(this, 'MxRecords', {
-        zone: hostedZone,
-        recordName: fullDomainName, // This will be beta.qandmedating.com
-        values: [
-          {
-            hostName: 'mx1.improvmx.com',
-            priority: 10,
-          },
-          {
-            hostName: 'mx2.improvmx.com',
-            priority: 20,
-          },
-        ],
-        ttl: cdk.Duration.minutes(5),
-      });
-
-      // Create the TXT record for SPF support
-      new route53.TxtRecord(this, 'SpfRecord', {
-        zone: hostedZone,
-        recordName: fullDomainName, // This will be beta.qandmedating.com
-        values: ['v=spf1 include:spf.improvmx.com -all'],
-        ttl: cdk.Duration.minutes(5),
-      });
+    // Add email records for production
+    if (this.stageName === STAGES.PROD) {
+      this.createEmailRecords(hostedZone);
     }
+  }
 
-    // Save the certificate ARN
-    this.certificateArn = certificate?.certificateArn;
-
-    // Export values for use in other stacks
-    this.hostedZoneId = hostedZone.hostedZoneId;
-    this.domainName = fullDomainName;
-    this.distributionId = distribution.distributionId;
-    this.distributionDomainName = distribution.distributionDomainName;
-
-    // CloudFormation outputs
-    new cdk.CfnOutput(this, 'HostedZoneId', {
-      value: hostedZone.hostedZoneId,
-      description: 'The ID of the hosted zone',
-      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-HostedZoneId`,
+  /**
+   * Creates email-related DNS records
+   */
+  private createEmailRecords(hostedZone: route53.PublicHostedZone): void {
+    // MX records for email
+    new route53.MxRecord(this, 'MxRecords', {
+      zone: hostedZone,
+      recordName: this.fullDomainName,
+      values: [
+        {
+          hostName: 'mx1.improvmx.com',
+          priority: 10,
+        },
+        {
+          hostName: 'mx2.improvmx.com',
+          priority: 20,
+        },
+      ],
+      ttl: cdk.Duration.minutes(5),
     });
 
+    // SPF record for email authentication
+    new route53.TxtRecord(this, 'SpfRecord', {
+      zone: hostedZone,
+      recordName: this.fullDomainName,
+      values: ['v=spf1 include:spf.improvmx.com -all'],
+      ttl: cdk.Duration.minutes(5),
+    });
+  }
+
+  /**
+   * Creates CloudFormation outputs
+   */
+  private createOutputs(props: {
+    hostedZone: route53.PublicHostedZone;
+    distribution: cloudfront.Distribution;
+    logBucket: s3.Bucket;
+    logGroup: logs.LogGroup;
+  }): void {
+    const domainNameForExport = this.props.domainName.replace(/\./g, '-');
+
+    // HostedZone ID output
+    new cdk.CfnOutput(this, 'HostedZoneId', {
+      value: props.hostedZone.hostedZoneId,
+      description: 'The ID of the hosted zone',
+      exportName: `${this.stageName}-${domainNameForExport}-HostedZoneId`,
+    });
+
+    // Domain name output
     new cdk.CfnOutput(this, 'DomainName', {
-      value: fullDomainName,
+      value: this.fullDomainName,
       description: 'The domain name for the website',
-      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-DomainName`,
+      exportName: `${this.stageName}-${domainNameForExport}-DomainName`,
     });
 
     // Add login credentials output for Beta environment
-    if (props.stageName === STAGES.BETA) {
+    if (this.stageName === STAGES.BETA) {
       new cdk.CfnOutput(this, 'BetaCredentials', {
         value: 'Username: testUser, Password: qandmedating',
         description: 'Login credentials for beta website access',
       });
     }
 
+    // Distribution ID output
     new cdk.CfnOutput(this, 'DistributionId', {
-      value: distribution.distributionId,
+      value: props.distribution.distributionId,
       description: 'The ID of the CloudFront distribution',
-      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-DistributionId`,
+      exportName: `${this.stageName}-${domainNameForExport}-DistributionId`,
     });
 
+    // Distribution domain name output
     new cdk.CfnOutput(this, 'DistributionDomainName', {
-      value: distribution.distributionDomainName,
+      value: props.distribution.distributionDomainName,
       description: 'The domain name of the CloudFront distribution',
-      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-DistributionDomainName`,
+      exportName: `${this.stageName}-${domainNameForExport}-DistributionDomainName`,
     });
 
-    new cdk.CfnOutput(this, 'CertificateArn', {
-      value: this.certificateArn,
-      description: 'The ARN of the ACM certificate',
-      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-CertificateArn`,
-    });
-
+    // Log bucket name output
     new cdk.CfnOutput(this, 'LogBucketName', {
-      value: logBucket.bucketName,
+      value: props.logBucket.bucketName,
       description: 'The S3 bucket for CloudFront logs',
-      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-LogBucketName`,
+      exportName: `${this.stageName}-${domainNameForExport}-LogBucketName`,
     });
 
+    // Log group name output
     new cdk.CfnOutput(this, 'LogGroupName', {
-      value: logGroup.logGroupName,
+      value: props.logGroup.logGroupName,
       description: 'The CloudWatch log group for CloudFront logs',
-      exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-LogGroupName`,
+      exportName: `${this.stageName}-${domainNameForExport}-LogGroupName`,
     });
 
-    // Add a CloudFront invalidation command output
+    // CloudFront invalidation command output
     new cdk.CfnOutput(this, 'InvalidationCommand', {
-      value: `aws cloudfront create-invalidation --distribution-id ${distribution.distributionId} --paths "/*"`,
+      value: `aws cloudfront create-invalidation --distribution-id ${props.distribution.distributionId} --paths "/*"`,
       description: 'Command to invalidate CloudFront cache after deployment',
     });
   }
