@@ -8,6 +8,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
+import { STAGES } from '../../utils/config';
 
 export interface DomainConfigurationStackProps extends cdk.StackProps {
   readonly stageName: string;
@@ -16,6 +17,7 @@ export interface DomainConfigurationStackProps extends cdk.StackProps {
   readonly distributionId?: string; // Existing CloudFront distribution ID, if any
   readonly useExistingHostedZone?: boolean; // Flag to use existing hosted zone
   readonly hostedZoneId?: string; // Existing hosted zone ID if available
+  readonly certificateArn?: string; // Optional existing certificate ARN
 }
 
 export class DomainConfigurationStack extends cdk.Stack {
@@ -28,21 +30,10 @@ export class DomainConfigurationStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DomainConfigurationStackProps) {
     super(scope, id, props);
 
-    // Only deploy for Beta and Prod stages
-    if (props.stageName.toLowerCase() !== 'beta' && props.stageName.toLowerCase() !== 'prod') {
-      // For non-beta/prod environments, just set empty values
-      this.hostedZoneId = '';
-      this.certificateArn = '';
-      this.domainName = '';
-      this.distributionId = '';
-      this.distributionDomainName = '';
-      return;
-    }
-
     // Define the domain and subdomain
     const domainName = props.domainName;
     const fullDomainName =
-      props.stageName.toLowerCase() === 'prod' ? domainName : `${props.stageName.toLowerCase()}.${domainName}`;
+      props.stageName === STAGES.PROD ? domainName : `${props.stageName.toLowerCase()}.${domainName}`;
 
     // Create or use existing Route53 hosted zone
     let hostedZone;
@@ -99,11 +90,18 @@ export class DomainConfigurationStack extends cdk.Stack {
     );
 
     // Import the existing certificate by ID
-    const certificate = acm.Certificate.fromCertificateArn(
-      this,
-      'ExistingCertificate',
-      `arn:aws:acm:us-east-1:${this.account}:certificate/53943950-4479-4e30-a7fb-2cbf2ecb766f`,
-    );
+    let certificate;
+    if (props.certificateArn) {
+      certificate = acm.Certificate.fromCertificateArn(this, 'ExistingCertificate', props.certificateArn);
+    } else {
+      // Create a new certificate if none is provided
+      certificate = new acm.DnsValidatedCertificate(this, 'SiteCertificate', {
+        domainName: fullDomainName,
+        hostedZone,
+        region: 'us-east-1', // CloudFront requires certificates in us-east-1
+        validation: acm.CertificateValidation.fromDns(hostedZone),
+      });
+    }
 
     // Create CloudFront log bucket with ACLs enabled (required for CloudFront logs)
     const logBucket = new s3.Bucket(this, 'CloudFrontLogBucket', {

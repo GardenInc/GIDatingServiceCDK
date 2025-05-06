@@ -236,9 +236,17 @@ export class WebsitePipelineStack extends Stack {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
+          install: {
+            'runtime-versions': {
+              nodejs: 20,
+            },
+          },
           build: {
             commands: [
-              `aws cloudfront create-invalidation --distribution-id ${betaConfig.distributionId} --paths "/*"`,
+              // Get the CloudFront distribution ID from CloudFormation outputs
+              'export DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2Domainqandmedating-comStack --profile beta --query "Stacks[0].Outputs[?OutputKey==\'DistributionId\'].OutputValue" --output text)',
+              'echo "Retrieved distribution ID: $DISTRIBUTION_ID"',
+              'aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"',
               'echo "CloudFront invalidation initiated for beta environment"',
             ],
           },
@@ -254,9 +262,17 @@ export class WebsitePipelineStack extends Stack {
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
+          install: {
+            'runtime-versions': {
+              nodejs: 20,
+            },
+          },
           build: {
             commands: [
-              `aws cloudfront create-invalidation --distribution-id ${prodConfig.distributionId} --paths "/*"`,
+              // Get the CloudFront distribution ID from CloudFormation outputs
+              'export DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name WebsiteProdus-west-2Domainqandmedating-comStack --profile prod --query "Stacks[0].Outputs[?OutputKey==\'DistributionId\'].OutputValue" --output text)',
+              'echo "Retrieved distribution ID: $DISTRIBUTION_ID"',
+              'aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"',
               'echo "CloudFront invalidation initiated for production environment"',
             ],
           },
@@ -272,16 +288,16 @@ export class WebsitePipelineStack extends Stack {
     betaCloudFrontInvalidation.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ['cloudfront:CreateInvalidation'],
-        resources: [`arn:aws:cloudfront::${betaAccountId}:distribution/${betaConfig.distributionId}`],
+        actions: ['cloudfront:CreateInvalidation', 'cloudformation:DescribeStacks'],
+        resources: ['*'],
       }),
     );
 
     prodCloudFrontInvalidation.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ['cloudfront:CreateInvalidation'],
-        resources: [`arn:aws:cloudfront::${prodAccountId}:distribution/${prodConfig.distributionId}`],
+        actions: ['cloudfront:CreateInvalidation', 'cloudformation:DescribeStacks'],
+        resources: ['*'],
       }),
     );
 

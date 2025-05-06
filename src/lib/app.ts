@@ -10,7 +10,7 @@ import {
   WebsiteDeploymentBucketStack,
 } from './stacks/website/websiteDeploymentBucketStack';
 import { DomainConfigurationStack, DomainConfigurationStackProps } from './stacks/website/DomainConfigurationStack';
-import { stageConfigurationList } from './utils/config';
+import { stageConfigurationList, STAGES } from './utils/config';
 import {
   FrontEndStackConfigInterface,
   ApplicationStackConfigInterface,
@@ -26,6 +26,7 @@ import {
   BACK_END,
   WEBSITE,
   DOMAIN_NAME,
+  SHARED_CERTIFICATE_ARN,
 } from './utils/constants';
 import {
   createServiceStackName,
@@ -50,14 +51,26 @@ for (var stageConfig of stageConfigurationList) {
   const bucketNamePrefix = `website-${stageConfig.stage.toLowerCase()}-${stageConfig.accountId}`;
   const uniqueBucketName = `${bucketNamePrefix}-${stageConfig.region}`;
 
-  // Create configuration with dummy CloudFront values
-  const websiteStageConfigurationList: WebsiteStackConfigInterface = {
-    config: stageConfig,
-    websiteBucketArn: `arn:aws:s3:::${uniqueBucketName}`,
-    websiteBucketName: uniqueBucketName,
-    distributionId: `E35HC17VOZGC7F`,
-    distributionDomainName: `https://de833z6icjhaj.cloudfront.net`,
-  };
+  const stageIndex = stageConfig.stage.toLowerCase() === 'beta' ? 0 : 1;
+  let websiteStageConfigurationList: WebsiteStackConfigInterface;
+
+  if (stageIndex == 0) {
+    websiteStageConfigurationList = {
+      config: stageConfig,
+      websiteBucketArn: `arn:aws:s3:::${uniqueBucketName}`,
+      websiteBucketName: uniqueBucketName,
+      distributionId: `E35HC17VOZGC7F`,
+      distributionDomainName: `https://de833z6icjhaj.cloudfront.net`,
+    };
+  } else {
+    websiteStageConfigurationList = {
+      config: stageConfig,
+      websiteBucketArn: `arn:aws:s3:::${uniqueBucketName}`,
+      websiteBucketName: uniqueBucketName,
+      distributionId: `E35HC17VOZGC7F`,
+      distributionDomainName: `https://de833z6icjhaj.cloudfront.net`,
+    };
+  }
 
   websiteServiceStackList.push(websiteStageConfigurationList);
 }
@@ -87,6 +100,10 @@ for (var stageConfig of stageConfigurationList) {
     stageName: stageConfig.stage,
     domainName: DOMAIN_NAME,
     bucketName: bucketName,
+    certificateArn:
+      stageConfig.stage == STAGES.BETA
+        ? SHARED_CERTIFICATE_ARN.replace('${AWS::AccountId}', stageConfig.accountId)
+        : undefined,
     env: {
       account: stageConfig.accountId,
       region: stageConfig.region,
@@ -100,11 +117,7 @@ for (var stageConfig of stageConfigurationList) {
     DOMAIN_NAME.replace(/\./g, '-'),
   );
 
-  // Only create domain config for Beta initially
-  // For production, we'll set up the domain after beta is confirmed working
-  if (stageConfig.stage.toLowerCase() === 'beta') {
-    new DomainConfigurationStack(app, domainConfigStackName, domainConfigStackProps);
-  }
+  new DomainConfigurationStack(app, domainConfigStackName, domainConfigStackProps);
 }
 
 // Now deploy the rest of the stacks
