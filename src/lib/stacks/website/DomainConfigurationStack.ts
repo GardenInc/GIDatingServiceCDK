@@ -82,11 +82,7 @@ export class DomainConfigurationStack extends cdk.Stack {
       }),
     );
 
-    // TODO UPDATED when prod is good
-    let certificate =
-      props.stageName == STAGES.BETA
-        ? acm.Certificate.fromCertificateArn(this, 'ExistingCertificate', props.certificateArn)
-        : undefined;
+    let certificate = acm.Certificate.fromCertificateArn(this, 'ExistingCertificate', props.certificateArn);
 
     // Create CloudFront log bucket with ACLs enabled (required for CloudFront logs)
     const logBucket = new s3.Bucket(this, 'CloudFrontLogBucket', {
@@ -238,11 +234,8 @@ export class DomainConfigurationStack extends cdk.Stack {
       });
     }
 
-    // TODO REMOVE
     // Save the certificate ARN
-    if (certificate) {
-      this.certificateArn = certificate?.certificateArn;
-    }
+    this.certificateArn = certificate?.certificateArn;
 
     // Export values for use in other stacks
     this.hostedZoneId = hostedZone.hostedZoneId;
@@ -276,12 +269,11 @@ export class DomainConfigurationStack extends cdk.Stack {
     });
 
     // TODO Add back
-    /*
     new cdk.CfnOutput(this, 'CertificateArn', {
       value: this.certificateArn,
       description: 'The ARN of the ACM certificate',
       exportName: `${props.stageName}-${domainName.replace(/\./g, '-')}-CertificateArn`,
-    });*/
+    });
 
     new cdk.CfnOutput(this, 'LogBucketName', {
       value: logBucket.bucketName,
