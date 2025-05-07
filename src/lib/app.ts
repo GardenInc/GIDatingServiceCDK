@@ -10,6 +10,7 @@ import {
   WebsiteDeploymentBucketStack,
 } from './stacks/website/websiteDeploymentBucketStack';
 import { DomainConfigurationStack, DomainConfigurationStackProps } from './stacks/website/DomainConfigurationStack';
+import { ContactFormStack, ContactFormStackProps } from './stacks/website/ContactFormStack';
 import { stageConfigurationList, STAGES } from './utils/config';
 import {
   FrontEndStackConfigInterface,
@@ -36,6 +37,7 @@ import {
   createDeploymentBucketStackName,
   createWebsiteBucketStackName,
   createDomainConfigStackName,
+  createContactFormStackName,
 } from './utils/utils';
 import { DeploymentBucketStackProps, DeploymentBucketStack } from './stacks/frontend/deploymentBucketStack';
 
@@ -119,6 +121,18 @@ for (var stageConfig of stageConfigurationList) {
   );
 
   new DomainConfigurationStack(app, domainConfigStackName, domainConfigStackProps);
+
+  // Create the contact form stack for both beta and prod
+  const contactFormStackProps: ContactFormStackProps = {
+    stageName: stageConfig.stage,
+    env: {
+      account: stageConfig.accountId,
+      region: stageConfig.region,
+    },
+  };
+
+  const contactFormStackName: string = createContactFormStackName(stageConfig.stage, stageConfig.region);
+  new ContactFormStack(app, contactFormStackName, contactFormStackProps);
 }
 
 // Now deploy the rest of the stacks

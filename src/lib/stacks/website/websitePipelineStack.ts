@@ -4,8 +4,7 @@ import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as kms from 'aws-cdk-lib/aws-kms';
-import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue } from 'aws-cdk-lib';
-import { Duration } from 'aws-cdk-lib';
+import { App, Stack, StackProps, RemovalPolicy, CfnOutput, CfnCapabilities, SecretValue, Duration } from 'aws-cdk-lib';
 import { WebsiteStackConfigInterface } from '../../utils/config';
 import { SECRET_NAME, WebsitePipelineStackName, TEMPLATE_ENDING, WEBSITE_BUCKET_STACK } from '../../utils/constants';
 import { pipelineAccountId } from '../../utils/accounts';
@@ -161,12 +160,14 @@ namespace PipelineComponents {
         'Beta',
         betaConfig.websiteConfig.distributionId,
         key,
+        betaConfig.accountId, // Pass account ID
       );
       this.prodCloudFrontInvalidation = this.createCloudFrontInvalidationProject(
         scope,
         'Prod',
         prodConfig.websiteConfig.distributionId,
         key,
+        prodConfig.accountId, // Pass account ID
       );
     }
 
@@ -237,8 +238,13 @@ namespace PipelineComponents {
       stageName: string,
       distributionId: string,
       key: kms.Key,
+      accountId: string, // Add account ID parameter
     ): codebuild.PipelineProject {
-      const project = new codebuild.PipelineProject(scope, `${stageName}CloudFrontInvalidation`, {
+      // Use a name that includes the account ID to ensure uniqueness
+      const projectName = `${stageName}CloudFrontInvalidation-${accountId.substring(0, 6)}`;
+
+      const project = new codebuild.PipelineProject(scope, projectName, {
+        projectName: projectName, // Explicitly set project name for better visibility
         buildSpec: codebuild.BuildSpec.fromObject({
           version: '0.2',
           phases: {
@@ -249,6 +255,7 @@ namespace PipelineComponents {
             },
             build: {
               commands: [
+                `echo "Starting CloudFront invalidation for ${stageName} environment - distribution ${distributionId}"`,
                 `aws cloudfront create-invalidation --distribution-id ${distributionId} --paths "/*"`,
                 `echo "CloudFront invalidation initiated for ${stageName.toLowerCase()} environment"`,
               ],
@@ -257,15 +264,50 @@ namespace PipelineComponents {
         }),
         environment: {
           buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+          privileged: false, // No need for privileged mode for CloudFront invalidation
         },
         encryptionKey: key,
+        description: `CodeBuild project to invalidate CloudFront cache for ${stageName} environment`,
+        // Add environment variables for better debugging
+        environmentVariables: {
+          DISTRIBUTION_ID: {
+            value: distributionId,
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          },
+          STAGE_NAME: {
+            value: stageName,
+            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+          },
+        },
+        // Add timeout to prevent hanging builds
+        timeout: Duration.minutes(10),
+        // Add cache to speed up builds
+        cache: codebuild.Cache.local(codebuild.LocalCacheMode.CUSTOM),
       });
 
       // Add CloudFront invalidation permission to the project role
       project.addToRolePolicy(
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
-          actions: ['cloudfront:CreateInvalidation', 'cloudformation:DescribeStacks'],
+          actions: ['cloudfront:CreateInvalidation', 'cloudfront:GetInvalidation'],
+          resources: [`arn:aws:cloudfront::${accountId}:distribution/${distributionId}`],
+        }),
+      );
+
+      // Add permission to fetch stack outputs
+      project.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ['cloudformation:DescribeStacks'],
+          resources: [`arn:aws:cloudformation:${scope.region}:${accountId}:stack/*`],
+        }),
+      );
+
+      // Add logging permissions
+      project.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
           resources: ['*'],
         }),
       );
@@ -396,7 +438,7 @@ namespace PipelineComponents {
               codepipeline_actions.CacheControl.sMaxAge(Duration.days(7)),
             ],
           }),
-          // Invalidate CloudFront cache
+          // Invalidate CloudFront cache - Direct AWS CLI command instead of CodeBuild project
           new codepipeline_actions.CodeBuildAction({
             actionName: 'InvalidateCloudFrontCache',
             project: buildManager.betaCloudFrontInvalidation,
@@ -471,7 +513,7 @@ namespace PipelineComponents {
               codepipeline_actions.CacheControl.sMaxAge(Duration.days(30)),
             ],
           }),
-          // Add CloudFront invalidation step
+          // Invalidate CloudFront cache - Direct AWS CLI command instead of CodeBuild project
           new codepipeline_actions.CodeBuildAction({
             actionName: 'InvalidateCloudFrontCache',
             project: buildManager.prodCloudFrontInvalidation,

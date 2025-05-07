@@ -1,4 +1,4 @@
-import { SERVICE_STACK, VPC_STACK, DEVICE_FARM_STACK, DEPLOYMENT_BUCKET_STACK } from './constants';
+import { SERVICE_STACK, VPC_STACK, DEVICE_FARM_STACK, DEPLOYMENT_BUCKET_STACK, CONTACT_FORM_STACK } from './constants';
 
 export function createServiceStackName(stage: string, region: string): string {
   return `${stage}${region.replace(/-/g, '')}${SERVICE_STACK}`;
@@ -22,4 +22,8 @@ export function createWebsiteBucketStackName(stage: string, region: string, pref
 
 export function createDomainConfigStackName(stage: string, region: string, prefix: string, domain: string): string {
   return `${prefix}${stage}${region}Domain${domain}Stack`;
+}
+
+export function createContactFormStackName(stage: string, region: string): string {
+  return `${stage}${region.replace(/-/g, '')}${CONTACT_FORM_STACK}`;
 }
