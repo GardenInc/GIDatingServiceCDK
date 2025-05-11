@@ -149,26 +149,12 @@ namespace PipelineComponents {
   export class BuildManager {
     public readonly cdkBuild: codebuild.PipelineProject;
     public readonly websiteBuild: codebuild.PipelineProject;
-    public readonly betaCloudFrontInvalidation: codebuild.PipelineProject;
-    public readonly prodCloudFrontInvalidation: codebuild.PipelineProject;
+    public readonly cloudFrontInvalidation: codebuild.PipelineProject;
 
     constructor(scope: Stack, key: kms.Key, betaConfig: AccountConfig, prodConfig: AccountConfig) {
       this.cdkBuild = this.createCdkBuildProject(scope, key);
       this.websiteBuild = this.createWebsiteBuildProject(scope);
-      this.betaCloudFrontInvalidation = this.createCloudFrontInvalidationProject(
-        scope,
-        'Beta',
-        betaConfig.websiteConfig.distributionId,
-        key,
-        betaConfig.accountId, // Pass account ID
-      );
-      this.prodCloudFrontInvalidation = this.createCloudFrontInvalidationProject(
-        scope,
-        'Prod',
-        prodConfig.websiteConfig.distributionId,
-        key,
-        prodConfig.accountId, // Pass account ID
-      );
+      this.cloudFrontInvalidation = this.createCloudFrontInvalidationProject(scope, key);
     }
 
     private createCdkBuildProject(scope: Stack, key: kms.Key): codebuild.PipelineProject {
@@ -233,18 +219,9 @@ namespace PipelineComponents {
       });
     }
 
-    private createCloudFrontInvalidationProject(
-      scope: Stack,
-      stageName: string,
-      distributionId: string,
-      key: kms.Key,
-      accountId: string, // Add account ID parameter
-    ): codebuild.PipelineProject {
-      // Use a name that includes the account ID to ensure uniqueness
-      const projectName = `${stageName}CloudFrontInvalidation-${accountId.substring(0, 6)}`;
-
-      const project = new codebuild.PipelineProject(scope, projectName, {
-        projectName: projectName, // Explicitly set project name for better visibility
+    private createCloudFrontInvalidationProject(scope: Stack, key: kms.Key): codebuild.PipelineProject {
+      const project = new codebuild.PipelineProject(scope, 'CloudFrontInvalidation', {
+        projectName: 'CloudFrontInvalidation', // Specific name to avoid confusion
         buildSpec: codebuild.BuildSpec.fromObject({
           version: '0.2',
           phases: {
@@ -255,34 +232,18 @@ namespace PipelineComponents {
             },
             build: {
               commands: [
-                `echo "Starting CloudFront invalidation for ${stageName} environment - distribution ${distributionId}"`,
-                `aws cloudfront create-invalidation --distribution-id ${distributionId} --paths "/*"`,
-                `echo "CloudFront invalidation initiated for ${stageName.toLowerCase()} environment"`,
+                'echo "Starting CloudFront invalidation"',
+                'echo $DISTRIBUTION_ID',
+                'aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"',
+                'echo "CloudFront invalidation initiated successfully"',
               ],
             },
           },
         }),
         environment: {
           buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
-          privileged: false, // No need for privileged mode for CloudFront invalidation
         },
         encryptionKey: key,
-        description: `CodeBuild project to invalidate CloudFront cache for ${stageName} environment`,
-        // Add environment variables for better debugging
-        environmentVariables: {
-          DISTRIBUTION_ID: {
-            value: distributionId,
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-          },
-          STAGE_NAME: {
-            value: stageName,
-            type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-          },
-        },
-        // Add timeout to prevent hanging builds
-        timeout: Duration.minutes(10),
-        // Add cache to speed up builds
-        cache: codebuild.Cache.local(codebuild.LocalCacheMode.CUSTOM),
       });
 
       // Add CloudFront invalidation permission to the project role
@@ -290,25 +251,7 @@ namespace PipelineComponents {
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
           actions: ['cloudfront:CreateInvalidation', 'cloudfront:GetInvalidation'],
-          resources: [`arn:aws:cloudfront::${accountId}:distribution/${distributionId}`],
-        }),
-      );
-
-      // Add permission to fetch stack outputs
-      project.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ['cloudformation:DescribeStacks'],
-          resources: [`arn:aws:cloudformation:${scope.region}:${accountId}:stack/*`],
-        }),
-      );
-
-      // Add logging permissions
-      project.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
-          resources: ['*'],
+          resources: ['*'], // Allow invalidation for any distribution
         }),
       );
 
@@ -441,10 +384,15 @@ namespace PipelineComponents {
           // Invalidate CloudFront cache - Direct AWS CLI command instead of CodeBuild project
           new codepipeline_actions.CodeBuildAction({
             actionName: 'InvalidateCloudFrontCache',
-            project: buildManager.betaCloudFrontInvalidation,
+            project: buildManager.cloudFrontInvalidation,
             input: new codepipeline.Artifact('websiteBuildOutput'),
+            environmentVariables: {
+              DISTRIBUTION_ID: {
+                value: betaConfig.websiteConfig.distributionId,
+                type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+              },
+            },
             runOrder: 4,
-            role: betaConfig.roles.codePipeline,
           }),
         ],
       };
@@ -516,10 +464,15 @@ namespace PipelineComponents {
           // Invalidate CloudFront cache - Direct AWS CLI command instead of CodeBuild project
           new codepipeline_actions.CodeBuildAction({
             actionName: 'InvalidateCloudFrontCache',
-            project: buildManager.prodCloudFrontInvalidation,
+            project: buildManager.cloudFrontInvalidation,
             input: new codepipeline.Artifact('websiteBuildOutput'),
+            environmentVariables: {
+              DISTRIBUTION_ID: {
+                value: prodConfig.websiteConfig.distributionId,
+                type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+              },
+            },
             runOrder: 4,
-            role: prodConfig.roles.codePipeline,
           }),
         ],
       };
@@ -625,6 +578,17 @@ namespace PipelineComponents {
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
           actions: ['cloudfront:CreateInvalidation'],
+          resources: [
+            `arn:aws:cloudfront::${betaConfig.websiteConfig.config.accountId}:distribution/${betaConfig.websiteConfig.distributionId}`,
+            `arn:aws:cloudfront::${prodConfig.websiteConfig.config.accountId}:distribution/${prodConfig.websiteConfig.distributionId}`,
+          ],
+        }),
+      );
+
+      pipeline.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ['cloudfront:CreateInvalidation', 'cloudfront:GetInvalidation'],
           resources: [
             `arn:aws:cloudfront::${betaConfig.websiteConfig.config.accountId}:distribution/${betaConfig.websiteConfig.distributionId}`,
             `arn:aws:cloudfront::${prodConfig.websiteConfig.config.accountId}:distribution/${prodConfig.websiteConfig.distributionId}`,
