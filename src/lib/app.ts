@@ -29,6 +29,7 @@ import {
   DOMAIN_NAME,
   BETA_CERTIFICATE_ARN,
   PROD_CERTIFICATE_ARN,
+  DEPLOY_PROD_DISTRIBUTION,
 } from './utils/constants';
 import {
   createServiceStackName,
@@ -107,6 +108,8 @@ for (var stageConfig of stageConfigurationList) {
       stageConfig.stage == STAGES.BETA
         ? BETA_CERTIFICATE_ARN.replace('${AWS::AccountId}', stageConfig.accountId)
         : PROD_CERTIFICATE_ARN.replace('${AWS::AccountId}', stageConfig.accountId),
+    // Only include deployDistribution flag for PROD stage
+    ...(stageConfig.stage === STAGES.PROD && { deployDistribution: DEPLOY_PROD_DISTRIBUTION }),
     env: {
       account: stageConfig.accountId,
       region: stageConfig.region,

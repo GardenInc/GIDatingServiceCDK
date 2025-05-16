@@ -16,6 +16,7 @@ export interface DomainConfigurationStackProps extends cdk.StackProps {
   readonly bucketName: string; // Name of the S3 bucket containing website content
   readonly certificateArn: string; // existing certificate ARN
   readonly distributionId?: string; // Existing CloudFront distribution ID, if any
+  readonly deployDistribution?: boolean; // Flag to control if CloudFront distribution should be deployed
 }
 
 export class DomainConfigurationStack extends cdk.Stack {
@@ -38,8 +39,39 @@ export class DomainConfigurationStack extends cdk.Stack {
     this.stageName = props.stageName;
     this.fullDomainName = this.formatDomainName(props.domainName, props.stageName);
 
-    // Create all resources
+    // Determine if we should deploy the distribution based on stage and flag
+    // Always deploy for Beta, conditionally deploy for Prod
+    const shouldDeployDistribution =
+      props.stageName !== STAGES.PROD || (props.deployDistribution !== undefined ? props.deployDistribution : true);
+
+    // Create hosted zone (always create this)
     const hostedZone = this.createHostedZone(props.domainName);
+
+    // If we're not deploying the distribution (Prod + flag off), just set up the hosted zone
+    if (!shouldDeployDistribution) {
+      // Still need to set required properties, but with placeholder values
+      this.hostedZoneId = hostedZone.hostedZoneId;
+      this.domainName = this.fullDomainName;
+      this.distributionId = props.distributionId || 'distribution-not-deployed';
+      this.distributionDomainName = 'distribution-not-deployed.cloudfront.net';
+      this.certificateArn = props.certificateArn;
+
+      // Create outputs for hosted zone info
+      this.createHostedZoneOutputs(hostedZone);
+
+      // Add a note about distribution being skipped
+      new cdk.CfnOutput(this, 'DistributionStatus', {
+        value: 'CloudFront distribution deployment was skipped as requested',
+        description: 'Status of CloudFront distribution deployment',
+      });
+
+      // Early return - don't create distribution or other resources
+      return;
+    }
+
+    // If we get here, we're deploying the full stack including distribution
+
+    // Create all resources
     const websiteBucket = this.getBucketReference(props.bucketName);
     const originAccessIdentity = this.createOriginAccessIdentity();
     const certificate = this.getCertificate();
@@ -83,6 +115,44 @@ export class DomainConfigurationStack extends cdk.Stack {
   }
 
   /**
+   * Creates outputs specifically for the hosted zone when skipping distribution
+   */
+  private createHostedZoneOutputs(hostedZone: route53.PublicHostedZone): void {
+    // HostedZone ID output
+    new cdk.CfnOutput(this, 'HostedZoneId', {
+      value: hostedZone.hostedZoneId,
+      description: 'The ID of the hosted zone',
+      exportName: `${this.stageName}-${this.props.domainName.replace(/\./g, '-')}-HostedZoneId`,
+    });
+
+    // Domain name output
+    new cdk.CfnOutput(this, 'DomainName', {
+      value: this.fullDomainName,
+      description: 'The domain name for the website',
+      exportName: `${this.stageName}-${this.props.domainName.replace(/\./g, '-')}-DomainName`,
+    });
+
+    // Output the nameservers for the hosted zone
+    new cdk.CfnOutput(this, 'NameServers', {
+      value: cdk.Fn.join(',', hostedZone.hostedZoneNameServers || []),
+      description: 'The name servers for the hosted zone. Update your Namecheap DNS with these.',
+    });
+
+    // Add next steps guidance
+    new cdk.CfnOutput(this, 'NextSteps', {
+      value: `
+1. Copy the above name servers (comma-separated list)
+2. Update DNS settings in Namecheap for ${this.props.domainName}
+3. Request SSL certificate for *.${this.props.domainName} and ${this.props.domainName}
+4. Update PROD_CERTIFICATE_ARN in constants.ts with the new certificate ARN
+5. Set DEPLOY_PROD_DISTRIBUTION to true in constants.ts
+6. Run CDK deploy again to create the distribution
+      `,
+      description: 'Next steps to complete the setup',
+    });
+  }
+
+  /**
    * Formats the full domain name based on environment
    */
   private formatDomainName(domainName: string, stageName: string): string {
@@ -96,12 +166,6 @@ export class DomainConfigurationStack extends cdk.Stack {
     const hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
       zoneName: domainName,
       comment: `Hosted zone for ${domainName}, managed via CDK`,
-    });
-
-    // Output the nameservers for the hosted zone
-    new cdk.CfnOutput(this, 'NameServers', {
-      value: cdk.Fn.join(',', hostedZone.hostedZoneNameServers || []),
-      description: 'The name servers for the hosted zone. Update your Namecheap DNS with these.',
     });
 
     return hostedZone;
@@ -479,7 +543,7 @@ export class DomainConfigurationStack extends cdk.Stack {
 
     // CloudFront invalidation command output
     new cdk.CfnOutput(this, 'InvalidationCommand', {
-      value: `aws cloudfront create-invalidation --distribution-id ${props.distribution.distributionId} --paths "/*"`,
+      value: `aws cloudfront create-invalidation --distribution-id ${props.distribution.distributionId} --paths "/*" --profile ${this.stageName.toLowerCase()}`,
       description: 'Command to invalidate CloudFront cache after deployment',
     });
   }
