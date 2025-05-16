@@ -149,12 +149,10 @@ namespace PipelineComponents {
   export class BuildManager {
     public readonly cdkBuild: codebuild.PipelineProject;
     public readonly websiteBuild: codebuild.PipelineProject;
-    public readonly cloudFrontInvalidation: codebuild.PipelineProject;
 
     constructor(scope: Stack, key: kms.Key, betaConfig: AccountConfig, prodConfig: AccountConfig) {
       this.cdkBuild = this.createCdkBuildProject(scope, key);
       this.websiteBuild = this.createWebsiteBuildProject(scope);
-      this.cloudFrontInvalidation = this.createCloudFrontInvalidationProject(scope, key);
     }
 
     private createCdkBuildProject(scope: Stack, key: kms.Key): codebuild.PipelineProject {
@@ -217,45 +215,6 @@ namespace PipelineComponents {
           buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
         },
       });
-    }
-
-    private createCloudFrontInvalidationProject(scope: Stack, key: kms.Key): codebuild.PipelineProject {
-      const project = new codebuild.PipelineProject(scope, 'CloudFrontInvalidation', {
-        projectName: 'CloudFrontInvalidation', // Specific name to avoid confusion
-        buildSpec: codebuild.BuildSpec.fromObject({
-          version: '0.2',
-          phases: {
-            install: {
-              'runtime-versions': {
-                nodejs: 20,
-              },
-            },
-            build: {
-              commands: [
-                'echo "Starting CloudFront invalidation"',
-                'echo $DISTRIBUTION_ID',
-                'aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"',
-                'echo "CloudFront invalidation initiated successfully"',
-              ],
-            },
-          },
-        }),
-        environment: {
-          buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
-        },
-        encryptionKey: key,
-      });
-
-      // Add CloudFront invalidation permission to the project role
-      project.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ['cloudfront:CreateInvalidation', 'cloudfront:GetInvalidation'],
-          resources: ['*'], // Allow invalidation for any distribution
-        }),
-      );
-
-      return project;
     }
   }
 
@@ -339,7 +298,7 @@ namespace PipelineComponents {
     /**
      * Creates the beta deployment stage
      */
-    public createBetaDeployStage(betaConfig: AccountConfig, buildManager: BuildManager): codepipeline.StageProps {
+    public createBetaDeployStage(betaConfig: AccountConfig): codepipeline.StageProps {
       return {
         stageName: 'Deploy_Beta',
         actions: [
@@ -381,17 +340,13 @@ namespace PipelineComponents {
               codepipeline_actions.CacheControl.sMaxAge(Duration.days(7)),
             ],
           }),
-          // Invalidate CloudFront cache - Direct AWS CLI command instead of CodeBuild project
-          new codepipeline_actions.CodeBuildAction({
-            actionName: 'InvalidateCloudFrontCache',
-            project: buildManager.cloudFrontInvalidation,
-            input: new codepipeline.Artifact('websiteBuildOutput'),
-            environmentVariables: {
-              DISTRIBUTION_ID: {
-                value: betaConfig.websiteConfig.distributionId,
-                type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-              },
-            },
+          // Replace CloudFront invalidation with a manual approval step
+          new codepipeline_actions.ManualApprovalAction({
+            actionName: 'ManualCacheInvalidation',
+            additionalInformation: `Please run the following command to invalidate the Beta CloudFront cache:
+aws cloudfront create-invalidation --distribution-id ${betaConfig.websiteConfig.distributionId} --paths "/*" --profile beta
+
+Once completed, approve this step to continue.`,
             runOrder: 4,
           }),
         ],
@@ -417,7 +372,7 @@ namespace PipelineComponents {
     /**
      * Creates the production deployment stage
      */
-    public createProdDeployStage(prodConfig: AccountConfig, buildManager: BuildManager): codepipeline.StageProps {
+    public createProdDeployStage(prodConfig: AccountConfig): codepipeline.StageProps {
       return {
         stageName: 'Deploy_Prod',
         actions: [
@@ -461,17 +416,13 @@ namespace PipelineComponents {
               codepipeline_actions.CacheControl.sMaxAge(Duration.days(30)),
             ],
           }),
-          // Invalidate CloudFront cache - Direct AWS CLI command instead of CodeBuild project
-          new codepipeline_actions.CodeBuildAction({
-            actionName: 'InvalidateCloudFrontCache',
-            project: buildManager.cloudFrontInvalidation,
-            input: new codepipeline.Artifact('websiteBuildOutput'),
-            environmentVariables: {
-              DISTRIBUTION_ID: {
-                value: prodConfig.websiteConfig.distributionId,
-                type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-              },
-            },
+          // Replace CloudFront invalidation with a manual approval step
+          new codepipeline_actions.ManualApprovalAction({
+            actionName: 'ManualCacheInvalidation',
+            additionalInformation: `Please run the following command to invalidate the Production CloudFront cache:
+aws cloudfront create-invalidation --distribution-id ${prodConfig.websiteConfig.distributionId} --paths "/*" --profile prod
+
+Once completed, approve this step to continue.`,
             runOrder: 4,
           }),
         ],
@@ -510,7 +461,7 @@ namespace PipelineComponents {
       });
 
       new CfnOutput(this.scope, 'BetaInvalidationCommand', {
-        value: `aws cloudfront create-invalidation --distribution-id ${betaConfig.websiteConfig.distributionId} --paths "/*"`,
+        value: `aws cloudfront create-invalidation --distribution-id ${betaConfig.websiteConfig.distributionId} --paths "/*" --profile beta`,
         description: 'Command to manually invalidate the Beta CloudFront distribution',
       });
 
@@ -521,7 +472,7 @@ namespace PipelineComponents {
       });
 
       new CfnOutput(this.scope, 'ProdInvalidationCommand', {
-        value: `aws cloudfront create-invalidation --distribution-id ${prodConfig.websiteConfig.distributionId} --paths "/*"`,
+        value: `aws cloudfront create-invalidation --distribution-id ${prodConfig.websiteConfig.distributionId} --paths "/*" --profile prod`,
         description: 'Command to manually invalidate the Production CloudFront distribution',
       });
     }
@@ -570,29 +521,6 @@ namespace PipelineComponents {
           effect: iam.Effect.ALLOW,
           actions: ['kms:Decrypt', 'kms:DescribeKey', 'kms:Encrypt', 'kms:ReEncrypt*', 'kms:GenerateDataKey*'],
           resources: [securityManager.key.keyArn],
-        }),
-      );
-
-      // Add CloudFront invalidation permissions
-      pipeline.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ['cloudfront:CreateInvalidation'],
-          resources: [
-            `arn:aws:cloudfront::${betaConfig.websiteConfig.config.accountId}:distribution/${betaConfig.websiteConfig.distributionId}`,
-            `arn:aws:cloudfront::${prodConfig.websiteConfig.config.accountId}:distribution/${prodConfig.websiteConfig.distributionId}`,
-          ],
-        }),
-      );
-
-      pipeline.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ['cloudfront:CreateInvalidation', 'cloudfront:GetInvalidation'],
-          resources: [
-            `arn:aws:cloudfront::${betaConfig.websiteConfig.config.accountId}:distribution/${betaConfig.websiteConfig.distributionId}`,
-            `arn:aws:cloudfront::${prodConfig.websiteConfig.config.accountId}:distribution/${prodConfig.websiteConfig.distributionId}`,
-          ],
         }),
       );
     }
@@ -673,9 +601,9 @@ export class WebsitePipelineStack extends Stack {
         stageFactory.createSourceStage(),
         stageFactory.createBuildStage(buildManager),
         stageFactory.createPipelineUpdateStage(),
-        stageFactory.createBetaDeployStage(betaAccountConfig, buildManager),
+        stageFactory.createBetaDeployStage(betaAccountConfig),
         stageFactory.createApprovalStage(betaAccountConfig),
-        stageFactory.createProdDeployStage(prodAccountConfig, buildManager),
+        stageFactory.createProdDeployStage(prodAccountConfig),
       ],
     });
 
