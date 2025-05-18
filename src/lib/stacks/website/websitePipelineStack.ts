@@ -314,7 +314,6 @@ namespace PipelineComponents {
             deploymentRole: betaConfig.roles.cloudFormation,
             runOrder: 1,
           }),
-          // Deploy domain configuration for Beta
           new codepipeline_actions.CloudFormationCreateUpdateStackAction({
             actionName: 'DeployBetaDomainConfig',
             templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
@@ -327,27 +326,37 @@ namespace PipelineComponents {
             deploymentRole: betaConfig.roles.cloudFormation,
             runOrder: 2,
           }),
-          // Improved S3 deployment with cache control
+          new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+            actionName: 'DeployBetaContactForm',
+            templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
+              `Betauswest2ContactFormStack${TEMPLATE_ENDING}`,
+            ),
+            stackName: 'Betauswest2ContactFormStack',
+            adminPermissions: false,
+            cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
+            role: betaConfig.roles.codePipeline,
+            deploymentRole: betaConfig.roles.cloudFormation,
+            runOrder: 3,
+          }),
           new codepipeline_actions.S3DeployAction({
             actionName: 'DeployWebsiteContent',
             input: new codepipeline.Artifact('websiteBuildOutput'),
             bucket: s3.Bucket.fromBucketName(this.scope, 'WebsiteS3Bucket', betaConfig.websiteConfig.websiteBucketName),
             role: betaConfig.roles.codePipeline,
-            runOrder: 3,
+            runOrder: 4,
             cacheControl: [
               codepipeline_actions.CacheControl.setPublic(),
               codepipeline_actions.CacheControl.maxAge(Duration.days(7)),
               codepipeline_actions.CacheControl.sMaxAge(Duration.days(7)),
             ],
           }),
-          // Replace CloudFront invalidation with a manual approval step
           new codepipeline_actions.ManualApprovalAction({
             actionName: 'ManualCacheInvalidation',
             additionalInformation: `Please run the following command to invalidate the Beta CloudFront cache:
-aws cloudfront create-invalidation --distribution-id ${betaConfig.websiteConfig.distributionId} --paths "/*" --profile beta
 
+aws cloudfront create-invalidation --distribution-id ${betaConfig.websiteConfig.distributionId} --paths "/*" --profile beta
 Once completed, approve this step to continue.`,
-            runOrder: 4,
+            runOrder: 5,
           }),
         ],
       };
@@ -388,7 +397,6 @@ Once completed, approve this step to continue.`,
             deploymentRole: prodConfig.roles.cloudFormation,
             runOrder: 1,
           }),
-          // Deploy domain configuration for Prod
           new codepipeline_actions.CloudFormationCreateUpdateStackAction({
             actionName: 'DeployProdDomainConfig',
             templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
@@ -401,7 +409,18 @@ Once completed, approve this step to continue.`,
             deploymentRole: prodConfig.roles.cloudFormation,
             runOrder: 2,
           }),
-          // Improved S3 deployment with cache control
+          new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+            actionName: 'DeployProdContactForm',
+            templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
+              `Produswest2ContactFormStack${TEMPLATE_ENDING}`,
+            ),
+            stackName: 'Produswest2ContactFormStack',
+            adminPermissions: false,
+            cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
+            role: prodConfig.roles.codePipeline,
+            deploymentRole: prodConfig.roles.cloudFormation,
+            runOrder: 3,
+          }),
           new codepipeline_actions.S3DeployAction({
             actionName: 'DeployWebsiteContent',
             input: new codepipeline.Artifact('websiteBuildOutput'),
@@ -409,21 +428,20 @@ Once completed, approve this step to continue.`,
               bucketArn: prodConfig.websiteConfig.websiteBucketArn,
             }),
             role: prodConfig.roles.codePipeline,
-            runOrder: 3,
+            runOrder: 4,
             cacheControl: [
               codepipeline_actions.CacheControl.setPublic(),
               codepipeline_actions.CacheControl.maxAge(Duration.days(30)),
               codepipeline_actions.CacheControl.sMaxAge(Duration.days(30)),
             ],
           }),
-          // Replace CloudFront invalidation with a manual approval step
           new codepipeline_actions.ManualApprovalAction({
             actionName: 'ManualCacheInvalidation',
             additionalInformation: `Please run the following command to invalidate the Production CloudFront cache:
 aws cloudfront create-invalidation --distribution-id ${prodConfig.websiteConfig.distributionId} --paths "/*" --profile prod
 
 Once completed, approve this step to continue.`,
-            runOrder: 4,
+            runOrder: 5,
           }),
         ],
       };

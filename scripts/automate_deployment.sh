@@ -136,22 +136,5 @@ aws cloudformation deploy --template-file cfnRolesTemplates/CodePipelineCrossAcc
 printf "\nCommitting code to repository\n"
 git add . && git commit -m "Automated Commit" && git push
 
-# Get deployed API Gateway endpoints
-printf "\nUse the following commands to get the Endpoints for deployed environments: "
-printf "\n  aws cloudformation describe-stacks --stack-name Betauswest2ServiceStack \
-  --profile beta | grep OutputValue"
-
-# Get website URLs
-printf "\nWebsite URLs:"
-printf "\n  Beta CloudFront: $(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2BucketStack \
-  --profile beta --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURLOutput`].OutputValue' --output text)"
-
-# Get Domain Configuration information
-printf "\nDomain Configuration (Beta only):"
-printf "\n  Beta Domain: $(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2Domainqandmedating-comStack \
-  --profile beta --query 'Stacks[0].Outputs[?OutputKey==`DomainName`].OutputValue' --output text)"
-printf "\n  Name Servers: $(aws cloudformation describe-stacks --stack-name WebsiteBetaus-west-2Domainqandmedating-comStack \
-  --profile beta --query 'Stacks[0].Outputs[?OutputKey==`NameServers`].OutputValue' --output text)"
-
 # Clean up temporary files
 rm -f ${CDK_OUTPUT_FILE} .cfn_outputs

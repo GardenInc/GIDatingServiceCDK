@@ -158,19 +158,6 @@ export class DomainConfigurationStack extends cdk.Stack {
       value: cdk.Fn.join(',', hostedZone.hostedZoneNameServers || []),
       description: 'The name servers for the hosted zone. Update your Namecheap DNS with these.',
     });
-
-    // Add next steps guidance
-    new cdk.CfnOutput(this, 'NextSteps', {
-      value: `
-1. Copy the above name servers (comma-separated list)
-2. Update DNS settings in Namecheap for ${this.props.domainName}
-3. Request SSL certificate for *.${this.props.domainName} and ${this.props.domainName}
-4. Update PROD_CERTIFICATE_ARN in constants.ts with the new certificate ARN
-5. Set DEPLOY_PROD_DISTRIBUTION to true in constants.ts
-6. Run CDK deploy again to create the distribution
-      `,
-      description: 'Next steps to complete the setup',
-    });
   }
 
   /**
