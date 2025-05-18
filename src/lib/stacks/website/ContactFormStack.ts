@@ -3,6 +3,7 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as path from 'path';
 import { Construct } from 'constructs';
 import { RemovalPolicy, Duration } from 'aws-cdk-lib';
 
@@ -17,7 +18,6 @@ export class ContactFormStack extends cdk.Stack {
     super(scope, id, props);
 
     // Define DynamoDB table for contact form submissions
-    // Define sort key at table creation time instead of using addSortKey
     const contactTable = new dynamodb.Table(this, 'ContactFormTable', {
       tableName: `ContactForm-${props.stageName}`,
       partitionKey: {
@@ -59,132 +59,27 @@ export class ContactFormStack extends cdk.Stack {
       },
     });
 
-    // Create Lambda for processing contact form submissions
+    // Create Lambda Layer with AWS SDK v3 dependencies
+    const lambdaDepsLayer = new lambda.LayerVersion(this, 'ContactFormDepsLayer', {
+      code: lambda.Code.fromAsset(path.join(__dirname, '/lambda/contactFormLambda'), {
+        bundling: {
+          image: lambda.Runtime.NODEJS_20_X.bundlingImage,
+          command: ['bash', '-c', ['npm install --production'].join(' && ')],
+        },
+      }),
+      description: 'AWS SDK v3 dependencies for contact form handler',
+      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+    });
+
+    // Create Lambda for processing contact form submissions with external code
     const contactFormLambda = new lambda.Function(this, 'ContactFormFunction', {
       functionName: `ContactForm-${props.stageName}`,
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromInline(`
-const AWS = require('aws-sdk');
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
-const tableName = process.env.TABLE_NAME;
-const maxItems = parseInt(process.env.MAX_ITEMS) || 10000;
-
-exports.handler = async (event) => {
-  try {
-    // Set CORS headers for all responses
-    const headers = {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGINS,
-      'Access-Control-Allow-Credentials': true,
-      'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
-    };
-    
-    // Handle preflight OPTIONS request
-    if (event.httpMethod === 'OPTIONS') {
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ message: 'CORS preflight response successful' })
-      };
-    }
-    
-    // Parse request body
-    const body = JSON.parse(event.body);
-    
-    // Validate required fields - waitlist only requires email
-    if (!body.email) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({
-          message: 'Missing required field: email. Please provide an email address.'
-        })
-      };
-    }
-
-    // For contact form, require additional fields
-    if (body.subject !== 'Waitlist Registration' && (!body.name || !body.subject || !body.message)) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({
-          message: 'Missing required fields. Please provide name, email, subject and message.'
-        })
-      };
-    }
-
-    // Check if table has reached size limit
-    const countParams = {
-      TableName: tableName,
-      Select: 'COUNT'
-    };
-    
-    const countResult = await dynamoDB.scan(countParams).promise();
-    
-    if (countResult.Count >= maxItems) {
-      console.error('DynamoDB table size limit reached');
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({
-          message: 'Internal server error'
-        })
-      };
-    }
-    
-    // Generate timestamp and date
-    const now = new Date();
-    const timestamp = now.toISOString();
-    const date = timestamp.split('T')[0]; // YYYY-MM-DD format
-    
-    // Prepare item for DynamoDB
-    const item = {
-      email: body.email,
-      timestamp: timestamp,
-      date: date,
-      name: body.name,
-      subject: body.subject,
-      message: body.message,
-      ipAddress: event.requestContext?.identity?.sourceIp || 'unknown',
-    };
-    
-    // Write to DynamoDB
-    await dynamoDB.put({
-      TableName: tableName,
-      Item: item
-    }).promise();
-    
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        message: body.subject === 'Waitlist Registration' 
-          ? 'Waitlist registration received successfully' 
-          : 'Contact form submission received successfully',
-        id: timestamp
-      })
-    };
-  } catch (error) {
-    console.error('Error processing submission:', error);
-    
-    return {
-      statusCode: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGINS,
-        'Access-Control-Allow-Credentials': true,
-        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
-      },
-      body: JSON.stringify({
-        message: 'Error processing submission'
-      })
-    };
-  }
-};
-      `),
+      code: lambda.Code.fromAsset(path.join(__dirname, '/lambda/contactFormLambda'), {
+        exclude: ['node_modules', 'package.json', 'package-lock.json'], // Exclude dependencies as they're in the layer
+      }),
+      layers: [lambdaDepsLayer],
       environment: {
         TABLE_NAME: contactTable.tableName,
         MAX_ITEMS: '10000', // Table size limit
@@ -192,9 +87,11 @@ exports.handler = async (event) => {
           props.stageName === 'Prod'
             ? 'https://qandmedating.com,https://www.qandmedating.com'
             : 'https://beta.qandmedating.com,http://localhost:3000',
+        NODE_ENV: props.stageName === 'Prod' ? 'production' : 'development',
       },
       timeout: Duration.seconds(30),
       memorySize: 256,
+      tracing: lambda.Tracing.ACTIVE, // Enable X-Ray tracing for better debugging
     });
 
     // Grant Lambda permissions to write to DynamoDB
@@ -227,65 +124,8 @@ exports.handler = async (event) => {
     // Create API resource and method
     const contactResource = api.root.addResource('contact');
 
-    // Define the Lambda integration
-    const lambdaIntegration = new apigateway.LambdaIntegration(contactFormLambda, {
-      proxy: true,
-      // Ensure content type is set correctly
-      requestTemplates: {
-        'application/json': '{ "statusCode": 200 }',
-      },
-      // Map response headers correctly for CORS
-      integrationResponses: [
-        {
-          statusCode: '200',
-          responseParameters: {
-            'method.response.header.Access-Control-Allow-Origin':
-              props.stageName === 'Prod' ? "'https://qandmedating.com'" : "'https://beta.qandmedating.com'",
-            'method.response.header.Access-Control-Allow-Headers':
-              "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-            'method.response.header.Access-Control-Allow-Methods': "'GET,POST,OPTIONS'",
-            'method.response.header.Access-Control-Allow-Credentials': "'true'",
-          },
-        },
-        {
-          // For handling errors
-          selectionPattern: '.*',
-          statusCode: '400',
-          responseParameters: {
-            'method.response.header.Access-Control-Allow-Origin':
-              props.stageName === 'Prod' ? "'https://qandmedating.com'" : "'https://beta.qandmedating.com'",
-            'method.response.header.Access-Control-Allow-Headers':
-              "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-            'method.response.header.Access-Control-Allow-Methods': "'GET,POST,OPTIONS'",
-            'method.response.header.Access-Control-Allow-Credentials': "'true'",
-          },
-        },
-      ],
-    });
-
-    // POST method for submitting contact forms with CORS headers in response
-    contactResource.addMethod('POST', lambdaIntegration, {
-      methodResponses: [
-        {
-          statusCode: '200',
-          responseParameters: {
-            'method.response.header.Access-Control-Allow-Origin': true,
-            'method.response.header.Access-Control-Allow-Headers': true,
-            'method.response.header.Access-Control-Allow-Methods': true,
-            'method.response.header.Access-Control-Allow-Credentials': true,
-          },
-        },
-        {
-          statusCode: '400',
-          responseParameters: {
-            'method.response.header.Access-Control-Allow-Origin': true,
-            'method.response.header.Access-Control-Allow-Headers': true,
-            'method.response.header.Access-Control-Allow-Methods': true,
-            'method.response.header.Access-Control-Allow-Credentials': true,
-          },
-        },
-      ],
-    });
+    // POST method for submitting contact forms
+    contactResource.addMethod('POST', new apigateway.LambdaIntegration(contactFormLambda));
 
     // Output the API endpoint URL
     this.apiEndpoint = api.url;

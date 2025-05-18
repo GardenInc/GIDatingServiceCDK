@@ -1,0 +1,12 @@
+{
+  "name": "contact-form-handler",
+  "version": "1.0.0",
+  "description": "Lambda handler for Q&Me contact form submissions",
+  "main": "index.js",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.350.0",
+    "@aws-sdk/lib-dynamodb": "^3.350.0"
+  },
+  "author": "Q&Me Dating",
+  "license": "UNLICENSED"
+}
