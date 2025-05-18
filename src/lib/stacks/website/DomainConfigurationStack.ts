@@ -46,6 +46,7 @@ export class DomainConfigurationStack extends cdk.Stack {
 
     // Create hosted zone (always create this)
     const hostedZone = this.createHostedZone(props.domainName);
+    this.createSubdomainDelegation(hostedZone);
 
     // If we're not deploying the distribution (Prod + flag off), just set up the hosted zone
     if (!shouldDeployDistribution) {
@@ -112,6 +113,26 @@ export class DomainConfigurationStack extends cdk.Stack {
       logBucket,
       logGroup,
     });
+  }
+
+  // Add this method to the DomainConfigurationStack class
+  private createSubdomainDelegation(hostedZone: route53.PublicHostedZone): void {
+    // Only create this record in the Prod environment
+    if (this.stageName === STAGES.PROD) {
+      // Create NS record for beta subdomain in the production hosted zone
+      new route53.NsRecord(this, 'BetaSubdomainDelegation', {
+        zone: hostedZone,
+        recordName: 'beta',
+        values: ['ns-381.awsdns-47.com', 'ns-525.awsdns-01.net', 'ns-1366.awsdns-42.org', 'ns-1717.awsdns-22.co.uk'],
+        ttl: cdk.Duration.minutes(5),
+      });
+
+      // Add output to show this was created
+      new cdk.CfnOutput(this, 'BetaSubdomainDelegationCreated', {
+        value: 'Beta subdomain delegation NS record has been created',
+        description: 'Indicates that the NS record for beta.qandmedating.com has been created in the production zone',
+      });
+    }
   }
 
   /**
