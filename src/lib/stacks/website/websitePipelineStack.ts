@@ -353,8 +353,8 @@ namespace PipelineComponents {
           new codepipeline_actions.ManualApprovalAction({
             actionName: 'ManualCacheInvalidation',
             additionalInformation: `Please run the following command to invalidate the Beta CloudFront cache:
-
 aws cloudfront create-invalidation --distribution-id ${betaConfig.websiteConfig.distributionId} --paths "/*" --profile beta
+
 Once completed, approve this step to continue.`,
             runOrder: 5,
           }),
