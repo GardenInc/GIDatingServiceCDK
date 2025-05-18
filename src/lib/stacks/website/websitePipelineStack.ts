@@ -149,10 +149,63 @@ namespace PipelineComponents {
   export class BuildManager {
     public readonly cdkBuild: codebuild.PipelineProject;
     public readonly websiteBuild: codebuild.PipelineProject;
+    public readonly cdkPublishBeta: codebuild.PipelineProject;
+    public readonly cdkPublishProd: codebuild.PipelineProject;
 
     constructor(scope: Stack, key: kms.Key, betaConfig: AccountConfig, prodConfig: AccountConfig) {
       this.cdkBuild = this.createCdkBuildProject(scope, key);
       this.websiteBuild = this.createWebsiteBuildProject(scope);
+      this.cdkPublishBeta = this.createCdkPublishProject(scope, key, 'Beta', betaConfig.accountId);
+      this.cdkPublishProd = this.createCdkPublishProject(scope, key, 'Prod', prodConfig.accountId);
+    }
+
+    private createCdkPublishProject(
+      scope: Stack,
+      key: kms.Key,
+      stageName: string,
+      accountId: string,
+    ): codebuild.PipelineProject {
+      return new codebuild.PipelineProject(scope, `CdkPublish${stageName}`, {
+        buildSpec: codebuild.BuildSpec.fromObject({
+          version: '0.2',
+          phases: {
+            install: {
+              'runtime-versions': {
+                nodejs: 20,
+              },
+              commands: ['npm install', 'npm install -g aws-cdk'],
+            },
+            build: {
+              commands: [
+                // Configure AWS CLI for cross-account access
+                'echo "Configuring for publishing to target account ${ACCOUNT_ID}"',
+                'export AWS_REGION=us-west-2',
+                'export AWS_ACCOUNT_ID=${ACCOUNT_ID}',
+
+                // Build the code
+                'npm run build',
+
+                // Publish assets to the target account
+                `npx cdk-assets publish -p "dist" -v`,
+
+                'echo "Asset publication complete"',
+              ],
+            },
+          },
+          artifacts: {
+            'base-directory': 'dist',
+            files: ['**/*.template.json'],
+          },
+        }),
+        environment: {
+          buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+          privileged: true, // Needed for Docker
+        },
+        environmentVariables: {
+          ACCOUNT_ID: { value: accountId },
+        },
+        encryptionKey: key,
+      });
     }
 
     private createCdkBuildProject(scope: Stack, key: kms.Key): codebuild.PipelineProject {
@@ -270,6 +323,36 @@ namespace PipelineComponents {
             project: buildManager.websiteBuild,
             input: new codepipeline.Artifact('websiteCodeSource'),
             outputs: [new codepipeline.Artifact('websiteBuildOutput')],
+          }),
+        ],
+      };
+    }
+
+    // Add a new method for publishing assets to Beta
+    public createPublishBetaStage(buildManager: BuildManager): codepipeline.StageProps {
+      return {
+        stageName: 'Publish_Beta_Assets',
+        actions: [
+          new codepipeline_actions.CodeBuildAction({
+            actionName: 'Publish_CDK_Assets_Beta',
+            project: buildManager.cdkPublishBeta,
+            input: new codepipeline.Artifact('cdkBuildOutput'),
+            outputs: [new codepipeline.Artifact('betaAssetsPublished')],
+          }),
+        ],
+      };
+    }
+
+    // Add a new method for publishing assets to Prod
+    public createPublishProdStage(buildManager: BuildManager): codepipeline.StageProps {
+      return {
+        stageName: 'Publish_Prod_Assets',
+        actions: [
+          new codepipeline_actions.CodeBuildAction({
+            actionName: 'Publish_CDK_Assets_Prod',
+            project: buildManager.cdkPublishProd,
+            input: new codepipeline.Artifact('cdkBuildOutput'),
+            outputs: [new codepipeline.Artifact('prodAssetsPublished')],
           }),
         ],
       };
@@ -619,8 +702,11 @@ export class WebsitePipelineStack extends Stack {
         stageFactory.createSourceStage(),
         stageFactory.createBuildStage(buildManager),
         stageFactory.createPipelineUpdateStage(),
+        // Add asset publishing stages before deployment stages
+        stageFactory.createPublishBetaStage(buildManager),
         stageFactory.createBetaDeployStage(betaAccountConfig),
         stageFactory.createApprovalStage(betaAccountConfig),
+        stageFactory.createPublishProdStage(buildManager),
         stageFactory.createProdDeployStage(prodAccountConfig),
       ],
     });
