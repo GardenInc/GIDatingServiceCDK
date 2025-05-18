@@ -59,27 +59,13 @@ export class ContactFormStack extends cdk.Stack {
       },
     });
 
-    // Create Lambda Layer with AWS SDK v3 dependencies
-    const lambdaDepsLayer = new lambda.LayerVersion(this, 'ContactFormDepsLayer', {
-      code: lambda.Code.fromAsset(path.join(__dirname, '/lambda/contactFormLambda'), {
-        bundling: {
-          image: lambda.Runtime.NODEJS_20_X.bundlingImage,
-          command: ['bash', '-c', ['npm install --production'].join(' && ')],
-        },
-      }),
-      description: 'AWS SDK v3 dependencies for contact form handler',
-      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
-    });
-
-    // Create Lambda for processing contact form submissions with external code
+    // Create Lambda for processing contact form submissions without a layer
+    // This approach avoids the need for bundling the dependencies
     const contactFormLambda = new lambda.Function(this, 'ContactFormFunction', {
       functionName: `ContactForm-${props.stageName}`,
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '/lambda/contactFormLambda'), {
-        exclude: ['node_modules', 'package.json', 'package-lock.json'], // Exclude dependencies as they're in the layer
-      }),
-      layers: [lambdaDepsLayer],
+      code: lambda.Code.fromAsset(path.join(__dirname, '/lambda/contactFormLambda')),
       environment: {
         TABLE_NAME: contactTable.tableName,
         MAX_ITEMS: '10000', // Table size limit
