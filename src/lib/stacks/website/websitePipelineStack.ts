@@ -181,9 +181,28 @@ namespace PipelineComponents {
                 'export AWS_REGION=us-west-2',
                 'export AWS_ACCOUNT_ID=${ACCOUNT_ID}',
 
-                // Just run a simple "find" with "-exec" which is safer than a for loop
-                'echo "Finding and publishing assets directly:"',
-                'find . -name "cdk.assets.json" -exec sh -c "echo Publishing assets from {}; cd $(dirname {}); cdk-assets publish -v" \\;',
+                // Improved asset publishing with detailed logging
+                'echo "Finding all asset files:"',
+                'find . -name "*.assets.json" | sort',
+                'echo "Finding specific ${STAGE} assets:"',
+                'find . -name "*${STAGE}*.assets.json" | sort',
+
+                // Explicit publishing of contact form assets
+                'echo "Publishing contact form Lambda assets:"',
+                'if [ -f "${STAGE}uswest2ContactFormStack.assets.json" ]; then',
+                '  echo "Publishing from ${STAGE}uswest2ContactFormStack.assets.json"',
+                '  cdk-assets publish -p ${STAGE}uswest2ContactFormStack.assets.json --verbose',
+                'else',
+                '  echo "WARNING: ${STAGE}uswest2ContactFormStack.assets.json not found"',
+                'fi',
+
+                // Publish all assets to ensure everything is uploaded
+                'echo "Publishing all assets for this stage:"',
+                'find . -name "*${STAGE}*.assets.json" -exec sh -c "echo Publishing assets from {}; cdk-assets publish -p {} --verbose" \\;',
+
+                // Verify asset bucket content after publishing
+                'echo "Verifying asset bucket contents:"',
+                'aws s3 ls s3://cdk-hnb659fds-assets-${ACCOUNT_ID}-us-west-2/ | grep -i lambda || echo "No Lambda assets found in bucket"',
 
                 // Notify completion
                 'echo "Asset publication complete"',
@@ -201,6 +220,7 @@ namespace PipelineComponents {
         },
         environmentVariables: {
           ACCOUNT_ID: { value: accountId },
+          STAGE: { value: stageName },
         },
         encryptionKey: key,
       });
@@ -220,19 +240,24 @@ namespace PipelineComponents {
             build: {
               commands: [
                 'npm run build', // Compile TypeScript
-                'npx cdk synth --verbose --path-metadata true --asset-metadata true --output dist', // Explicit flags for assets
+                // Explicitly include asset manifest files for Lambda functions
+                'npx cdk synth --verbose --path-metadata true --asset-metadata true --output dist',
                 'echo "Generated files:"',
                 'find dist -type f | sort', // List all generated files for debugging
                 'echo "Looking for asset files:"',
-                'find dist -name "cdk.assets.json" -o -name "*.assets.json" | sort', // Find any asset files
+                'find dist -name "*.assets.json" | sort', // Find any asset files
+
+                // Move assets to the root level for easier publishing
+                'echo "Copying assets to root directory for publishing:"',
+                'cp dist/*.assets.json ./',
+                'mkdir -p asset-output',
+                'find dist/asset.* -type d -exec cp -r {} asset-output/ \\;',
               ],
             },
           },
           artifacts: {
-            'base-directory': 'dist',
-            files: [
-              '**/*', // Include ALL files, not just templates
-            ],
+            'base-directory': '.',
+            files: ['**/*.template.json', '**/*.assets.json', 'asset-output/**/*', 'cdk.out/**/*'],
           },
         }),
         environment: {
@@ -388,6 +413,7 @@ namespace PipelineComponents {
             actionName: 'PublishAssets',
             project: buildManager.cdkPublishBeta, // The CDK asset publishing build project
             input: new codepipeline.Artifact('cdkBuildOutput'),
+            outputs: [new codepipeline.Artifact('betaAssetsPublished')], // Add output to wait for completion
             runOrder: 1, // Run this first
           }),
 
@@ -431,6 +457,7 @@ namespace PipelineComponents {
             role: betaConfig.roles.codePipeline,
             deploymentRole: betaConfig.roles.cloudFormation,
             runOrder: 4,
+            extraInputs: [new codepipeline.Artifact('betaAssetsPublished')], // Ensure assets are published
           }),
 
           // Fifth action: Deploy website content to S3
@@ -488,6 +515,7 @@ namespace PipelineComponents {
             actionName: 'PublishAssets',
             project: buildManager.cdkPublishProd, // The CDK asset publishing build project
             input: new codepipeline.Artifact('cdkBuildOutput'),
+            outputs: [new codepipeline.Artifact('prodAssetsPublished')], // Add output to wait for completion
             runOrder: 1, // Run this first
           }),
 
@@ -531,6 +559,7 @@ namespace PipelineComponents {
             role: prodConfig.roles.codePipeline,
             deploymentRole: prodConfig.roles.cloudFormation,
             runOrder: 4,
+            extraInputs: [new codepipeline.Artifact('prodAssetsPublished')], // Ensure assets are published
           }),
 
           // Fifth action: Deploy website content to S3

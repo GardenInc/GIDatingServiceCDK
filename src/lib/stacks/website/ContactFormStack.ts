@@ -59,8 +59,8 @@ export class ContactFormStack extends cdk.Stack {
       },
     });
 
-    // Create Lambda for processing contact form submissions without a layer
-    // This approach avoids the need for bundling the dependencies
+    // Create Lambda for processing contact form submissions without bundling
+    // This version doesn't require Docker and simply packages the code as-is
     const contactFormLambda = new lambda.Function(this, 'ContactFormFunction', {
       functionName: `ContactForm-${props.stageName}`,
       runtime: lambda.Runtime.NODEJS_20_X,
