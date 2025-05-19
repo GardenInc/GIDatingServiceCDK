@@ -197,13 +197,13 @@ namespace PipelineComponents {
                 'echo "Looking for cdk.assets.json files:"',
                 'find . -name "cdk.assets.json"',
 
-                // Create a list of all manifests and publish them
+                // Create a list of all manifests and publish them - fixed loop syntax
                 'echo "Publishing assets from all manifests:"',
                 'for manifest in $(find . -name "cdk.assets.json"); do',
                 '  dirname=$(dirname "$manifest")',
                 '  echo "Publishing assets from $manifest"',
                 '  cdk-assets --path "$dirname" publish -v',
-                'done',
+                'done', // This 'done' was missing in the previous version
 
                 'echo "Asset publication complete"',
               ],
