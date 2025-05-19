@@ -257,7 +257,13 @@ namespace PipelineComponents {
           },
           artifacts: {
             'base-directory': '.',
-            files: ['**/*.template.json', '**/*.assets.json', 'asset-output/**/*', 'cdk.out/**/*'],
+            files: [
+              '*.template.json', // Include templates at root level
+              '*.assets.json', // Include assets at root level
+              'dist/**/*.template.json', // Also include templates from dist directory
+              'dist/**/*.assets.json', // Also include assets from dist directory
+              'asset-output/**/*', // Include asset files
+            ],
           },
         }),
         environment: {
@@ -390,9 +396,7 @@ namespace PipelineComponents {
         actions: [
           new codepipeline_actions.CloudFormationCreateUpdateStackAction({
             actionName: 'SelfMutate',
-            templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
-              `${WebsitePipelineStackName}${TEMPLATE_ENDING}`,
-            ),
+            templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(`WebsitePipelineStack.template.json`),
             stackName: `${WebsitePipelineStackName}`,
             adminPermissions: true,
             cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
