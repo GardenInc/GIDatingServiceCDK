@@ -215,23 +215,23 @@ namespace PipelineComponents {
               'runtime-versions': {
                 nodejs: 20,
               },
-              commands: [
-                'npm install', // Install dependencies
-              ],
+              commands: ['npm install'],
             },
             build: {
               commands: [
                 'npm run build', // Compile TypeScript
-                'npm run cdk synth -- -o dist', // Generate CloudFormation template
-                'echo "Generated template files:"',
-                'find dist -name "*.template.json" | sort', // List all template files for debugging
+                'npx cdk synth --verbose --path-metadata true --asset-metadata true --output dist', // Explicit flags for assets
+                'echo "Generated files:"',
+                'find dist -type f | sort', // List all generated files for debugging
+                'echo "Looking for asset files:"',
+                'find dist -name "cdk.assets.json" -o -name "*.assets.json" | sort', // Find any asset files
               ],
             },
           },
           artifacts: {
             'base-directory': 'dist',
             files: [
-              '**/*.template.json', // Include all template files
+              '**/*', // Include ALL files, not just templates
             ],
           },
         }),
