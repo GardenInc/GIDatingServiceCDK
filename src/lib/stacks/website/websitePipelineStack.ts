@@ -173,38 +173,19 @@ namespace PipelineComponents {
               'runtime-versions': {
                 nodejs: 20,
               },
-              commands: [
-                // Install only what we need - cdk-assets
-                'npm install -g cdk-assets',
-
-                // Debug commands
-                'echo "Current directory: $(pwd)"',
-                'ls -la',
-              ],
+              commands: ['npm install -g cdk-assets', 'echo "Current directory: $(pwd)"', 'ls -la'],
             },
             build: {
               commands: [
-                // Show the directory structure
-                'echo "Files in input directory:"',
-                'ls -la',
-
                 // Configure AWS credentials and region
-                'echo "Configuring for publishing to target account ${ACCOUNT_ID}"',
                 'export AWS_REGION=us-west-2',
                 'export AWS_ACCOUNT_ID=${ACCOUNT_ID}',
 
-                // Look for asset manifest
-                'echo "Looking for cdk.assets.json files:"',
-                'find . -name "cdk.assets.json"',
+                // Just run a simple "find" with "-exec" which is safer than a for loop
+                'echo "Finding and publishing assets directly:"',
+                'find . -name "cdk.assets.json" -exec sh -c "echo Publishing assets from {}; cd $(dirname {}); cdk-assets publish -v" \\;',
 
-                // Create a list of all manifests and publish them - fixed loop syntax
-                'echo "Publishing assets from all manifests:"',
-                'for manifest in $(find . -name "cdk.assets.json"); do',
-                '  dirname=$(dirname "$manifest")',
-                '  echo "Publishing assets from $manifest"',
-                '  cdk-assets --path "$dirname" publish -v',
-                'done', // This 'done' was missing in the previous version
-
+                // Notify completion
                 'echo "Asset publication complete"',
               ],
             },
