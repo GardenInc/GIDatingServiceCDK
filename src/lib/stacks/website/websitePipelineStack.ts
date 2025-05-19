@@ -173,27 +173,44 @@ namespace PipelineComponents {
               'runtime-versions': {
                 nodejs: 20,
               },
-              commands: ['npm install', 'npm install -g aws-cdk'],
+              commands: [
+                // Install only what we need - cdk-assets
+                'npm install -g cdk-assets',
+
+                // Debug commands
+                'echo "Current directory: $(pwd)"',
+                'ls -la',
+              ],
             },
             build: {
               commands: [
-                // Configure AWS CLI for cross-account access
+                // Show the directory structure
+                'echo "Files in input directory:"',
+                'ls -la',
+
+                // Configure AWS credentials and region
                 'echo "Configuring for publishing to target account ${ACCOUNT_ID}"',
                 'export AWS_REGION=us-west-2',
                 'export AWS_ACCOUNT_ID=${ACCOUNT_ID}',
 
-                // Build the code
-                'npm run build',
+                // Look for asset manifest
+                'echo "Looking for cdk.assets.json files:"',
+                'find . -name "cdk.assets.json"',
 
-                // Publish assets to the target account
-                `npx cdk-assets publish -p "dist" -v`,
+                // Create a list of all manifests and publish them
+                'echo "Publishing assets from all manifests:"',
+                'for manifest in $(find . -name "cdk.assets.json"); do',
+                '  dirname=$(dirname "$manifest")',
+                '  echo "Publishing assets from $manifest"',
+                '  cdk-assets --path "$dirname" publish -v',
+                'done',
 
                 'echo "Asset publication complete"',
               ],
             },
           },
           artifacts: {
-            'base-directory': 'dist',
+            'base-directory': '.',
             files: ['**/*.template.json'],
           },
         }),
@@ -381,10 +398,19 @@ namespace PipelineComponents {
     /**
      * Creates the beta deployment stage
      */
-    public createBetaDeployStage(betaConfig: AccountConfig): codepipeline.StageProps {
+    public createBetaDeployStage(buildManager: BuildManager, betaConfig: AccountConfig): codepipeline.StageProps {
       return {
         stageName: 'Deploy_Beta',
         actions: [
+          // First action: Publish CDK assets to the Beta account
+          new codepipeline_actions.CodeBuildAction({
+            actionName: 'PublishAssets',
+            project: buildManager.cdkPublishBeta, // The CDK asset publishing build project
+            input: new codepipeline.Artifact('cdkBuildOutput'),
+            runOrder: 1, // Run this first
+          }),
+
+          // Second action: Deploy the WebsiteBucket CloudFormation stack
           new codepipeline_actions.CloudFormationCreateUpdateStackAction({
             actionName: 'DeployWebsiteBucket',
             templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
@@ -395,8 +421,10 @@ namespace PipelineComponents {
             cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             role: betaConfig.roles.codePipeline,
             deploymentRole: betaConfig.roles.cloudFormation,
-            runOrder: 1,
+            runOrder: 2, // Run after assets are published
           }),
+
+          // Third action: Deploy the DomainConfig CloudFormation stack
           new codepipeline_actions.CloudFormationCreateUpdateStackAction({
             actionName: 'DeployBetaDomainConfig',
             templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
@@ -407,8 +435,10 @@ namespace PipelineComponents {
             cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             role: betaConfig.roles.codePipeline,
             deploymentRole: betaConfig.roles.cloudFormation,
-            runOrder: 2,
+            runOrder: 3,
           }),
+
+          // Fourth action: Deploy the ContactForm CloudFormation stack
           new codepipeline_actions.CloudFormationCreateUpdateStackAction({
             actionName: 'DeployBetaContactForm',
             templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
@@ -419,27 +449,31 @@ namespace PipelineComponents {
             cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             role: betaConfig.roles.codePipeline,
             deploymentRole: betaConfig.roles.cloudFormation,
-            runOrder: 3,
+            runOrder: 4,
           }),
+
+          // Fifth action: Deploy website content to S3
           new codepipeline_actions.S3DeployAction({
             actionName: 'DeployWebsiteContent',
             input: new codepipeline.Artifact('websiteBuildOutput'),
             bucket: s3.Bucket.fromBucketName(this.scope, 'WebsiteS3Bucket', betaConfig.websiteConfig.websiteBucketName),
             role: betaConfig.roles.codePipeline,
-            runOrder: 4,
+            runOrder: 5,
             cacheControl: [
               codepipeline_actions.CacheControl.setPublic(),
               codepipeline_actions.CacheControl.maxAge(Duration.days(7)),
               codepipeline_actions.CacheControl.sMaxAge(Duration.days(7)),
             ],
           }),
+
+          // Final action: Manual cache invalidation step
           new codepipeline_actions.ManualApprovalAction({
             actionName: 'ManualCacheInvalidation',
             additionalInformation: `Please run the following command to invalidate the Beta CloudFront cache:
-aws cloudfront create-invalidation --distribution-id ${betaConfig.websiteConfig.distributionId} --paths "/*" --profile beta
-
-Once completed, approve this step to continue.`,
-            runOrder: 5,
+    aws cloudfront create-invalidation --distribution-id ${betaConfig.websiteConfig.distributionId} --paths "/*" --profile beta
+    
+    Once completed, approve this step to continue.`,
+            runOrder: 6,
           }),
         ],
       };
@@ -464,10 +498,19 @@ Once completed, approve this step to continue.`,
     /**
      * Creates the production deployment stage
      */
-    public createProdDeployStage(prodConfig: AccountConfig): codepipeline.StageProps {
+    public createProdDeployStage(buildManager: BuildManager, prodConfig: AccountConfig): codepipeline.StageProps {
       return {
         stageName: 'Deploy_Prod',
         actions: [
+          // First action: Publish CDK assets to the Prod account
+          new codepipeline_actions.CodeBuildAction({
+            actionName: 'PublishAssets',
+            project: buildManager.cdkPublishProd, // The CDK asset publishing build project
+            input: new codepipeline.Artifact('cdkBuildOutput'),
+            runOrder: 1, // Run this first
+          }),
+
+          // Second action: Deploy the WebsiteBucket CloudFormation stack
           new codepipeline_actions.CloudFormationCreateUpdateStackAction({
             actionName: 'DeployWebsiteBucket',
             templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
@@ -478,8 +521,10 @@ Once completed, approve this step to continue.`,
             cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             role: prodConfig.roles.codePipeline,
             deploymentRole: prodConfig.roles.cloudFormation,
-            runOrder: 1,
+            runOrder: 2, // Run after assets are published
           }),
+
+          // Third action: Deploy the DomainConfig CloudFormation stack
           new codepipeline_actions.CloudFormationCreateUpdateStackAction({
             actionName: 'DeployProdDomainConfig',
             templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
@@ -490,8 +535,10 @@ Once completed, approve this step to continue.`,
             cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             role: prodConfig.roles.codePipeline,
             deploymentRole: prodConfig.roles.cloudFormation,
-            runOrder: 2,
+            runOrder: 3,
           }),
+
+          // Fourth action: Deploy the ContactForm CloudFormation stack
           new codepipeline_actions.CloudFormationCreateUpdateStackAction({
             actionName: 'DeployProdContactForm',
             templatePath: new codepipeline.Artifact('cdkBuildOutput').atPath(
@@ -502,8 +549,10 @@ Once completed, approve this step to continue.`,
             cfnCapabilities: [CfnCapabilities.ANONYMOUS_IAM],
             role: prodConfig.roles.codePipeline,
             deploymentRole: prodConfig.roles.cloudFormation,
-            runOrder: 3,
+            runOrder: 4,
           }),
+
+          // Fifth action: Deploy website content to S3
           new codepipeline_actions.S3DeployAction({
             actionName: 'DeployWebsiteContent',
             input: new codepipeline.Artifact('websiteBuildOutput'),
@@ -511,20 +560,22 @@ Once completed, approve this step to continue.`,
               bucketArn: prodConfig.websiteConfig.websiteBucketArn,
             }),
             role: prodConfig.roles.codePipeline,
-            runOrder: 4,
+            runOrder: 5,
             cacheControl: [
               codepipeline_actions.CacheControl.setPublic(),
               codepipeline_actions.CacheControl.maxAge(Duration.days(30)),
               codepipeline_actions.CacheControl.sMaxAge(Duration.days(30)),
             ],
           }),
+
+          // Final action: Manual cache invalidation step
           new codepipeline_actions.ManualApprovalAction({
             actionName: 'ManualCacheInvalidation',
             additionalInformation: `Please run the following command to invalidate the Production CloudFront cache:
-aws cloudfront create-invalidation --distribution-id ${prodConfig.websiteConfig.distributionId} --paths "/*" --profile prod
-
-Once completed, approve this step to continue.`,
-            runOrder: 5,
+    aws cloudfront create-invalidation --distribution-id ${prodConfig.websiteConfig.distributionId} --paths "/*" --profile prod
+    
+    Once completed, approve this step to continue.`,
+            runOrder: 6,
           }),
         ],
       };
@@ -702,12 +753,10 @@ export class WebsitePipelineStack extends Stack {
         stageFactory.createSourceStage(),
         stageFactory.createBuildStage(buildManager),
         stageFactory.createPipelineUpdateStage(),
-        // Add asset publishing stages before deployment stages
-        stageFactory.createPublishBetaStage(buildManager),
-        stageFactory.createBetaDeployStage(betaAccountConfig),
+        // Pass the buildManager to the stage factory methods
+        stageFactory.createBetaDeployStage(buildManager, betaAccountConfig),
         stageFactory.createApprovalStage(betaAccountConfig),
-        stageFactory.createPublishProdStage(buildManager),
-        stageFactory.createProdDeployStage(prodAccountConfig),
+        stageFactory.createProdDeployStage(buildManager, prodAccountConfig),
       ],
     });
 
