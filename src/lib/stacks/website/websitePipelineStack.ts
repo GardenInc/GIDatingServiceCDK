@@ -183,10 +183,7 @@ namespace PipelineComponents {
 
                 // Simple assets publishing directly from dist folder
                 'echo "Publishing assets for ${STAGE} environment:"',
-                'for asset_file in dist/*${STAGE}*.assets.json; do',
-                '  echo "Publishing from $asset_file"',
-                '  cdk-assets publish -p $asset_file',
-                'done',
+                'find dist -name "*${STAGE}*.assets.json" -exec echo "Publishing {}" \\; -exec cdk-assets publish -p {} \\;',
 
                 'echo "Asset publication complete"',
               ],
