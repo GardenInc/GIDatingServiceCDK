@@ -173,7 +173,7 @@ namespace PipelineComponents {
               'runtime-versions': {
                 nodejs: 20,
               },
-              commands: ['npm install -g cdk-assets', 'echo "Current directory: $(pwd)"', 'ls -la'],
+              commands: ['npm install -g cdk-assets'],
             },
             build: {
               commands: [
@@ -181,30 +181,13 @@ namespace PipelineComponents {
                 'export AWS_REGION=us-west-2',
                 'export AWS_ACCOUNT_ID=${ACCOUNT_ID}',
 
-                // Improved asset publishing with detailed logging
-                'echo "Finding all asset files:"',
-                'find . -name "*.assets.json" | sort',
-                'echo "Finding specific ${STAGE} assets:"',
-                'find . -name "*${STAGE}*.assets.json" | sort',
+                // Simple assets publishing directly from dist folder
+                'echo "Publishing assets for ${STAGE} environment:"',
+                'for asset_file in dist/*${STAGE}*.assets.json; do',
+                '  echo "Publishing from $asset_file"',
+                '  cdk-assets publish -p $asset_file',
+                'done',
 
-                // Explicit publishing of contact form assets
-                'echo "Publishing contact form Lambda assets:"',
-                'if [ -f "${STAGE}uswest2ContactFormStack.assets.json" ]; then',
-                '  echo "Publishing from ${STAGE}uswest2ContactFormStack.assets.json"',
-                '  cdk-assets publish -p ${STAGE}uswest2ContactFormStack.assets.json --verbose',
-                'else',
-                '  echo "WARNING: ${STAGE}uswest2ContactFormStack.assets.json not found"',
-                'fi',
-
-                // Publish all assets to ensure everything is uploaded
-                'echo "Publishing all assets for this stage:"',
-                'find . -name "*${STAGE}*.assets.json" -exec sh -c "echo Publishing assets from {}; cdk-assets publish -p {} --verbose" \\;',
-
-                // Verify asset bucket content after publishing
-                'echo "Verifying asset bucket contents:"',
-                'aws s3 ls s3://cdk-hnb659fds-assets-${ACCOUNT_ID}-us-west-2/ | grep -i lambda || echo "No Lambda assets found in bucket"',
-
-                // Notify completion
                 'echo "Asset publication complete"',
               ],
             },
@@ -413,7 +396,7 @@ namespace PipelineComponents {
           // First action: Publish CDK assets to the Beta account
           new codepipeline_actions.CodeBuildAction({
             actionName: 'PublishAssets',
-            project: buildManager.cdkPublishBeta, // The CDK asset publishing build project
+            project: buildManager.cdkPublishBeta,
             input: new codepipeline.Artifact('cdkBuildOutput'),
             outputs: [new codepipeline.Artifact('betaAssetsPublished')], // Add output to wait for completion
             runOrder: 1, // Run this first
