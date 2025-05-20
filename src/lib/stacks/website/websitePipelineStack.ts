@@ -165,7 +165,7 @@ namespace PipelineComponents {
       stageName: string,
       accountId: string,
     ): codebuild.PipelineProject {
-      return new codebuild.PipelineProject(scope, `CdkPublish${stageName}`, {
+      const project = new codebuild.PipelineProject(scope, `CdkPublish${stageName}`, {
         buildSpec: codebuild.BuildSpec.fromObject({
           version: '0.2',
           phases: {
@@ -204,6 +204,24 @@ namespace PipelineComponents {
         },
         encryptionKey: key,
       });
+
+      this.addCdkAssetBucketPermissions(project, accountId);
+
+      return project;
+    }
+
+    private addCdkAssetBucketPermissions(project: codebuild.PipelineProject, accountId: string) {
+      // Add permission to access the CDK asset buckets in both accounts
+      project.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*', 's3:DeleteObject*', 's3:PutObject*', 's3:Abort*'],
+          resources: [
+            `arn:aws:s3:::cdk-hnb659fds-assets-${accountId}-us-west-2`,
+            `arn:aws:s3:::cdk-hnb659fds-assets-${accountId}-us-west-2/*`,
+          ],
+        }),
+      );
     }
 
     private createCdkBuildProject(scope: Stack, key: kms.Key): codebuild.PipelineProject {
